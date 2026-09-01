@@ -1,0 +1,203 @@
+﻿using System.Linq;
+
+using Kiota.Builder.Extensions;
+
+using Xunit;
+
+namespace Kiota.Builder.Tests.Extensions;
+
+public class StringExtensionsTests
+{
+    [Fact]
+    public void Defensive()
+    {
+        Assert.Equal(StringExtensions.GetNamespaceImportSymbol(null), string.Empty);
+    }
+    [Fact]
+    public void ToLowerCase()
+    {
+        string nString = null;
+        Assert.Empty(nString.ToFirstCharacterLowerCase());
+        Assert.Equal(string.Empty, string.Empty.ToFirstCharacterLowerCase());
+        Assert.Equal("toto", "Toto".ToFirstCharacterLowerCase());
+    }
+    [Fact]
+    public void ToUpperCase()
+    {
+        string nString = null;
+        Assert.Empty(nString.ToFirstCharacterUpperCase());
+        Assert.Equal(string.Empty, string.Empty.ToFirstCharacterUpperCase());
+        Assert.Equal("Toto", "toto".ToFirstCharacterUpperCase());
+    }
+    [Fact]
+    public void ToCamelCase()
+    {
+        string nString = null;
+        Assert.Empty(nString.ToCamelCase());
+        Assert.Equal(string.Empty, string.Empty.ToCamelCase());
+        Assert.Equal(string.Empty, "-".ToCamelCase());
+        Assert.Equal("toto", "toto".ToCamelCase());
+        Assert.Equal("totoCamelCase", "toto-camel-case".ToCamelCase());
+        Assert.Equal("totoCamelCase", "toto.camel~case".ToCamelCase('.', '~'));
+    }
+    [Fact]
+    public void ToPascalCase()
+    {
+        string nString = null;
+        Assert.Empty(nString.ToPascalCase());
+        Assert.Equal(string.Empty, string.Empty.ToPascalCase());
+        Assert.Equal("Toto", "toto".ToPascalCase());
+        Assert.Equal("TotoPascalCase", "toto-pascal-case".ToPascalCase());
+    }
+    [Fact]
+    public void ToPascalCaseCustomSeparator()
+    {
+        string nString = null;
+        Assert.Empty(nString.ToPascalCase());
+        Assert.Equal(string.Empty, string.Empty.ToPascalCase(new[] { '_' }));
+        Assert.Equal("Toto", "toto".ToPascalCase(new[] { '_' }));
+        Assert.Equal("TotoPascalCase", "toto_pascal_case".ToPascalCase(new[] { '_' }));
+    }
+    [Fact]
+    public void ReplaceValueIdentifier()
+    {
+        string nString = null;
+        Assert.Empty(nString.ReplaceValueIdentifier());
+        Assert.Equal(string.Empty, string.Empty.ReplaceValueIdentifier());
+        Assert.Equal("microsoft.graph.message.Content", "microsoft.graph.message.$value".ReplaceValueIdentifier());
+    }
+    [Fact]
+    public void ToSnakeCase()
+    {
+        string nString = null;
+        Assert.Empty(nString.ToSnakeCase());
+        Assert.Equal(string.Empty, string.Empty.ToSnakeCase());
+        Assert.Equal("toto", "Toto".ToSnakeCase());
+        Assert.Equal("microsoft_graph_message_content", "microsoft-Graph-Message-Content".ToSnakeCase());
+        Assert.Equal("microsoft_graph_message_content", "microsoftGraphMessageContent".ToSnakeCase());
+        Assert.Equal("microsoft_graph_message_content", "microsoft_Graph_Message_Content".ToSnakeCase());
+        Assert.Equal("test_value", "testValue<WithStrippedContent".ToSnakeCase());
+        Assert.Equal("test", "test<Value".ToSnakeCase());
+    }
+    [Fact]
+    public void NormalizeNameSpaceName()
+    {
+        string nString = null;
+        Assert.Empty(nString.NormalizeNameSpaceName("."));
+        Assert.Equal(string.Empty, string.Empty.NormalizeNameSpaceName("."));
+        Assert.Equal("Toto", "toto".NormalizeNameSpaceName("-"));
+        Assert.Equal("Microsoft_Graph_Message_Content", "microsoft.Graph.Message.Content".NormalizeNameSpaceName("_"));
+    }
+    [InlineData("\" !#$%&'()*+,./:;<=>?@[]\\^`{}|~-", "plus")]
+    [InlineData("unchanged", "unchanged")]
+    [InlineData("@odata.changed", "OdataChanged")]
+    [InlineData("specialLast@", "specialLast")]
+    [InlineData("kebab-cased", "kebabCased")]
+    [InlineData("123Spelled", "OneTwoThreeSpelled")]
+    [InlineData("+1", "plus_1")]
+    [InlineData("+1+", "plus_1_plus")]
+    [InlineData("+1+1", "plus_1_plus_1")]
+    [InlineData("-1", "minus_1")]
+    [InlineData("-1-", "minus_1")]
+    [InlineData("-1-1", "minus_11")]
+    [InlineData("-", "minus")]
+    [InlineData("@", "At")]
+    [InlineData("_component", "component")]
+    [InlineData("__component", "component")]
+    [InlineData("a__b", "a__b")]
+    [InlineData("_", "Underscore")]
+    [Theory]
+    public void CleansUpSymbolNames(string input, string expected)
+    {
+        Assert.Equal(expected, input.CleanupSymbolName());
+    }
+
+    [Fact]
+    public void EqualsIgnoreCase()
+    {
+        string a = null;
+        string b = null;
+        string c = string.Empty;
+        Assert.True(a.EqualsIgnoreCase(b));
+        Assert.False(a.EqualsIgnoreCase(c));
+        Assert.False(a.EqualsIgnoreCase("Ab"));
+        Assert.True("Aa".EqualsIgnoreCase("aa"));
+        Assert.False("Aa".EqualsIgnoreCase("Ab"));
+        Assert.True("AaAaAa".EqualsIgnoreCase("aaaaaa"));
+        Assert.True("".EqualsIgnoreCase(""));
+        Assert.True("Joe_Doe".EqualsIgnoreCase("joe_doe"));
+    }
+    [Fact]
+    public void ReplacesDoubleQuoteWithEscapedSingleQuoteLiteral()
+    {
+        const string input = "\"line1'\\\nline2\"";
+        Assert.Equal("'line1\\'\\\\\\nline2'", input.ReplaceDoubleQuoteWithSingleQuote());
+    }
+    [Fact]
+    public void ShortenNameSegmentReturnsOriginalWhenUnderLimit()
+    {
+        var shortName = "MyShortClassName";
+        Assert.Equal(shortName, shortName.ShortenNameSegment());
+    }
+    [Fact]
+    public void ShortenNameSegmentReturnsOriginalAtExactLimit()
+    {
+        var name = new string('a', 200);
+        Assert.Equal(name, name.ShortenNameSegment());
+    }
+    [Fact]
+    public void ShortenNameSegmentTruncatesAndAppendsHashWhenOverLimit()
+    {
+        var longName = string.Concat(Enumerable.Repeat("MicrosoftGraphNetworkaccessDeviceReportSegment", 8)); // 368 chars > 200
+        var result = longName.ShortenNameSegment();
+        Assert.Equal(200, result.Length);
+        // First 191 chars are preserved (200 - 8 hash - 1 underscore)
+        Assert.StartsWith(longName[..191], result);
+        Assert.Equal('_', result[191]);
+    }
+    [Fact]
+    public void ShortenNameSegmentIsDeterministic()
+    {
+        var longName = string.Concat(Enumerable.Repeat("MicrosoftGraphNetworkaccessDeviceReportSegment", 8)); // 368 chars > 255
+        var result1 = longName.ShortenNameSegment();
+        var result2 = longName.ShortenNameSegment();
+        Assert.Equal(result1, result2);
+    }
+    [Fact]
+    public void ShortenNameSegmentProducesDifferentResultsForDifferentInputs()
+    {
+        var name1 = string.Concat(Enumerable.Repeat("MicrosoftGraphNetworkaccessDeviceReportSegment", 8)) + "One"; // > 255
+        var name2 = string.Concat(Enumerable.Repeat("MicrosoftGraphNetworkaccessDeviceReportSegment", 8)) + "Two"; // > 255
+        var result1 = name1.ShortenNameSegment();
+        var result2 = name2.ShortenNameSegment();
+        Assert.NotEqual(result1, result2);
+    }
+    [Fact]
+    public void ShortenNameSegmentHandlesNullAndEmpty()
+    {
+        Assert.Null(((string)null).ShortenNameSegment());
+        Assert.Equal(string.Empty, string.Empty.ShortenNameSegment());
+    }
+    [Fact]
+    public void ShortenNameSegmentRespectsCustomMaxLength()
+    {
+        var name = "SomeVeryLongNameThatExceedsThirtyCharacters";
+        var result = name.ShortenNameSegment(30);
+        Assert.Equal(30, result.Length);
+        Assert.StartsWith("SomeVeryLongNameThatE", result);
+        Assert.Contains("_", result);
+    }
+    [Fact]
+    public void HashStringReturnsEmptyForNullOrEmpty()
+    {
+        Assert.Equal(string.Empty, StringExtensions.HashString(null));
+        Assert.Equal(string.Empty, StringExtensions.HashString(string.Empty));
+    }
+    [Fact]
+    public void HashStringReturnsConsistentHashForInput()
+    {
+        var result = StringExtensions.HashString("test");
+        Assert.False(string.IsNullOrEmpty(result));
+        Assert.Equal(result, StringExtensions.HashString("test"));
+    }
+}

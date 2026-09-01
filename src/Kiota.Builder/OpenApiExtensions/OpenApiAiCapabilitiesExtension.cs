@@ -1,0 +1,517 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Kiota.Builder.Extensions;
+using Microsoft.OpenApi;
+
+namespace Kiota.Builder.OpenApiExtensions;
+
+public class OpenApiAiCapabilitiesExtension : IOpenApiExtension
+{
+    public static string Name => "x-ai-capabilities";
+    public ExtensionConfirmation? Confirmation
+    {
+        get; set;
+    }
+    public ExtensionResponseSemantics? ResponseSemantics
+    {
+        get; set;
+    }
+    public ExtensionSecurityInfo? SecurityInfo
+    {
+        get; set;
+    }
+
+    public static OpenApiAiCapabilitiesExtension Parse(JsonNode source)
+    {
+        if (source is not JsonObject rawObject) throw new ArgumentOutOfRangeException(nameof(source));
+        var extension = new OpenApiAiCapabilitiesExtension();
+        if (rawObject.TryGetPropertyValue(nameof(Confirmation).ToFirstCharacterLowerCase(), out var confirmation) && confirmation is JsonObject confirmationObject)
+        {
+            extension.Confirmation = ParseConfirmation(confirmationObject);
+        }
+        if (rawObject.TryGetPropertyValue(nameof(ResponseSemantics).ToFirstCharacterLowerCase().ToSnakeCase(), out var responseSemantics) && responseSemantics is JsonObject responseSemanticsObject)
+        {
+            extension.ResponseSemantics = ParseResponseSemantics(responseSemanticsObject);
+        }
+        if (rawObject.TryGetPropertyValue(nameof(SecurityInfo).ToFirstCharacterLowerCase().ToSnakeCase(), out var securityInfo) && securityInfo is JsonObject securityInfoObject)
+        {
+            extension.SecurityInfo = ParseSecurityInfo(securityInfoObject);
+        }
+        return extension;
+    }
+
+    public void Write(IOpenApiWriter writer, OpenApiSpecVersion specVersion)
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        writer.WriteStartObject();
+        if (ResponseSemantics != null || Confirmation != null || SecurityInfo != null)
+        {
+
+            if (ResponseSemantics is not null)
+            {
+                writer.WritePropertyName(nameof(ResponseSemantics).ToFirstCharacterLowerCase().ToSnakeCase());
+                WriteResponseSemantics(writer, ResponseSemantics);
+            }
+            if (Confirmation is not null)
+            {
+                writer.WritePropertyName(nameof(Confirmation).ToFirstCharacterLowerCase());
+                WriteConfirmation(writer, Confirmation);
+            }
+            if (SecurityInfo is not null)
+            {
+                writer.WritePropertyName(nameof(SecurityInfo).ToFirstCharacterLowerCase().ToSnakeCase());
+                WriteSecurityInfo(writer, SecurityInfo);
+            }
+        }
+        writer.WriteEndObject();
+    }
+
+    private static ExtensionConfirmation ParseConfirmation(JsonObject source)
+    {
+        var confirmation = new ExtensionConfirmation();
+        if (source.TryGetPropertyValue(nameof(Confirmation.Type).ToFirstCharacterLowerCase(), out var type) &&
+            type is JsonValue typeValue && typeValue.GetValueKind() is JsonValueKind.String &&
+            typeValue.TryGetValue<string>(out var typeStrValue))
+        {
+            confirmation.Type = typeStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(Confirmation.Title).ToFirstCharacterLowerCase(), out var title) &&
+            title is JsonValue titleValue && titleValue.GetValueKind() is JsonValueKind.String &&
+            titleValue.TryGetValue<string>(out var titleStrValue))
+        {
+            confirmation.Title = titleStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(Confirmation.Body).ToFirstCharacterLowerCase(), out var body) &&
+            body is JsonValue bodyValue && bodyValue.GetValueKind() is JsonValueKind.String &&
+            bodyValue.TryGetValue<string>(out var bodyStrValue))
+        {
+            confirmation.Body = bodyStrValue;
+        }
+        if (source.TryGetPropertyValue(nameof(Confirmation.IsNonConsequential).ToFirstCharacterLowerCase(), out var isNonConsequential) &&
+            isNonConsequential is JsonValue isNonConsequentialValue &&
+            isNonConsequentialValue.GetValueKind() is JsonValueKind.True or JsonValueKind.False &&
+            isNonConsequentialValue.TryGetValue<bool>(out var isNonConsequentialBoolValue))
+        {
+            confirmation.IsNonConsequential = isNonConsequentialBoolValue;
+        }
+
+        return confirmation;
+    }
+
+    private void WriteConfirmation(IOpenApiWriter writer, ExtensionConfirmation confirmation)
+    {
+        writer.WriteStartObject();
+
+        if (!string.IsNullOrEmpty(confirmation.Type))
+        {
+            writer.WritePropertyName(nameof(Confirmation.Type).ToFirstCharacterLowerCase());
+            writer.WriteValue(confirmation.Type);
+        }
+
+        if (!string.IsNullOrEmpty(confirmation.Title))
+        {
+            writer.WritePropertyName(nameof(Confirmation.Title).ToFirstCharacterLowerCase());
+            writer.WriteValue(confirmation.Title);
+        }
+
+        if (!string.IsNullOrEmpty(confirmation.Body))
+        {
+            writer.WritePropertyName(nameof(Confirmation.Body).ToFirstCharacterLowerCase());
+            writer.WriteValue(confirmation.Body);
+        }
+
+        if (confirmation.IsNonConsequential.HasValue)
+        {
+            writer.WritePropertyName(nameof(Confirmation.IsNonConsequential).ToFirstCharacterLowerCase());
+            writer.WriteValue(confirmation.IsNonConsequential.Value);
+        }
+
+        writer.WriteEndObject();
+    }
+
+    private static ExtensionResponseSemantics ParseResponseSemantics(JsonObject source)
+    {
+        var responseSemantics = new ExtensionResponseSemantics();
+
+        if (source.TryGetPropertyValue(nameof(ResponseSemantics.DataPath).ToFirstCharacterLowerCase().ToSnakeCase(), out var dataPath) &&
+            dataPath is JsonValue dataPathValue && dataPathValue.GetValueKind() is JsonValueKind.String &&
+            dataPathValue.TryGetValue<string>(out var dataPathStrValue))
+        {
+            responseSemantics.DataPath = dataPathStrValue;
+        }
+        if (source.TryGetPropertyValue(nameof(ResponseSemantics.StaticTemplate).ToFirstCharacterLowerCase().ToSnakeCase(), out var staticTemplate) &&
+            staticTemplate is JsonObject staticTemplateObj)
+        {
+            responseSemantics.StaticTemplate = new ExtensionResponseSemanticsStaticTemplate { Template = staticTemplateObj };
+        }
+
+        if (source.TryGetPropertyValue(nameof(ResponseSemantics.Properties).ToFirstCharacterLowerCase(), out var properties) &&
+            properties is JsonObject propertiesObj)
+        {
+            responseSemantics.Properties = ParseResponseSemanticsProperties(propertiesObj);
+        }
+
+        if (source.TryGetPropertyValue(nameof(ResponseSemantics.OauthCardPath).ToFirstCharacterLowerCase().ToSnakeCase(), out var OauthCardPath) &&
+            OauthCardPath is JsonValue OauthCardPathValue && OauthCardPathValue.GetValueKind() is JsonValueKind.String &&
+            OauthCardPathValue.TryGetValue<string>(out var OauthCardPathStrValue))
+        {
+            responseSemantics.OauthCardPath = OauthCardPathStrValue;
+        }
+
+        return responseSemantics;
+    }
+
+    private void WriteResponseSemantics(IOpenApiWriter writer, ExtensionResponseSemantics responseSemantics)
+    {
+        writer.WriteStartObject();
+
+        writer.WritePropertyName(nameof(ResponseSemantics.DataPath).ToFirstCharacterLowerCase().ToSnakeCase());
+        writer.WriteValue(responseSemantics.DataPath);
+
+        if (responseSemantics.StaticTemplate is { } staticTemplate)
+        {
+            writer.WritePropertyName(nameof(ResponseSemantics.StaticTemplate).ToFirstCharacterLowerCase().ToSnakeCase());
+            writer.WriteRaw(staticTemplate.Template.ToJsonString());
+        }
+
+        if (responseSemantics.Properties != null)
+        {
+            writer.WritePropertyName(nameof(ResponseSemantics.Properties).ToFirstCharacterLowerCase());
+            WriteResponseSemanticsProperties(writer, responseSemantics.Properties);
+        }
+
+        if (!string.IsNullOrEmpty(responseSemantics.OauthCardPath))
+        {
+            writer.WritePropertyName(nameof(ResponseSemantics.OauthCardPath).ToFirstCharacterLowerCase().ToSnakeCase());
+            writer.WriteValue(responseSemantics.OauthCardPath);
+        }
+
+        writer.WriteEndObject();
+    }
+
+    private static ExtensionResponseSemanticsProperties ParseResponseSemanticsProperties(JsonObject source)
+    {
+        var properties = new ExtensionResponseSemanticsProperties();
+
+        if (source.TryGetPropertyValue(nameof(ExtensionResponseSemanticsProperties.Title).ToFirstCharacterLowerCase(), out var title) &&
+            title is JsonValue titleValue && titleValue.GetValueKind() is JsonValueKind.String &&
+            titleValue.TryGetValue<string>(out var titleStrValue))
+        {
+            properties.Title = titleStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(ExtensionResponseSemanticsProperties.Subtitle).ToFirstCharacterLowerCase(), out var subtitle) &&
+            subtitle is JsonValue subtitleValue && subtitleValue.GetValueKind() is JsonValueKind.String &&
+            subtitleValue.TryGetValue<string>(out var subtitleStrValue))
+        {
+            properties.Subtitle = subtitleStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(ExtensionResponseSemanticsProperties.Url).ToFirstCharacterLowerCase(), out var url) &&
+            url is JsonValue urlValue && urlValue.GetValueKind() is JsonValueKind.String &&
+            urlValue.TryGetValue<string>(out var urlStrValue))
+        {
+            properties.Url = urlStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(ExtensionResponseSemanticsProperties.ThumbnailUrl).ToFirstCharacterLowerCase().ToSnakeCase(), out var thumbnailUrl) &&
+            thumbnailUrl is JsonValue thumbnailUrlValue && thumbnailUrlValue.GetValueKind() is JsonValueKind.String &&
+            thumbnailUrlValue.TryGetValue<string>(out var thumbnailUrlStrValue))
+        {
+            properties.ThumbnailUrl = thumbnailUrlStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(ExtensionResponseSemanticsProperties.InformationProtectionLabel).ToFirstCharacterLowerCase().ToSnakeCase(), out var informationProtectionLabel) &&
+            informationProtectionLabel is JsonValue informationProtectionLabelValue && informationProtectionLabelValue.GetValueKind() is JsonValueKind.String &&
+            informationProtectionLabelValue.TryGetValue<string>(out var informationProtectionLabelStrValue))
+        {
+            properties.InformationProtectionLabel = informationProtectionLabelStrValue;
+        }
+
+        if (source.TryGetPropertyValue(nameof(ExtensionResponseSemanticsProperties.TemplateSelector).ToFirstCharacterLowerCase().ToSnakeCase(), out var templateSelector) &&
+            templateSelector is JsonValue templateSelectorValue && templateSelectorValue.GetValueKind() is JsonValueKind.String &&
+            templateSelectorValue.TryGetValue<string>(out var templateSelectorStrValue))
+        {
+            properties.TemplateSelector = templateSelectorStrValue;
+        }
+
+        return properties;
+    }
+
+    private void WriteResponseSemanticsProperties(IOpenApiWriter writer, ExtensionResponseSemanticsProperties properties)
+    {
+        writer.WriteStartObject();
+
+        if (!string.IsNullOrEmpty(properties.Title))
+        {
+            writer.WritePropertyName(nameof(ExtensionResponseSemanticsProperties.Title).ToFirstCharacterLowerCase());
+            writer.WriteValue(properties.Title);
+        }
+
+        if (!string.IsNullOrEmpty(properties.Subtitle))
+        {
+            writer.WritePropertyName(nameof(ExtensionResponseSemanticsProperties.Subtitle).ToFirstCharacterLowerCase());
+            writer.WriteValue(properties.Subtitle);
+        }
+
+        if (!string.IsNullOrEmpty(properties.Url))
+        {
+            writer.WritePropertyName(nameof(ExtensionResponseSemanticsProperties.Url).ToFirstCharacterLowerCase());
+            writer.WriteValue(properties.Url);
+        }
+
+        if (!string.IsNullOrEmpty(properties.ThumbnailUrl))
+        {
+            writer.WritePropertyName(nameof(ExtensionResponseSemanticsProperties.ThumbnailUrl).ToFirstCharacterLowerCase().ToSnakeCase());
+            writer.WriteValue(properties.ThumbnailUrl);
+        }
+
+        if (!string.IsNullOrEmpty(properties.InformationProtectionLabel))
+        {
+            writer.WritePropertyName(nameof(ExtensionResponseSemanticsProperties.InformationProtectionLabel).ToFirstCharacterLowerCase().ToSnakeCase());
+            writer.WriteValue(properties.InformationProtectionLabel);
+        }
+
+        if (!string.IsNullOrEmpty(properties.TemplateSelector))
+        {
+            writer.WritePropertyName(nameof(ExtensionResponseSemanticsProperties.TemplateSelector).ToFirstCharacterLowerCase().ToSnakeCase());
+            writer.WriteValue(properties.TemplateSelector);
+        }
+
+        writer.WriteEndObject();
+    }
+
+    private static ExtensionSecurityInfo ParseSecurityInfo(JsonObject source)
+    {
+        var securityInfo = new ExtensionSecurityInfo();
+
+        if (source.TryGetPropertyValue(nameof(ExtensionSecurityInfo.DataHandling).ToFirstCharacterLowerCase().ToSnakeCase(), out var dataHandling) &&
+            dataHandling is JsonArray dataHandlingArray)
+        {
+            var dataHandlingList = new List<string>();
+
+            foreach (var item in dataHandlingArray)
+            {
+                if (item is JsonValue valueItem && valueItem.GetValueKind() is JsonValueKind.String &&
+                    valueItem.TryGetValue<string>(out var strValue))
+                {
+                    dataHandlingList.Add(strValue);
+                }
+            }
+
+            securityInfo.DataHandling = dataHandlingList;
+        }
+
+        return securityInfo;
+    }
+
+    private void WriteSecurityInfo(IOpenApiWriter writer, ExtensionSecurityInfo securityInfo)
+    {
+        writer.WriteStartObject();
+
+        if (securityInfo.DataHandling != null && securityInfo.DataHandling.Count > 0)
+        {
+            writer.WritePropertyName(nameof(securityInfo.DataHandling).ToFirstCharacterLowerCase().ToSnakeCase());
+            writer.WriteStartArray();
+
+            foreach (var item in securityInfo.DataHandling)
+            {
+                writer.WriteValue(item);
+            }
+
+            writer.WriteEndArray();
+        }
+
+        writer.WriteEndObject();
+    }
+}
+
+
+public class ExtensionConfirmation
+{
+    public string? Type
+    {
+        get; set;
+    }
+    public string? Title
+    {
+        get; set;
+    }
+    public string? Body
+    {
+        get; set;
+    }
+    public bool? IsNonConsequential
+    {
+        get; set;
+    }
+}
+
+public class ExtensionResponseSemantics
+{
+    public string DataPath { get; set; } = string.Empty;
+    public ExtensionResponseSemanticsStaticTemplate? StaticTemplate
+    {
+        get; set;
+    }
+    public ExtensionResponseSemanticsProperties? Properties
+    {
+        get; set;
+    }
+    public string? OauthCardPath
+    {
+        get; set;
+    }
+}
+
+public class ExtensionResponseSemanticsStaticTemplate
+{
+    // The raw static_template content, either an inlined Adaptive Card or a { "file": "..." } reference.
+    // It is preserved verbatim so inlined cards are passed through to the generated manifest unchanged.
+    public JsonObject Template { get; init; } = new();
+
+    // The relative file reference when the static_template is a { "file": "..." } reference; null for inlined cards.
+    public string? File =>
+        Template.TryGetPropertyValue("file", out var fileNode) &&
+        fileNode is JsonValue fileValue &&
+        fileValue.TryGetValue<string>(out var file)
+            ? file
+            : null;
+
+    // True when the static_template is a file reference that could resolve outside the manifest package.
+    // Inlined cards (no "file" property) are always considered safe.
+    public bool HasUnsafeFileReference => File is not null && !IsSafeFileReference(File);
+
+    // Upper bound on percent-decode passes; enough to defeat multi-level (double) encoding without unbounded looping.
+    private const int MaxPercentDecodePasses = 5;
+
+    // Validates that a static_template file reference is a relative path that cannot point outside the manifest
+    // package: rejects absolute URIs, POSIX/UNC rooted paths, Windows drive paths, and '..' traversal (CWE-22/CWE-829).
+    // The reference is percent-decoded first so encoded traversal sequences (e.g. %2e%2e for '..', %2f for '/',
+    // %3a for ':') cannot bypass the checks below; decoding is repeated to defeat multi-level encoding, residual
+    // encoding beyond the decode budget fails closed, embedded control/NUL characters are rejected, and Unicode
+    // compatibility forms are folded so full-width homoglyph traversal cannot slip through.
+    public static bool IsSafeFileReference(string? file)
+    {
+        if (string.IsNullOrWhiteSpace(file))
+        {
+            return false;
+        }
+
+        // Percent-decode repeatedly until the value is stable so encoded (and double-encoded) traversal payloads
+        // are normalized back to their literal form before validation.
+        var decoded = file;
+        for (var pass = 0; pass < MaxPercentDecodePasses; pass++)
+        {
+            var next = Uri.UnescapeDataString(decoded);
+            if (string.Equals(next, decoded, StringComparison.Ordinal))
+            {
+                break;
+            }
+            decoded = next;
+        }
+
+        if (string.IsNullOrWhiteSpace(decoded))
+        {
+            return false;
+        }
+
+        // Fail closed if percent-encoding remains after the decode budget is exhausted: undecoded residue
+        // (e.g. more encoding levels than MaxPercentDecodePasses) could still be decoded by the downstream
+        // consumer into a traversal sequence, so treat it as unsafe rather than accepting it verbatim.
+        if (!string.Equals(Uri.UnescapeDataString(decoded), decoded, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        // Fold Unicode compatibility forms (e.g. full-width '．'/'／') to their canonical ASCII equivalents so
+        // homoglyph traversal payloads are normalized before the checks below. Validation only; the original
+        // reference is still emitted verbatim.
+        decoded = decoded.Normalize(System.Text.NormalizationForm.FormKC);
+
+        // Reject control characters (e.g. an embedded NUL from %00) which can truncate the path in downstream
+        // consumers and defeat the parent-directory segment check below.
+        if (decoded.Any(char.IsControl))
+        {
+            return false;
+        }
+
+        // The manifest schema requires a relative file path; reject absolute URIs such as http(s):// or file://.
+        if (Uri.TryCreate(decoded, UriKind.Absolute, out _))
+        {
+            return false;
+        }
+
+        // Normalize separators so the checks below are OS-independent (the manifest is consumed on any platform).
+        var normalized = decoded.Replace('\\', '/');
+
+        // Reject POSIX-absolute and UNC-style rooted paths (e.g. /etc/passwd, //server/share).
+        if (normalized.StartsWith('/'))
+        {
+            return false;
+        }
+
+        // Reject Windows drive-qualified paths (e.g. C:\..., C:foo).
+        if (normalized.Length >= 2 && normalized[1] == ':')
+        {
+            return false;
+        }
+
+        // Reject any parent-directory traversal segment.
+        foreach (var segment in normalized.Split('/'))
+        {
+            if (segment == "..")
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+public class ExtensionResponseSemanticsProperties
+{
+    public string? Title
+    {
+        get; set;
+    }
+    public string? Subtitle
+    {
+        get; set;
+    }
+#pragma warning disable CA1056 // URI-like properties should not be strings
+    public string? Url
+    {
+        get; set;
+    }
+    public string? ThumbnailUrl
+    {
+        get; set;
+    }
+#pragma warning restore CA1056 // URI-like properties should not be strings
+    public string? InformationProtectionLabel
+    {
+        get; set;
+    }
+    public string? TemplateSelector
+    {
+        get; set;
+    }
+}
+
+public class ExtensionSecurityInfo
+{
+#pragma warning disable CA1002 // Do not expose generic lists
+#pragma warning disable CA2227 // Collection properties should be read only
+    public List<string> DataHandling { get; set; } = new List<string>();
+#pragma warning restore CA2227 // Collection properties should be read only
+#pragma warning restore CA1002 // Do not expose generic lists
+}
+
+

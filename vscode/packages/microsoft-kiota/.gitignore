@@ -1,0 +1,6 @@
+dist/
+out/
+.kiotabin/
+*.vsix
+.vscode-test
+coverage/

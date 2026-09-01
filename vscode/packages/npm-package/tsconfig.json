@@ -1,0 +1,29 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "rootDir": "./lib/",
+    "outDir": "./dist/",
+    "strict": true,
+    "types": [
+      "node",
+      "jest"
+    ],
+    "target": "esnext",
+    "lib": [
+      "ESNext"
+    ],
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+  },
+  "include": [
+    "./lib/**/*.ts"
+  ]
+}

@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <LangVersion>Latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TargetFrameworks>net8.0;net9.0;net10.0;</TargetFrameworks>
+    <SignAssembly>true</SignAssembly>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/microsoft/kiota</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Title>Microsoft.OpenApi.Kiota.Builder</Title>
+    <PackageId>Microsoft.OpenApi.Kiota.Builder</PackageId>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <VersionPrefix>1.34.1</VersionPrefix>
+    <VersionSuffix>$(VersionSuffix)</VersionSuffix>
+    <PackageReleaseNotes>
+      https://github.com/microsoft/kiota/releases
+    </PackageReleaseNotes>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryUrl>https://github.com/microsoft/kiota</RepositoryUrl>
+    <Description>The core engine behind the OpenAPI based client generator.</Description>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageTags>OpenAPI .NET CSharp TypeScript Java Go PHP Python REST API</PackageTags>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Microsoft.OpenApi.snk</AssemblyOriginatorKeyFile>
+    <IsTrimmable>true</IsTrimmable>
+    <AnalysisMode>All</AnalysisMode>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- the source generators emit warnings -->
+    <NoWarn>$(NoWarn);CS8785;NU5048;NU5104;CA1724;CA1055;CA1848;CA1308;CA1822</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AsyncKeyedLock" Version="8.0.2" />
+    <PackageReference Include="DotNet.Glob" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Kiota.Bundle" Version="2.0.0" />
+    <PackageReference Include="Microsoft.OpenApi" Version="3.10.0" />
+    <PackageReference Include="Microsoft.OpenApi.ApiManifest" Version="3.0.0-preview.1" />
+    <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="3.10.0" />
+    <PackageReference Include="Microsoft.DeclarativeAgents.Manifest" Version="5.0.0-rc.2" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.400" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <ProjectReference Include="..\Kiota.Generated\KiotaGenerated.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="*.g.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\AdaptiveCardTemplate.json" />
+  </ItemGroup>
+</Project>

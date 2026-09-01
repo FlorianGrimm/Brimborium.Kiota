@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: "Todo API"
+  version: "1.0.0"
+servers:
+  - url: https://mytodos.doesnotexist/
+    description: Core
+paths:
+  /todos:
+    get:
+      description: Return a list of Todo entities
+      operationId: todos_ListTodos
+      parameters:
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: keyword
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                title: collectionTodos
+                type: object
+                properties:
+                  value:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/todo"
+
+    post:
+      requestBody:
+        description: New Todo
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewTodo"
+        required: true
+      responses:
+        "201":
+          description: OK
+  /todos/{todoId}:
+    get:
+      description: Return a single Todo object
+      responses:
+        "200":
+          description: OK
+    delete:
+      description: Delete a single Todo object
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    todo:
+      title: Todo
+      type: object
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        Notes:
+          type: string
+    NewTodo:
+      title: NewTodo
+      type: object
+      properties:
+        subject:
+          type: string
+        Notes:
+          type: string

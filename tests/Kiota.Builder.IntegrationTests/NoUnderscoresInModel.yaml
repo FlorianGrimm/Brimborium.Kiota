@@ -1,0 +1,112 @@
+openapi: 3.0.0
+servers:
+  - url: https://localhost
+info:
+  title: Test
+  version: 1.0.0
+  description: something
+  contact:
+    name: Microsoft
+tags:
+  - name: metrics
+    description: "The metrics API"
+  - name: permissions
+    description: "The permissions API"
+  - name: image
+    description: "The image API"
+paths:
+  /api/metrics/v1:
+    get:
+      operationId: getMetrics
+      tags:
+        - "metrics"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestList"
+          description: Test
+      description: Returns a test list
+  /api/permissions/v1:
+    get:
+      operationId: getPermissions
+      tags:
+        - "permissions"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/app-permissions"
+          description: Test
+      description: Returns a app permissions
+  /api/image/v1:
+    post:
+      operationId: createImage
+      tags:
+        - "image"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateImageRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Value"
+          description: Test
+      description: Returns a create image request
+components:
+  schemas:
+    app-permissions:
+      title: App Permissions
+      type: object
+      description: The permissions granted to the user-to-server access token.
+      properties:
+        pages:
+          type: string
+          description:
+            The level of permission to grant the access token to retrieve
+            Pages statuses, configuration, and builds, as well as create new builds.
+          enum:
+            - read
+            - write
+    TestList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Value"
+    Value:
+      type: object
+      properties:
+        additional:
+          type: object
+          additionalProperties:
+            type: string
+        values:
+          type: array
+          items:
+            type: string
+    CreateImageRequest:
+      type: object
+      properties:
+        prompt:
+          description: A text description of the desired image(s). The maximum length is 1000 characters for `dall-e-2` and 4000 characters for `dall-e-3`.
+          type: string
+          example: "A cute baby sea otter"
+        model:
+          anyOf:
+            - type: string
+            - type: string
+              enum: ["dall-e-2", "dall-e-3"]
+          x-oaiTypeLabel: string
+          example: "dall-e-3"
+          nullable: true
+          description: The model to use for image generation.
