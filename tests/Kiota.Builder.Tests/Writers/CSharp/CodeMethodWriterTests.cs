@@ -6,7 +6,7 @@ using Kiota.Builder.CodeDOM;
 using Kiota.Builder.Extensions;
 using Kiota.Builder.Writers;
 using Kiota.Builder.Writers.CSharp;
-using Microsoft.Kiota.Abstractions;
+using Brimborium.Kiota.Abstractions;
 using Xunit;
 
 namespace Kiota.Builder.Tests.Writers.CSharp;
@@ -2213,7 +2213,7 @@ public sealed class CodeMethodWriterTests : IDisposable
             Kind = CodePropertyKind.Custom,
             Type = new CodeType
             {
-                Name = nameof(Date)
+                Name = nameof(DateOnly)
             }
         });
         var defaultValueUuid = "\"00000000-0000-0000-0000-000000000000\"";
@@ -2237,7 +2237,7 @@ public sealed class CodeMethodWriterTests : IDisposable
             Kind = CodePropertyKind.Custom,
             Type = new CodeType
             {
-                Name = nameof(Time)
+                Name = nameof(TimeOnly)
             }
         });
 
@@ -2263,7 +2263,7 @@ public sealed class CodeMethodWriterTests : IDisposable
             Kind = CodePropertyKind.Custom,
             Type = new CodeType
             {
-                Name = nameof(Date)
+                Name = nameof(DateOnly)
             }
         });
         var hostileStringDefault = "\"line1\"\nline2\"";

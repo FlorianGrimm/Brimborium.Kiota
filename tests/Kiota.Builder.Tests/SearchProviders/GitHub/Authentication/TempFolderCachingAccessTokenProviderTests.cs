@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kiota.Builder.SearchProviders.GitHub.Authentication;
 using Microsoft.Extensions.Logging;
-using Microsoft.Kiota.Abstractions.Authentication;
+using Brimborium.Kiota.Abstractions.Authentication;
 using Moq;
 using Xunit;
 

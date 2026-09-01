@@ -2,7 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Kiota.Builder.SearchProviders.GitHub.Authentication;
-using Microsoft.Kiota.Abstractions.Authentication;
+using Brimborium.Kiota.Abstractions.Authentication;
 
 namespace kiota.Authentication.GitHub.DeviceCode;
 

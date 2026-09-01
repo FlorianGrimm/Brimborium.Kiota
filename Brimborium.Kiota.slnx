@@ -5,6 +5,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Kiota.Tests/Kiota.Tests.csproj" />
   </Folder>
+  <Project Path="../Brimborium.Kiota-dotnet/src/Brimborium.Kiota.csproj" />
   <Project Path="src/Kiota.Builder/Kiota.Builder.csproj" />
   <Project Path="src/kiota/kiota.csproj" />
   <Project Path="tests/Kiota.Builder.IntegrationTests/Kiota.Builder.IntegrationTests.csproj" />

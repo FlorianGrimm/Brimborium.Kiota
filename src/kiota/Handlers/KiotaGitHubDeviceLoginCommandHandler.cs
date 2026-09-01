@@ -6,9 +6,9 @@ using kiota.Telemetry;
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Kiota.Abstractions;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
+using Brimborium.Kiota.Abstractions;
+using Brimborium.Kiota.Abstractions.Authentication;
+using Brimborium.Kiota.Http.HttpClientLibrary;
 
 namespace kiota.Handlers;
 
