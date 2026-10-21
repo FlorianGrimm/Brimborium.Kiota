@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <LangVersion>Latest</LangVersion>
     <TargetFrameworks>net10.0;</TargetFrameworks>
+    <!--
     <PackAsTool>true</PackAsTool>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/microsoft/kiota</PackageProjectUrl>
@@ -27,6 +28,7 @@
     <PackageTags>OpenAPI .NET CSharp TypeScript Java Go PHP Python REST API</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Microsoft.OpenApi.snk</AssemblyOriginatorKeyFile>
+    -->
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ImplicitUsings>enable</ImplicitUsings>
