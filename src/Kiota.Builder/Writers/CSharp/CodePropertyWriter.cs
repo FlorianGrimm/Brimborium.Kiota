@@ -21,15 +21,20 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, CSharpConventi
         conventions.WriteDeprecationAttribute(codeElement, writer);
         if (isNullableReferenceType)
         {
-            CSharpConventionService.WriteNullableOpening(writer);
+            //CSharpConventionService.WriteNullableOpening(writer);
+            writer.WriteLine($"[global::System.Text.Json.Serialization.JsonPropertyName(\"{codeElement.WireName.SanitizeDoubleQuote()}\")]");
             WritePropertyInternal(codeElement, writer, $"{propertyType}?");
-            CSharpConventionService.WriteNullableMiddle(writer);
+            //CSharpConventionService.WriteNullableMiddle(writer);
+            //WritePropertyInternal(codeElement, writer, propertyType);// Always write the normal way
+        }
+        else { 
+            writer.WriteLine($"[global::System.Text.Json.Serialization.JsonPropertyName(\"{codeElement.WireName.SanitizeDoubleQuote()}\")]");
+            WritePropertyInternal(codeElement, writer, propertyType);// Always write the normal way
         }
 
-        WritePropertyInternal(codeElement, writer, propertyType);// Always write the normal way
 
-        if (isNullableReferenceType)
-            CSharpConventionService.WriteNullableClosing(writer);
+        //if (isNullableReferenceType)
+        //    CSharpConventionService.WriteNullableClosing(writer);
     }
 
     private void WritePropertyInternal(CodeProperty codeElement, LanguageWriter writer, string propertyType)
@@ -58,6 +63,13 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, CSharpConventi
                 writer.WriteLine($"get {{ return {backingStoreProperty.Name.ToFirstCharacterUpperCase()}{nullableOp}.Get<{propertyType}>(\"{backingStoreKey}\"){defaultPropertyValue}; }}");
                 writer.WriteLine($"set {{ {backingStoreProperty.Name.ToFirstCharacterUpperCase()}{nullableOp}.Set(\"{backingStoreKey}\", value); }}");
                 writer.CloseBlock();
+                break;
+            case CodePropertyKind.AdditionalData when backingStoreProperty is null:
+                var propertyName = codeElement.Name.ToFirstCharacterUpperCase();
+                writer.WriteLine($"{conventions.GetAccessModifier(codeElement.Access)} {propertyType} {propertyName} {{ get {{ return _{propertyName} ??= new Dictionary<string, object>(); }} set{{ _{propertyName} = value; }} }}");
+                writer.WriteLine($"private {propertyType}? _{propertyName};");
+                writer.WriteLine("/// <inheritdoc>/>");
+                writer.WriteLine($"public {propertyType}? GetAdditionalData() => _{propertyName};");
                 break;
             case CodePropertyKind.ErrorMessageOverride when parentClass.IsErrorDefinition:
                 if (parentClass.GetPrimaryMessageCodePath(static x => x.Name.ToFirstCharacterUpperCase(), static x => x.Name.ToFirstCharacterUpperCase(), "?.") is string primaryMessageCodePath && !string.IsNullOrEmpty(primaryMessageCodePath))

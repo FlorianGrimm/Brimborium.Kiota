@@ -7,7 +7,7 @@ using Kiota.Builder.CodeDOM;
 using Kiota.Builder.Configuration;
 using Kiota.Builder.Extensions;
 using Kiota.Builder.Writers.Java;
-using Brimborium.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions;
 
 namespace Kiota.Builder.Refiners;
 

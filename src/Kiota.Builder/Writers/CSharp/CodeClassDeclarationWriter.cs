@@ -20,6 +20,7 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, CS
         {
             writer.WriteLine(AutoGenerationHeader);
             conventions.WritePragmaDisable(writer, CSharpConventionService.CS0618);
+            writer.WriteLine(CSharpConventionService.NullableEnableDirective);
             codeElement.Usings
                     .Where(x => (x.Declaration?.IsExternal ?? true) || !x.Declaration.Name.Equals(codeElement.Name, StringComparison.OrdinalIgnoreCase)) // needed for circular requests patterns like message folder
                     .Select(static x => x.Declaration?.IsExternal ?? false ?

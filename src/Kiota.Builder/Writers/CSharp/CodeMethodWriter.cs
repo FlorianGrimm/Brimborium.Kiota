@@ -518,8 +518,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
         else
             WriteSerializerBodyForInheritedModel(shouldHide, method, parentClass, writer);
 
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.AdditionalData) is CodeProperty additionalDataProperty)
-            writer.WriteLine($"writer.WriteAdditionalData({additionalDataProperty.Name});");
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.AdditionalData) is CodeProperty additionalDataProperty) 
+            //writer.WriteLine($"writer.WriteAdditionalData({additionalDataProperty.Name});");
+            writer.WriteLine($"if (this._{additionalDataProperty.Name} is {{ }}) writer.WriteAdditionalData(this._{additionalDataProperty.Name});");
     }
     private void WriteSerializerBodyForInheritedModel(bool shouldHide, CodeMethod method, CodeClass parentClass, LanguageWriter writer)
     {

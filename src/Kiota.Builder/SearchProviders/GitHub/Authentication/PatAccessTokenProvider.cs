@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Brimborium.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace Kiota.Builder.SearchProviders.GitHub.Authentication;
 

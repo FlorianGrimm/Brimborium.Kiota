@@ -10,7 +10,7 @@ using Kiota.Builder.SearchProviders.APIsGuru;
 using Kiota.Builder.SearchProviders.GitHub;
 using Kiota.Builder.SearchProviders.MSGraph;
 using Microsoft.Extensions.Logging;
-using Brimborium.Kiota.Abstractions.Authentication;
+using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace Kiota.Builder;
 

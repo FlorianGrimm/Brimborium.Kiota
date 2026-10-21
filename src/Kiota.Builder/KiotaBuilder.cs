@@ -2771,7 +2771,7 @@ public partial class KiotaBuilder
     private const string BackingStoreInterface = "IBackingStore";
     internal const string BackedModelInterface = "IBackedModel";
     private const string ParseNodeInterface = "IParseNode";
-    internal const string AdditionalHolderInterface = "IAdditionalDataHolder";
+    internal const string AdditionalHolderInterface = "IAdditionalDataHolderSlim";
     private static readonly char[] manifestPathSeparator = ['#'];
     internal static void AddSerializationMembers(CodeClass model, bool includeAdditionalProperties, bool usesBackingStore, Func<string, string> refineMethodName)
     {
@@ -2835,7 +2835,7 @@ public partial class KiotaBuilder
             {
                 Name = AdditionalDataPropName,
                 Access = AccessModifier.Public,
-                DefaultValue = "new Dictionary<string, object>()",
+                // DefaultValue = "new Dictionary<string, object>()",
                 Kind = CodePropertyKind.AdditionalData,
                 Documentation = new()
                 {

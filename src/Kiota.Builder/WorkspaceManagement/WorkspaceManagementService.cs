@@ -14,7 +14,7 @@ using Kiota.Builder.Extensions;
 using Kiota.Builder.Lock;
 using Kiota.Builder.Manifest;
 using Microsoft.Extensions.Logging;
-using Brimborium.Kiota.Abstractions.Extensions;
+using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.OpenApi.ApiManifest;
 
 namespace Kiota.Builder.WorkspaceManagement;

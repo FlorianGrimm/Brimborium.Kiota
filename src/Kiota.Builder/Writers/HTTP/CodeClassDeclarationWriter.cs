@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kiota.Builder.CodeDOM;
 using Kiota.Builder.Extensions;
-using Brimborium.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions;
 using Microsoft.OpenApi;
 
 namespace Kiota.Builder.Writers.Http;

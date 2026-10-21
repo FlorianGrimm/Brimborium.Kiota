@@ -9,7 +9,7 @@ using Kiota.Builder.Configuration;
 using Kiota.Builder.SearchProviders.GitHub.Authentication;
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient;
 using Microsoft.Extensions.Logging;
-using Brimborium.Kiota.Http.HttpClientLibrary;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 
 namespace Kiota.Builder;
 

@@ -61,6 +61,7 @@ public sealed class CodeClassDeclarationWriterTests : IDisposable
         codeElementWriter.WriteCodeElement(parentClass.StartBlock, writer);
         var result = tw.ToString();
         Assert.Contains("#pragma warning disable CS0618", result);
+        //Assert.Contains("#nullable enable", result);
     }
 
     [Fact]

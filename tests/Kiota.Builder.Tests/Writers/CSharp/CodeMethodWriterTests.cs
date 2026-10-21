@@ -6,7 +6,7 @@ using Kiota.Builder.CodeDOM;
 using Kiota.Builder.Extensions;
 using Kiota.Builder.Writers;
 using Kiota.Builder.Writers.CSharp;
-using Brimborium.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions;
 using Xunit;
 
 namespace Kiota.Builder.Tests.Writers.CSharp;

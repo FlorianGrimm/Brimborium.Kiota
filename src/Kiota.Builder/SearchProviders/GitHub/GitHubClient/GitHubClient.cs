@@ -3,11 +3,11 @@
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient.Repos;
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient.Search;
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient.User;
-using Brimborium.Kiota.Abstractions.Extensions;
-using Brimborium.Kiota.Abstractions;
-using Brimborium.Kiota.Serialization.Form;
-using Brimborium.Kiota.Serialization.Json;
-using Brimborium.Kiota.Serialization.Text;
+using Microsoft.Kiota.Abstractions.Extensions;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Serialization.Form;
+using Microsoft.Kiota.Serialization.Json;
+using Microsoft.Kiota.Serialization.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;

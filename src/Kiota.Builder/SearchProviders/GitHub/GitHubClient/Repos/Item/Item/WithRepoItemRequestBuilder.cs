@@ -2,8 +2,8 @@
 #pragma warning disable CS0618
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient.Repos.Item.Item.Contents;
 using Kiota.Builder.SearchProviders.GitHub.GitHubClient.Repos.Item.Item.Releases;
-using Brimborium.Kiota.Abstractions.Extensions;
-using Brimborium.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Extensions;
+using Microsoft.Kiota.Abstractions;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
