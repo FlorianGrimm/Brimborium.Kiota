@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#if false
+using System.Runtime.CompilerServices;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using kiota.Telemetry;
 using kiota.Telemetry.Config;
@@ -36,9 +37,14 @@ internal static class KiotaHostExtensions
                 var openTelemetryBuilder = services.AddOpenTelemetry()
                     .ConfigureResource(static r =>
                     {
+#if false
+                        var serviceVersion= Kiota.Generated.KiotaVersion.Current();
+#else
+                        var serviceVersion = "0.0.0";
+#endif
                         r.AddService(serviceName: "kiota",
                                 serviceNamespace: "microsoft.openapi",
-                                serviceVersion: Kiota.Generated.KiotaVersion.Current());
+                                serviceVersion: serviceVersion);
                         if (OsName() is { } osName)
                         {
                             r.AddAttributes([
@@ -145,3 +151,4 @@ internal static class KiotaHostExtensions
         return "unknown";
     }
 }
+#endif

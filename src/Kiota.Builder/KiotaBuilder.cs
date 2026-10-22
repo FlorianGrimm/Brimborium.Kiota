@@ -157,7 +157,11 @@ public partial class KiotaBuilder
     private async Task<(int, OpenApiUrlTreeNode?, bool, OpenApiDiagnostic?)> GetTreeNodeInternalAsync(string inputPath, bool generating, Stopwatch sw, CancellationToken cancellationToken)
     {
 #pragma warning disable CA1873 // Avoid potentially expensive logging
+#if false
         LogKiotaVersion(global::Kiota.Generated.KiotaVersion.Current());
+#else
+        LogKiotaVersion("0.0.0");
+#endif
 #pragma warning restore CA1873 // Avoid potentially expensive logging
         var stepId = 0;
         if (config.ShouldGetApiManifest)

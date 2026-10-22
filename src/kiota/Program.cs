@@ -10,7 +10,9 @@ static class Program
     static async Task<int> Main(string[] args)
     {
         var host = Host.CreateDefaultBuilder(args)
+#if false
             .ConfigureKiotaTelemetryServices()
+#endif
             .ConfigureLogging(static logging =>
             {
                 logging.ClearProviders();

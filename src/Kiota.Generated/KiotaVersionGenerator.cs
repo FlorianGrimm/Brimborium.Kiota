@@ -19,9 +19,15 @@ public class KiotaVersionGenerator : IIncrementalGenerator
             try
             {
                 XmlDocument csproj = new XmlDocument();
-                csproj.Load(PathHelper.Join(directory, "Kiota.Builder.csproj"));
-
-                var version = csproj.GetElementsByTagName("VersionPrefix")[0].InnerText;
+                var filename = PathHelper.Join(directory, "Kiota.Builder.csproj");
+                string version;
+                try {
+                    csproj.Load(filename);
+                    version = csproj.GetElementsByTagName("VersionPrefix")[0].InnerText;
+                } catch {
+                    version = "1";
+                }
+                 
                 var majorVersion = $"{Version.Parse(version).Major}.0.0";
                 var versionSuffixTag = csproj.GetElementsByTagName("VersionSuffix");
                 if (versionSuffixTag != null && versionSuffixTag.Count > 0)

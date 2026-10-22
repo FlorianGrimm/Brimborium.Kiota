@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace kiota;
 
-internal static class KiotaConfigurationExtensions
+public static class KiotaConfigurationExtensions
 {
     /// <summary>
     /// Binds the configuration to the KiotaConfiguration object

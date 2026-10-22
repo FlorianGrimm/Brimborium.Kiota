@@ -130,7 +130,11 @@ internal abstract class BaseKiotaCommandHandler : AsynchronousCommandLineAction,
         }
 
         var updateService = new UpdateService(httpClient, logger, Configuration.Update);
+#if false
         var result = await updateService.GetUpdateMessageAsync(Kiota.Generated.KiotaVersion.Current(), cancellationToken).ConfigureAwait(false);
+#else
+        var result = await updateService.GetUpdateMessageAsync("0.0.0", cancellationToken).ConfigureAwait(false);
+#endif
         if (!string.IsNullOrEmpty(result))
             DisplayWarning(result);
     }

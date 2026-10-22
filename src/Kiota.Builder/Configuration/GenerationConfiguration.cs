@@ -255,7 +255,11 @@ public partial class GenerationConfiguration : ICloneable
         {
             dependency.Extensions.Add(KiotaHashManifestExtensionKey, JsonValue.Create(configurationHash));// only include non empty value.
         }
+#if false
         dependency.Extensions.Add(KiotaVersionManifestExtensionKey, Kiota.Generated.KiotaVersion.Current());
+#else
+        dependency.Extensions.Add(KiotaVersionManifestExtensionKey, "0.0.0");
+#endif
         return dependency;
     }
     private string NormalizeDescriptionLocation(string targetDirectory)

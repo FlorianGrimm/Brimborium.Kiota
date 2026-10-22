@@ -5,21 +5,20 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit.Sdk;
 using Xunit.v3;
 
 namespace Kiota.Builder.Tests.Helpers;
 
 [Serializable]
-public class RetryTestCase : XunitTestCase, ISelfExecutingXunitTestCase
-{
+public class RetryTestCase : XunitTestCase, ISelfExecutingXunitTestCase {
     private int maxRetries;
     private int delayMilliseconds;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public RetryTestCase()
-    {
+    public RetryTestCase() {
     }
 
     public RetryTestCase(
@@ -53,39 +52,50 @@ public class RetryTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             testMethodArguments,
             sourceFilePath,
             sourceLineNumber,
-            timeout)
-    {
+            timeout) {
         this.maxRetries = maxRetries;
         this.delayMilliseconds = delayMilliseconds;
     }
+
 
     public async ValueTask<RunSummary> Run(
         ExplicitOption explicitOption,
         IMessageBus messageBus,
         object[] constructorArguments,
         ExceptionAggregator aggregator,
-        CancellationTokenSource cancellationTokenSource)
-    {
+        CancellationTokenSource cancellationTokenSource,
+        ParallelMode parallelMode,
+        ExecutionScheduler scheduler,
+        FixtureMappingManager methodFixtureMappings) {
         var delay = delayMilliseconds;
         RunSummary lastSummary = default;
         var hasLastSummary = false;
 
-        for (var attempt = 1; attempt <= maxRetries; attempt++)
-        {
+        for (var attempt = 1; attempt <= maxRetries; attempt++) {
             var replayBus = new ReplayMessageBus(messageBus);
             var attemptAggregator = aggregator.Clone();
 
+            //public static ValueTask<RunSummary> RunXunitTestCase(IXunitTestCase testCase, IMessageBus messageBus,
+            ////CancellationTokenSource cancellationTokenSource,
+            ///ParallelMode parallelMode, 
+            ///ExecutionScheduler scheduler, 
+            ///ExceptionAggregator aggregator, 
+            ///ExplicitOption explicitOption, object?[] constructorArguments, 
+            ///FixtureMappingManager methodFixtureMappings) {
             var summary = await XunitRunnerHelper.RunXunitTestCase(
-                this,
-                replayBus,
-                cancellationTokenSource,
-                attemptAggregator,
-                explicitOption,
-                constructorArguments).ConfigureAwait(false);
+                    testCase: this,
+                    messageBus: replayBus,
+                    cancellationTokenSource: cancellationTokenSource,
+                    parallelMode: parallelMode,
+                    scheduler: scheduler,
+                    aggregator: attemptAggregator,
+                    explicitOption: explicitOption,
+                    constructorArguments: constructorArguments,
+                    methodFixtureMappings: methodFixtureMappings
+                ).ConfigureAwait(false);
 
             var hasFailures = summary.Failed > 0 || attemptAggregator.HasExceptions;
-            if (!hasFailures || attempt == maxRetries)
-            {
+            if (!hasFailures || attempt == maxRetries) {
                 replayBus.ForwardAll();
                 aggregator.Aggregate(attemptAggregator);
                 return summary;
@@ -111,40 +121,34 @@ public class RetryTestCase : XunitTestCase, ISelfExecutingXunitTestCase
         return hasLastSummary ? lastSummary : new RunSummary { Total = 1, Failed = 1 };
     }
 
-    protected override void Serialize(IXunitSerializationInfo info)
-    {
+    protected override void Serialize(IXunitSerializationInfo info) {
         base.Serialize(info);
         info.AddValue(nameof(maxRetries), maxRetries);
         info.AddValue(nameof(delayMilliseconds), delayMilliseconds);
     }
 
-    protected override void Deserialize(IXunitSerializationInfo info)
-    {
+    protected override void Deserialize(IXunitSerializationInfo info) {
         base.Deserialize(info);
         maxRetries = info.GetValue<int>(nameof(maxRetries));
         delayMilliseconds = info.GetValue<int>(nameof(delayMilliseconds));
     }
 
-    private sealed class ReplayMessageBus(IMessageBus innerBus) : IMessageBus
-    {
+
+    private sealed class ReplayMessageBus(IMessageBus innerBus) : IMessageBus {
         private readonly ConcurrentQueue<IMessageSinkMessage> messages = new();
 
-        public bool QueueMessage(IMessageSinkMessage message)
-        {
+        public bool QueueMessage(IMessageSinkMessage message) {
             messages.Enqueue(message);
             return true;
         }
 
-        public void ForwardAll()
-        {
-            while (messages.TryDequeue(out var message))
-            {
+        public void ForwardAll() {
+            while (messages.TryDequeue(out var message)) {
                 innerBus.QueueMessage(message);
             }
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
         }
     }
 }

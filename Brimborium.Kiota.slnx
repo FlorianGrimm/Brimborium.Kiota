@@ -1,13 +1,14 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="../Brimborium.Kiota-dotnet/src/Brimborium.Kiota.csproj" />
+    <Project Path="src/Kiota.Builder/Kiota.Builder.csproj" />
     <Project Path="src/Kiota.Generated/KiotaGenerated.csproj" />
+    <Project Path="src/kiota/kiota.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Kiota.Builder.IntegrationTests/Kiota.Builder.IntegrationTests.csproj" />
+    <Project Path="tests/Kiota.Builder.Tests/Kiota.Builder.Tests.csproj" />
     <Project Path="tests/Kiota.Tests/Kiota.Tests.csproj" />
   </Folder>
-  <Project Path="../Brimborium.Kiota-dotnet/src/Brimborium.Kiota.csproj" />
-  <Project Path="src/Kiota.Builder/Kiota.Builder.csproj" />
-  <Project Path="src/kiota/kiota.csproj" />
-  <Project Path="tests/Kiota.Builder.IntegrationTests/Kiota.Builder.IntegrationTests.csproj" />
-  <Project Path="tests/Kiota.Builder.Tests/Kiota.Builder.Tests.csproj" />
+  <Project Path="SampleWebApp/SampleWebApp.csproj" Id="b57203fb-5c34-4002-902f-7ce893444481" />
 </Solution>

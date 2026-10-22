@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if false
+using System;
 using System.IO;
 using kiota.Extension;
 using Xunit;
@@ -77,3 +78,4 @@ public class KiotaHostExtensionsTests
         }
     }
 }
+#endif

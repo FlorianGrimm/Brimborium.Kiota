@@ -36,7 +36,11 @@ internal partial class Server : IServer
     private static readonly Lazy<bool> IsConfigPreviewEnabled = new(() => bool.TryParse(Environment.GetEnvironmentVariable(KiotaHost.KiotaPreviewEnvironmentVariable), out var isPreviewEnabled) && isPreviewEnabled);
     public string GetVersion()
     {
+#if false
         return KiotaVersion.Current();
+#else
+        return "0.0.0";
+#endif
     }
 
     public async Task<List<LogEntry>> UpdateAsync(string output, bool cleanOutput, bool clearCache, CancellationToken cancellationToken)
