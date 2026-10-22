@@ -22,13 +22,33 @@ public class ApiClientConfigurationComparer : BaseApiConsumerConfigurationCompar
 
     public override bool Equals(ApiClientConfiguration? x, ApiClientConfiguration? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
-        if (x.ExcludeBackwardCompatible != y.ExcludeBackwardCompatible) return false;
-        if (x.UsesBackingStore != y.UsesBackingStore) return false;
-        if (x.IncludeAdditionalData != y.IncludeAdditionalData) return false;
-        if (!_stringComparer.Equals(x.ClientNamespaceName, y.ClientNamespaceName)) return false;
-        if (!_stringComparer.Equals(x.Language, y.Language)) return false;
-        if (!_stringComparer.Equals(x.TypeAccessModifier, y.TypeAccessModifier)) return false;
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
+        if (x.ExcludeBackwardCompatible != y.ExcludeBackwardCompatible) {
+            return false;
+        }
+
+        if (x.UsesBackingStore != y.UsesBackingStore) {
+            return false;
+        }
+
+        if (x.IncludeAdditionalData != y.IncludeAdditionalData) {
+            return false;
+        }
+
+        if (!_stringComparer.Equals(x.ClientNamespaceName, y.ClientNamespaceName)) {
+            return false;
+        }
+
+        if (!_stringComparer.Equals(x.Language, y.Language)) {
+            return false;
+        }
+
+        if (!_stringComparer.Equals(x.TypeAccessModifier, y.TypeAccessModifier)) {
+            return false;
+        }
 
         // slow deep comparison
         return _stringIEnumerableDeepComparer.Equals(x.DisabledValidationRules, y.DisabledValidationRules)
@@ -40,7 +60,10 @@ public class ApiClientConfigurationComparer : BaseApiConsumerConfigurationCompar
     public override int GetHashCode([DisallowNull] ApiClientConfiguration obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.DisabledValidationRules, _stringIEnumerableDeepComparer); // _stringIEnumerableDeepComparer orders
         hash.Add(obj.ClientNamespaceName, _stringComparer);
         hash.Add(obj.Language, _stringComparer);

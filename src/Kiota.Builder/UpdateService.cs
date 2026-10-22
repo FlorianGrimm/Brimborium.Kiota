@@ -31,27 +31,42 @@ public class UpdateService
     }
     public async Task<string> GetUpdateMessageAsync(string currentVersion, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(currentVersion) || _updateConfiguration.Disabled)
+        if (string.IsNullOrEmpty(currentVersion) || _updateConfiguration.Disabled) {
             return string.Empty;
+        }
+
         try
         {
             var lastVerificationDate = await GetLastVerificationDateAsync(cancellationToken).ConfigureAwait(false);
-            if (!ShouldCheckForUpdates(lastVerificationDate)) return string.Empty;
+            if (!ShouldCheckForUpdates(lastVerificationDate)) {
+                return string.Empty;
+            }
+
             using var requestAdapter = new HttpClientRequestAdapter(new AnonymousAuthenticationProvider(), httpClient: _httpClient);
             var gitHubClient = new GitHubClient(requestAdapter);
             var releases = await gitHubClient.Repos[_updateConfiguration.OrgName][_updateConfiguration.RepoName].Releases.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (releases is null) return string.Empty;
+            if (releases is null) {
+                return string.Empty;
+            }
+
             var latestVersion = releases.Where(static x => x.Draft == false && x.Prerelease == false && !string.IsNullOrEmpty(x.TagName))
                                         .Select(static x => GetVersionFromLabel(x.TagName!))
                                         .OfType<Version>()
                                         .OrderDescending(_versionComparer)
                                         .FirstOrDefault();
-            if (latestVersion is null) return string.Empty;
+            if (latestVersion is null) {
+                return string.Empty;
+            }
+
             var currentVersionParsed = GetVersionFromLabel(currentVersion);
-            if (currentVersionParsed is null) return string.Empty;
+            if (currentVersionParsed is null) {
+                return string.Empty;
+            }
+
             await SetLastVerificationDateAsync(DateTimeOffset.UtcNow, cancellationToken).ConfigureAwait(false);
-            if (_versionComparer.Compare(currentVersionParsed, latestVersion) < 0)
+            if (_versionComparer.Compare(currentVersionParsed, latestVersion) < 0) {
                 return $"A newer version of Kiota ({latestVersion}) is available. You are currently using version {currentVersion}. https://aka.ms/get/kiota";
+            }
         }
 #pragma warning disable CA1031
         catch (Exception ex)
@@ -66,8 +81,9 @@ public class UpdateService
         if (File.Exists(_lastVerificationFilePath))
         {
             var lastVerificationDate = await File.ReadAllTextAsync(_lastVerificationFilePath, cancellationToken).ConfigureAwait(false);
-            if (DateTimeOffset.TryParse(lastVerificationDate, out var parsedDate))
+            if (DateTimeOffset.TryParse(lastVerificationDate, out var parsedDate)) {
                 return parsedDate;
+            }
         }
         return DateTimeOffset.MinValue;
 
@@ -76,14 +92,17 @@ public class UpdateService
     {
         ClearVerificationDate();
         var directoryPath = Path.GetDirectoryName(_lastVerificationFilePath);
-        if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+        if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath)) {
             Directory.CreateDirectory(directoryPath);
+        }
+
         await File.WriteAllTextAsync(_lastVerificationFilePath, date.ToString("o"), cancellationToken).ConfigureAwait(false);
     }
     internal static void ClearVerificationDate()
     {
-        if (File.Exists(_lastVerificationFilePath))
+        if (File.Exists(_lastVerificationFilePath)) {
             File.Delete(_lastVerificationFilePath);
+        }
     }
     private static bool ShouldCheckForUpdates(DateTimeOffset lastVerificationDate)
     {
@@ -91,10 +110,15 @@ public class UpdateService
     }
     private static Version? GetVersionFromLabel(string label)
     {
-        if (string.IsNullOrEmpty(label)) return null;
+        if (string.IsNullOrEmpty(label)) {
+            return null;
+        }
+
         var versionLabel = label.TrimStart('v', 'V').Split('-', StringSplitOptions.RemoveEmptyEntries)[0];
-        if (Version.TryParse(versionLabel, out var parsedVersion))
+        if (Version.TryParse(versionLabel, out var parsedVersion)) {
             return parsedVersion;
+        }
+
         return null;
     }
 }

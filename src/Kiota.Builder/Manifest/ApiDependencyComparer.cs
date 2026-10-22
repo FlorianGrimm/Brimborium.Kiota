@@ -36,10 +36,17 @@ public class ApiDependencyComparer : IEqualityComparer<ApiDependency>
     /// <inheritdoc/>
     public bool Equals(ApiDependency? x, ApiDependency? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
 
-        if (!_stringComparer.Equals(x.ApiDescriptionUrl, y.ApiDescriptionUrl)) return false;
-        if (!_stringComparer.Equals(x.ApiDescriptionVersion, y.ApiDescriptionVersion)) return false;
+        if (!_stringComparer.Equals(x.ApiDescriptionUrl, y.ApiDescriptionUrl)) {
+            return false;
+        }
+
+        if (!_stringComparer.Equals(x.ApiDescriptionVersion, y.ApiDescriptionVersion)) {
+            return false;
+        }
 
         string? xExtensions = GetDependencyExtensionsValue(x), yExtensions = GetDependencyExtensionsValue(y);
         // Assume requests are equal if we aren't comparing them.
@@ -53,10 +60,15 @@ public class ApiDependencyComparer : IEqualityComparer<ApiDependency>
     public int GetHashCode([DisallowNull] ApiDependency obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.ApiDescriptionUrl, _stringComparer);
         hash.Add(GetDependencyExtensionsValue(obj) ?? string.Empty, _stringComparer);
-        if (!_compareRequests) return hash.ToHashCode();
+        if (!_compareRequests) {
+            return hash.ToHashCode();
+        }
 
         foreach (var request in GetOrderedRequests(obj.Requests))
         {

@@ -13,7 +13,10 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, GoConventionService>
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (!codeElement.Options.Any()) return;
+        if (!codeElement.Options.Any()) {
+            return;
+        }
+
         if (codeElement.Parent is CodeNamespace ns)
         {
             // always add a comment to the top of the file to indicate it's generated
@@ -48,19 +51,23 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, GoConventionService>
             int power = 0;
             foreach (var item in enumOptions)
             {
-                if (item.Documentation.DescriptionAvailable)
+                if (item.Documentation.DescriptionAvailable) {
                     writer.WriteLine($"// {GoConventionService.RemoveInvalidDescriptionCharacters(item.Documentation.DescriptionTemplate)}");
+                }
 
-                if (isMultiValue)
+                if (isMultiValue) {
                     writer.WriteLine($"{item.Name.ToUpperInvariant()}_{typeName.ToUpperInvariant()} = {(int)Math.Pow(2, power)}");
-                else
+                } else {
                     writer.WriteLine($"{item.Name.ToUpperInvariant()}_{typeName.ToUpperInvariant()}{(power == 0 ? $" {typeName} = iota" : string.Empty)}");
+                }
 
                 power++;
             }
         });
-        foreach (var line in GoFieldFormatter.AlignFieldBlock(constBlock))
+        foreach (var line in GoFieldFormatter.AlignFieldBlock(constBlock)) {
             writer.WriteLine(line, includeIndent: false);
+        }
+
         writer.DecreaseIndent();
         writer.WriteLine(")");
 

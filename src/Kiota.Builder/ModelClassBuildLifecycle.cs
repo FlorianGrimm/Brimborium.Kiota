@@ -52,7 +52,9 @@ public class ModelClassBuildLifecycle : IDisposable
     }
     protected virtual void Dispose(bool disposing)
     {
-        if (isDisposed) return;
+        if (isDisposed) {
+            return;
+        }
 
         if (disposing)
         {

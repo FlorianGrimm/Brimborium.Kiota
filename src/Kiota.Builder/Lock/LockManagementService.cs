@@ -83,8 +83,10 @@ public class LockManagementService : ILockManagementService
     private static string GetRelativeDescriptionPath(string descriptionPath, string lockFilePath)
     {
         if (IsDescriptionLocal(descriptionPath) &&
-            Path.GetDirectoryName(lockFilePath) is string lockFileDirectoryPath)
+            Path.GetDirectoryName(lockFilePath) is string lockFileDirectoryPath) {
             return Path.GetRelativePath(lockFileDirectoryPath, descriptionPath).NormalizePathSeparators();
+        }
+
         return descriptionPath;
     }
     /// <inheritdoc/>
@@ -100,9 +102,14 @@ public class LockManagementService : ILockManagementService
         {
             var backupFilePath = GetBackupFilePath(directoryPath);
             var targetDirectory = Path.GetDirectoryName(backupFilePath);
-            if (string.IsNullOrEmpty(targetDirectory)) return Task.CompletedTask;
-            if (!Directory.Exists(targetDirectory))
+            if (string.IsNullOrEmpty(targetDirectory)) {
+                return Task.CompletedTask;
+            }
+
+            if (!Directory.Exists(targetDirectory)) {
                 Directory.CreateDirectory(targetDirectory);
+            }
+
             File.Copy(lockFilePath, backupFilePath, true);
         }
         return Task.CompletedTask;
@@ -117,9 +124,14 @@ public class LockManagementService : ILockManagementService
     {
         var lockFilePath = Path.Combine(directoryPath, LockFileName);
         var targetDirectory = Path.GetDirectoryName(lockFilePath);
-        if (string.IsNullOrEmpty(targetDirectory)) return Task.CompletedTask;
-        if (!Directory.Exists(targetDirectory))
+        if (string.IsNullOrEmpty(targetDirectory)) {
+            return Task.CompletedTask;
+        }
+
+        if (!Directory.Exists(targetDirectory)) {
             Directory.CreateDirectory(targetDirectory);
+        }
+
         var backupFilePath = GetBackupFilePath(directoryPath);
         if (File.Exists(backupFilePath))
         {
@@ -137,7 +149,8 @@ public class LockManagementService : ILockManagementService
     {
         ArgumentException.ThrowIfNullOrEmpty(directoryPath);
         var lockFilePath = Path.Combine(directoryPath, LockFileName);
-        if (File.Exists(lockFilePath))
+        if (File.Exists(lockFilePath)) {
             File.Delete(lockFilePath);
+        }
     }
 }

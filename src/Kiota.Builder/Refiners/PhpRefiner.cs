@@ -229,9 +229,9 @@ public class PhpRefiner : CommonLanguageRefiner
             currentProperty.Type.Name = "RequestAdapter";
             currentProperty.Type.IsNullable = false;
         }
-        else if (currentProperty.IsOfKind(CodePropertyKind.BackingStore) && currentProperty.Type.Name.StartsWith(('I')))
+        else if (currentProperty.IsOfKind(CodePropertyKind.BackingStore) && currentProperty.Type.Name.StartsWith(('I'))) {
             currentProperty.Type.Name = currentProperty.Type.Name[1..];
-        else if (currentProperty.IsOfKind(CodePropertyKind.AdditionalData))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.AdditionalData))
         {
             currentProperty.Type.Name = "array";
             currentProperty.Type.IsNullable = true;
@@ -282,10 +282,11 @@ public class PhpRefiner : CommonLanguageRefiner
         {
             currentMethod.Parameters.Where(static x => x.IsOfKind(CodeParameterKind.ParseNode, CodeParameterKind.PathParameters)).ToList().ForEach(static x =>
             {
-                if (x.IsOfKind(CodeParameterKind.ParseNode))
+                if (x.IsOfKind(CodeParameterKind.ParseNode)) {
                     x.Type.Name = "ParseNode";
-                else
+                } else {
                     x.Documentation.DescriptionTemplate += " or a String representing the raw URL.";
+                }
             });
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.BackingStore)
                                                 && currentMethod.IsOfKind(CodeMethodKind.ClientConstructor)).ToList().ForEach(static x =>
@@ -336,8 +337,10 @@ public class PhpRefiner : CommonLanguageRefiner
 
     private static void CorrectBackingStoreSetterParam(CodeElement codeElement)
     {
-        if (codeElement is CodeMethod method && method.Kind == CodeMethodKind.Setter && method.AccessedProperty?.Kind == CodePropertyKind.BackingStore)
+        if (codeElement is CodeMethod method && method.Kind == CodeMethodKind.Setter && method.AccessedProperty?.Kind == CodePropertyKind.BackingStore) {
             method.Parameters.ToList().ForEach(param => param.Optional = false);
+        }
+
         CrawlTree(codeElement, CorrectBackingStoreSetterParam);
     }
 

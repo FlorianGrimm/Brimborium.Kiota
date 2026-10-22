@@ -29,7 +29,10 @@ public class OpenApiAiReasoningInstructionsExtension : IOpenApiExtension
     }
     public static OpenApiAiReasoningInstructionsExtension Parse(JsonNode source)
     {
-        if (source is not JsonArray rawArray) throw new ArgumentOutOfRangeException(nameof(source));
+        if (source is not JsonArray rawArray) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         var result = new OpenApiAiReasoningInstructionsExtension();
         result.ReasoningInstructions.AddRange(rawArray.OfType<JsonValue>().Where(static x => x.GetValueKind() is JsonValueKind.String).Select(static x => x.GetValue<string>()));
         return result;

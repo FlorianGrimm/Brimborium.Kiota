@@ -10,9 +10,14 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, JavaConvention
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.ExistsInExternalBaseType)
+        if (codeElement.ExistsInExternalBaseType) {
             return;
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException("The parent of a property should be a class");
+        }
+
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException("The parent of a property should be a class");
+        }
+
         var returnType = conventions.GetTypeString(codeElement.Type, codeElement);
         var returnRemark = codeElement.Kind is CodePropertyKind.RequestBuilder ?
                             conventions.GetReturnDocComment(returnType) :
@@ -37,10 +42,14 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, JavaConvention
                 defaultValue = $" = new {returnType}()";
                 goto default;
             default:
-                if (codeElement.Type is CodeType { TypeDefinition: CodeEnum { Flags: true }, IsCollection: false })
+                if (codeElement.Type is CodeType { TypeDefinition: CodeEnum { Flags: true }, IsCollection: false }) {
                     returnType = $"EnumSet<{returnType}>";
-                if (codeElement.Access != AccessModifier.Private)
+                }
+
+                if (codeElement.Access != AccessModifier.Private) {
                     writer.WriteLine(codeElement.Type.IsNullable ? "@jakarta.annotation.Nullable" : "@jakarta.annotation.Nonnull");
+                }
+
                 writer.WriteLine($"{conventions.GetAccessModifier(codeElement.Access)} {returnType} {codeElement.NamePrefix}{codeElement.Name}{defaultValue};");
                 break;
         }

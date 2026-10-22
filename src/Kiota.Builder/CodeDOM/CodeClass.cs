@@ -52,17 +52,22 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     {
         if (Kind is not CodeClassKind.Model ||
                 Parent is not CodeNamespace parentNamespace ||
-                !parentNamespace.IsChildOf(modelsNamespace))
+                !parentNamespace.IsChildOf(modelsNamespace)) {
             return string.Empty;
+        }
+
         return $"{parentNamespace.Name[(modelsNamespace.Name.Length + 1)..]}.{Name}";
     }
     public CodeIndexer? Indexer => InnerChildElements.Values.OfType<CodeIndexer>().FirstOrDefault(static x => !x.IsLegacyIndexer);
     public void AddIndexer(params CodeIndexer[] indexers)
     {
-        if (indexers == null || Array.Exists(indexers, static x => x == null))
+        if (indexers == null || Array.Exists(indexers, static x => x == null)) {
             throw new ArgumentNullException(nameof(indexers));
-        if (indexers.Length == 0)
+        }
+
+        if (indexers.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(indexers));
+        }
 
         foreach (var value in indexers)
         {
@@ -77,16 +82,20 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
                 }
                 AddRange(CodeMethod.FromIndexer(value, static x => $"With{x.ToFirstCharacterUpperCase()}", static x => x.ToFirstCharacterUpperCase(), false));
             }
-            else
+            else {
                 AddRange(value);
+            }
         }
     }
     public override IEnumerable<CodeProperty> AddProperty(params CodeProperty[] properties)
     {
-        if (properties == null || properties.Any(static x => x == null))
+        if (properties == null || properties.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(properties));
-        if (properties.Length == 0)
+        }
+
+        if (properties.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(properties));
+        }
 
         return properties.Select(property =>
         {
@@ -102,8 +111,10 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
                 else
                 {
                     var uniquePropertyName = ResolveUniquePropertyName(property.Name);
-                    if (!uniquePropertyName.Equals(property.Name, StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(property.SerializationName))
+                    if (!uniquePropertyName.Equals(property.Name, StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(property.SerializationName)) {
                         property.SerializationName = property.Name;
+                    }
+
                     property.Name = uniquePropertyName;
                 }
             }
@@ -126,20 +137,27 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
                 PropertiesByWireName.TryAdd(propertyToAdd.WireName, propertyToAdd);
             }
         }
-        else throw new InvalidOperationException($"The element {oldName} could not be found in the class {Name}");
+        else {
+            throw new InvalidOperationException($"The element {oldName} could not be found in the class {Name}");
+        }
     }
     public override void RemoveChildElementByName(params string[] names)
     {
-        if (names == null) return;
+        if (names == null) {
+            return;
+        }
 
         foreach (var name in names)
         {
             if (InnerChildElements.TryRemove(name, out var removedElement))
             {
-                if (removedElement is CodeProperty removedProperty)
+                if (removedElement is CodeProperty removedProperty) {
                     PropertiesByWireName.TryRemove(removedProperty.WireName, out _);
+                }
             }
-            else throw new InvalidOperationException($"The element {name} could not be found in the class {Name}");
+            else {
+                throw new InvalidOperationException($"The element {name} could not be found in the class {Name}");
+            }
         }
     }
     public void RemoveMethodByKinds(params CodeMethodKind[] kinds)
@@ -148,15 +166,20 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     }
     private string ResolveUniquePropertyName(string name)
     {
-        if (FindPropertyByNameInTypeHierarchy(name) == null)
+        if (FindPropertyByNameInTypeHierarchy(name) == null) {
             return name;
+        }
         // the CodeClass.Name is not very useful as prefix for the property name, so keep the original name and add a number
         var nameWithTypeName = Kind == CodeClassKind.QueryParameters ? name : Name + name.ToFirstCharacterUpperCase();
-        if (Kind != CodeClassKind.QueryParameters && FindPropertyByNameInTypeHierarchy(nameWithTypeName) == null)
+        if (Kind != CodeClassKind.QueryParameters && FindPropertyByNameInTypeHierarchy(nameWithTypeName) == null) {
             return nameWithTypeName;
+        }
+
         var i = 0;
-        while (FindPropertyByNameInTypeHierarchy(nameWithTypeName + i) != null)
+        while (FindPropertyByNameInTypeHierarchy(nameWithTypeName + i) != null) {
             i++;
+        }
+
         return nameWithTypeName + i;
     }
     private CodeProperty? FindPropertyByNameInTypeHierarchy(string propertyName)
@@ -177,11 +200,14 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     {
         ArgumentException.ThrowIfNullOrEmpty(serializationName);
 
-        if (BaseClass is CodeClass currentParentClass)
-            if (currentParentClass.FindPropertyByWireName(serializationName) is CodeProperty currentProperty && !currentProperty.ExistsInBaseType && currentProperty.Kind is not (CodePropertyKind.AdditionalData or CodePropertyKind.BackingStore))
+        if (BaseClass is CodeClass currentParentClass) {
+            if (currentParentClass.FindPropertyByWireName(serializationName) is CodeProperty currentProperty && !currentProperty.ExistsInBaseType && currentProperty.Kind is not (CodePropertyKind.AdditionalData or CodePropertyKind.BackingStore)) {
                 return currentProperty;
-            else
+            } else {
                 return currentParentClass.GetOriginalPropertyDefinedFromBaseType(serializationName);
+            }
+        }
+
         return default;
     }
     private CodeProperty? FindPropertyByWireName(string wireName)
@@ -194,18 +220,26 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     }
     public IEnumerable<CodeClass> AddInnerClass(params CodeClass[] codeClasses)
     {
-        if (codeClasses == null || codeClasses.Any(static x => x == null))
+        if (codeClasses == null || codeClasses.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(codeClasses));
-        if (codeClasses.Length == 0)
+        }
+
+        if (codeClasses.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(codeClasses));
+        }
+
         return AddRange(codeClasses);
     }
     public IEnumerable<CodeInterface> AddInnerInterface(params CodeInterface[] codeInterfaces)
     {
-        if (codeInterfaces == null || codeInterfaces.Any(static x => x == null))
+        if (codeInterfaces == null || codeInterfaces.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(codeInterfaces));
-        if (codeInterfaces.Length == 0)
+        }
+
+        if (codeInterfaces.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(codeInterfaces));
+        }
+
         return AddRange(codeInterfaces);
     }
     public CodeClass? BaseClass => StartBlock.Inherits?.TypeDefinition as CodeClass;
@@ -220,20 +254,27 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     {
         ArgumentNullException.ThrowIfNull(codeClass);
         var parent = BaseClass;
-        if (parent == null)
+        if (parent == null) {
             return false;
-        if (parent == codeClass)
+        }
+
+        if (parent == codeClass) {
             return true;
+        }
+
         return parent.DerivesFrom(codeClass);
     }
     public Collection<CodeClass> GetInheritanceTree(bool currentNamespaceOnly = false, bool includeCurrentClass = true)
     {
         var parentClass = BaseClass;
-        if (parentClass == null || (currentNamespaceOnly && parentClass.GetImmediateParentOfType<CodeNamespace>() != GetImmediateParentOfType<CodeNamespace>()))
-            if (includeCurrentClass)
+        if (parentClass == null || (currentNamespaceOnly && parentClass.GetImmediateParentOfType<CodeNamespace>() != GetImmediateParentOfType<CodeNamespace>())) {
+            if (includeCurrentClass) {
                 return new() { this };
-            else
+            } else {
                 return new();
+            }
+        }
+
         var result = parentClass.GetInheritanceTree(currentNamespaceOnly);
         result.Add(this);
         return result;
@@ -241,8 +282,9 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     public CodeClass? GetGreatestGrandparent(CodeClass? startClassToSkip = default)
     {
         var parentClass = BaseClass;
-        if (parentClass == null)
+        if (parentClass == null) {
             return startClassToSkip != null && startClassToSkip == this ? null : this;
+        }
         // we don't want to return the current class if this is the start node in the inheritance tree and doesn't have parent
         return parentClass.GetGreatestGrandparent(startClassToSkip);
     }
@@ -252,8 +294,10 @@ public class CodeClass : ProprietableBlock<CodeClassKind, ClassDeclaration>, ITy
     {
         get
         {
-            if (_discriminatorInformation == null)
+            if (_discriminatorInformation == null) {
                 DiscriminatorInformation = new DiscriminatorInformation();
+            }
+
             return _discriminatorInformation!;
         }
         set
@@ -290,11 +334,14 @@ public class ClassDeclaration : ProprietableBlockDeclaration
 
         if (inherits is CodeType currentInheritsType &&
             !inherits.IsExternal &&
-            currentInheritsType.TypeDefinition is CodeClass currentParentClass)
-            if (currentParentClass.FindChildByName<CodeProperty>(propertyName, false) is CodeProperty currentProperty && !currentProperty.ExistsInBaseType)
+            currentInheritsType.TypeDefinition is CodeClass currentParentClass) {
+            if (currentParentClass.FindChildByName<CodeProperty>(propertyName, false) is CodeProperty currentProperty && !currentProperty.ExistsInBaseType) {
                 return currentProperty;
-            else
+            } else {
                 return currentParentClass.StartBlock.GetOriginalPropertyDefinedFromBaseType(propertyName);
+            }
+        }
+
         return default;
     }
     public bool InheritsFrom(CodeClass candidate)
@@ -302,11 +349,14 @@ public class ClassDeclaration : ProprietableBlockDeclaration
         ArgumentNullException.ThrowIfNull(candidate);
 
         if (inherits is CodeType currentInheritsType &&
-            currentInheritsType.TypeDefinition is CodeClass currentParentClass)
-            if (currentParentClass == candidate)
+            currentInheritsType.TypeDefinition is CodeClass currentParentClass) {
+            if (currentParentClass == candidate) {
                 return true;
-            else
+            } else {
                 return currentParentClass.StartBlock.InheritsFrom(candidate);
+            }
+        }
+
         return false;
     }
 }

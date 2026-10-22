@@ -16,8 +16,10 @@ public class PatAccessTokenProvider : IAccessTokenProvider
     public async Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(uri);
-        if ("https".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase) && AllowedHostsValidator.IsUrlHostValid(uri))
+        if ("https".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase) && AllowedHostsValidator.IsUrlHostValid(uri)) {
             return await StorageService.GetTokenAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
+        }
+
         return string.Empty;
     }
 }

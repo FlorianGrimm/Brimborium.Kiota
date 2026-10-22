@@ -40,8 +40,9 @@ public partial class DocumentCachingProvider
         var target = Path.Combine(Path.GetTempPath(), Constants.TempDirectoryName, "cache", intermediateFolderName, hashedUrl, fileName);
         using (await _locks.LockAsync(target, token).ConfigureAwait(false))
         {// if multiple clients are being updated for the same description, we'll have concurrent download of the file without the lock
-            if (!File.Exists(target) || couldNotDelete)
+            if (!File.Exists(target) || couldNotDelete) {
                 return await DownloadDocumentFromSourceAsync(documentUri, target, accept, token).ConfigureAwait(false);
+            }
 
             var lastModificationDate = File.GetLastWriteTime(target);
             if (lastModificationDate.Add(Duration) > DateTime.Now && !ClearCache)
@@ -74,14 +75,18 @@ public partial class DocumentCachingProvider
     {
         LogCacheFileNotFound(target, documentUri);
         var directory = Path.GetDirectoryName(target);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) {
             Directory.CreateDirectory(directory);
+        }
+
         Stream content = Stream.Null;
         try
         {
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, documentUri);
-            if (!string.IsNullOrEmpty(accept))
+            if (!string.IsNullOrEmpty(accept)) {
                 requestMessage.Headers.Add("Accept", accept);
+            }
+
             using var responseMessage = await HttpClient.SendAsync(requestMessage, token).ConfigureAwait(false);
             responseMessage.EnsureSuccessStatusCode();
             content = new MemoryStream();

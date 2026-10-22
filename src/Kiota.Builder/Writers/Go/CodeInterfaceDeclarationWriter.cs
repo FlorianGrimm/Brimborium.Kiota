@@ -11,11 +11,16 @@ public class CodeInterfaceDeclarationWriter : CodeProprietableBlockDeclarationWr
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is not CodeInterface inter) throw new InvalidOperationException("Expected the parent to be an interface");
+        if (codeElement.Parent is not CodeInterface inter) {
+            throw new InvalidOperationException("Expected the parent to be an interface");
+        }
+
         var interName = codeElement.Name.ToFirstCharacterUpperCase();
         conventions.WriteShortDescription(inter, writer, $"A {interName}");
-        if (codeElement.Parent is CodeInterface currentInterface && currentInterface.OriginalClass is not null)
+        if (codeElement.Parent is CodeInterface currentInterface && currentInterface.OriginalClass is not null) {
             conventions.WriteDeprecation(currentInterface.OriginalClass, writer);
+        }
+
         conventions.WriteLinkDescription(inter.Documentation, writer);
         writer.WriteLine($"type {interName} interface {{");
         writer.IncreaseIndent();

@@ -32,7 +32,10 @@ public static class StringExtensions
     /// <returns>The sanitized literal if quoted, otherwise the original value.</returns>
     public static string SanitizeQuotedStringLiteral(this string original)
     {
-        if (string.IsNullOrEmpty(original) || original.Length < 2) return original;
+        if (string.IsNullOrEmpty(original) || original.Length < 2) {
+            return original;
+        }
+
         return (original[0], original[^1]) switch
         {
             ('"', '"') => $"\"{original[1..^1].SanitizeDoubleQuote()}\"",
@@ -43,7 +46,10 @@ public static class StringExtensions
 
     private static string SanitizeForQuotedLiteral(string original, char quote)
     {
-        if (string.IsNullOrEmpty(original)) return original;
+        if (string.IsNullOrEmpty(original)) {
+            return original;
+        }
+
         var builder = new StringBuilder(original.Length);
         foreach (var character in original)
         {
@@ -71,10 +77,12 @@ public static class StringExtensions
                     builder.Append("\\'");
                     break;
                 default:
-                    if (char.IsControl(character))
+                    if (char.IsControl(character)) {
                         builder.Append(@"\u").Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
-                    else
+                    } else {
                         builder.Append(character);
+                    }
+
                     break;
             }
         }

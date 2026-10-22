@@ -51,13 +51,18 @@ public record LanguageInformation : IOpenApiSerializable
     {
         ArgumentNullException.ThrowIfNull(source);
         if (source.GetValueKind() is not JsonValueKind.Object ||
-        source.AsObject() is not JsonObject rawObject) throw new ArgumentOutOfRangeException(nameof(source));
+        source.AsObject() is not JsonObject rawObject) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         var extension = new LanguageInformation();
         if (rawObject.TryGetPropertyValue(nameof(Dependencies).ToFirstCharacterLowerCase(), out var dependencies) && dependencies is JsonArray arrayValue)
         {
-            foreach (var entry in arrayValue)
-                if (entry is not null)
+            foreach (var entry in arrayValue) {
+                if (entry is not null) {
                     extension.Dependencies.Add(LanguageDependency.Parse(entry));
+                }
+            }
         }
         // not parsing the maturity level on purpose, we don't want APIs to be able to change that
         if (rawObject.TryGetPropertyValue(nameof(ClientClassName).ToFirstCharacterLowerCase(), out var clientClassName) && clientClassName is JsonValue clientClassNameValue)
@@ -70,8 +75,9 @@ public record LanguageInformation : IOpenApiSerializable
         }
         if (rawObject.TryGetPropertyValue(nameof(StructuredMimeTypes).ToFirstCharacterLowerCase(), out var structuredMimeTypes) && structuredMimeTypes is JsonArray structuredMimeTypesValue)
         {
-            foreach (var entry in structuredMimeTypesValue.OfType<JsonValue>())
+            foreach (var entry in structuredMimeTypesValue.OfType<JsonValue>()) {
                 extension.StructuredMimeTypes.Add(entry.GetValue<string>());
+            }
         }
         if (rawObject.TryGetPropertyValue(nameof(MaturityLevel).ToFirstCharacterLowerCase(), out var maturityLevel) && maturityLevel is JsonValue maturityLevelValue && maturityLevelValue.GetValueKind() is JsonValueKind.String && Enum.TryParse<LanguageMaturityLevel>(maturityLevelValue.GetValue<string>(), true, out var parsedMaturityLevelValue))
         {
@@ -114,7 +120,10 @@ public record LanguageDependency : IOpenApiSerializable
     {
         ArgumentNullException.ThrowIfNull(source);
         if (source.GetValueKind() is not JsonValueKind.Object ||
-        source.AsObject() is not JsonObject rawObject) throw new ArgumentOutOfRangeException(nameof(source));
+        source.AsObject() is not JsonObject rawObject) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         var extension = new LanguageDependency();
         if (rawObject.TryGetPropertyValue(nameof(Name).ToFirstCharacterLowerCase(), out var nameNode) && nameNode is JsonValue nameJsonValue && nameJsonValue.TryGetValue<string>(out var nameValue))
         {

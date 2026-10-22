@@ -18,12 +18,13 @@ internal static class OpenApiDocumentExtensions
             Parallel.ForEach(openApiDocument.Components.Schemas, entry =>
             {
                 inheritanceIndex.TryAdd(entry.Key, new(StringComparer.OrdinalIgnoreCase));
-                if (entry.Value.AllOf != null)
+                if (entry.Value.AllOf != null) {
                     foreach (var allOfEntry in entry.Value.AllOf.OfType<OpenApiSchemaReference>().Where(static x => !string.IsNullOrEmpty(x.Reference.Id)))
                     {
                         var dependents = inheritanceIndex.GetOrAdd(allOfEntry.Reference.Id!, new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase));
                         dependents.TryAdd(entry.Key, false);
                     }
+                }
             });
         }
     }
@@ -36,9 +37,9 @@ internal static class OpenApiDocumentExtensions
                                         ?.OrderByDescending(static x => x.Url, StringComparer.OrdinalIgnoreCase) // prefer https over http
                                         ?.FirstOrDefault()
                                         ?.Url;
-        if (string.IsNullOrEmpty(candidateUrl))
+        if (string.IsNullOrEmpty(candidateUrl)) {
             return null;
-        else if (!candidateUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+        } else if (!candidateUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                 openAPIFilePath.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
                 Uri.TryCreate(openAPIFilePath, new(), out var filePathUri) &&
                 Uri.TryCreate(filePathUri, candidateUrl, out var candidateUri))

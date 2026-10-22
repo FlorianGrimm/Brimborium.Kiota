@@ -211,8 +211,10 @@ public class PythonRefiner : CommonLanguageRefiner, ILanguageRefiner
 
             foreach (var param in m.Parameters)
             {
-                if (param.SerializationName != null)
+                if (param.SerializationName != null) {
                     param.SerializationName = param.Name;
+                }
+
                 param.Name = param.Name.ToFirstCharacterLowerCase().ToSnakeCase();
             }
             if (parentClassM.IsOfKind(CodeClassKind.Model))
@@ -239,8 +241,9 @@ public class PythonRefiner : CommonLanguageRefiner, ILanguageRefiner
             p.IsOfKind(CodePropertyKind.UrlTemplate)) &&
             currentElement.Parent is CodeClass parentClassP)
         {
-            if (p.SerializationName != null)
+            if (p.SerializationName != null) {
                 p.SerializationName = p.Name;
+            }
 
             parentClassP.RenameChildElement(p.Name, p.Name.ToFirstCharacterLowerCase().ToSnakeCase());
         }
@@ -271,15 +274,15 @@ public class PythonRefiner : CommonLanguageRefiner, ILanguageRefiner
     }
     private static void CorrectPropertyType(CodeProperty currentProperty)
     {
-        if (currentProperty.IsOfKind(CodePropertyKind.RequestAdapter))
+        if (currentProperty.IsOfKind(CodePropertyKind.RequestAdapter)) {
             currentProperty.Type.Name = "RequestAdapter";
-        else if (currentProperty.IsOfKind(CodePropertyKind.BackingStore))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.BackingStore)) {
             currentProperty.Type.Name = currentProperty.Type.Name[1..].ToFirstCharacterUpperCase(); // removing the "I"
-        else if (currentProperty.IsOfKind(CodePropertyKind.Options))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.Options)) {
             currentProperty.Type.Name = "list[RequestOption]";
-        else if (currentProperty.IsOfKind(CodePropertyKind.Headers))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.Headers)) {
             currentProperty.Type.Name = "dict[str, Union[str, list[str]]]";
-        else if (currentProperty.IsOfKind(CodePropertyKind.AdditionalData))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.AdditionalData))
         {
             currentProperty.Type.Name = "dict[str, Any]";
             currentProperty.DefaultValue = "field(default_factory=dict)";
@@ -288,8 +291,9 @@ public class PythonRefiner : CommonLanguageRefiner, ILanguageRefiner
         {
             currentProperty.Type.IsNullable = false;
             currentProperty.Type.Name = "Union[str, dict[str, Any]]";
-            if (!string.IsNullOrEmpty(currentProperty.DefaultValue))
+            if (!string.IsNullOrEmpty(currentProperty.DefaultValue)) {
                 currentProperty.DefaultValue = "{}";
+            }
         }
         else if (currentProperty.Kind is CodePropertyKind.Custom && currentProperty.Type.IsNullable && string.IsNullOrEmpty(currentProperty.DefaultValue))
         {
@@ -317,11 +321,11 @@ public class PythonRefiner : CommonLanguageRefiner, ILanguageRefiner
     }
     private static void CorrectMethodType(CodeMethod currentMethod)
     {
-        if (currentMethod.IsOfKind(CodeMethodKind.Serializer))
+        if (currentMethod.IsOfKind(CodeMethodKind.Serializer)) {
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.Serializer) && x.Type.Name.StartsWith('I')).ToList().ForEach(x => x.Type.Name = x.Type.Name[1..]);
-        else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer))
+        } else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer)) {
             currentMethod.ReturnType.Name = "dict[str, Callable[[ParseNode], None]]";
-        else if (currentMethod.IsOfKind(CodeMethodKind.ClientConstructor, CodeMethodKind.Constructor, CodeMethodKind.Factory))
+        } else if (currentMethod.IsOfKind(CodeMethodKind.ClientConstructor, CodeMethodKind.Constructor, CodeMethodKind.Factory))
         {
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.RequestAdapter, CodeParameterKind.BackingStore, CodeParameterKind.ParseNode))
                 .Where(static x => x.Type.Name.StartsWith('I'))

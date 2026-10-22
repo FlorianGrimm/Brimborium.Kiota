@@ -45,7 +45,7 @@ public class CodeElementOrderComparer : BaseStringComparisonComparer<CodeElement
 
     protected virtual int GetMethodKindFactor(CodeElement element)
     {
-        if (element is CodeMethod method)
+        if (element is CodeMethod method) {
             return method.Kind switch
             {
                 CodeMethodKind.ClientConstructor => 1,
@@ -53,24 +53,30 @@ public class CodeElementOrderComparer : BaseStringComparisonComparer<CodeElement
                 CodeMethodKind.RawUrlConstructor => 3,
                 _ => 0,
             };
+        }
+
         return 0;
     }
     protected virtual int constantKindWeight { get; } = 1000;
     protected virtual int GetConstantKindFactor(CodeElement element)
     {
-        if (element is CodeConstant constant)
+        if (element is CodeConstant constant) {
             return constant.Kind switch
             {
                 CodeConstantKind.UriTemplate => 1, // in typescript uri templates need to go first before the request metadata constants
                 _ => 2,
             };
+        }
+
         return 0;
     }
     private const int ParametersWeight = 1;
     private static int GetParametersFactor(CodeElement element)
     {
-        if (element is CodeMethod method && (method.Parameters?.Any() ?? false))
+        if (element is CodeMethod method && (method.Parameters?.Any() ?? false)) {
             return method.Parameters.Count();
+        }
+
         return 0;
     }
 }

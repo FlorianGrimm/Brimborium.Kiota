@@ -65,10 +65,14 @@ public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedE
     {
         get
         {
-            if (Getter != null)
+            if (Getter != null) {
                 return Getter;
-            if (ExistsInBaseType)
+            }
+
+            if (ExistsInBaseType) {
                 return OriginalPropertyFromBaseType?.Getter;
+            }
+
             return default;
         }
     }
@@ -76,10 +80,14 @@ public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedE
     {
         get
         {
-            if (Setter != null)
+            if (Setter != null) {
                 return Setter;
-            if (ExistsInBaseType)
+            }
+
+            if (ExistsInBaseType) {
                 return OriginalPropertyFromBaseType?.Setter;
+            }
+
             return default;
         }
     }

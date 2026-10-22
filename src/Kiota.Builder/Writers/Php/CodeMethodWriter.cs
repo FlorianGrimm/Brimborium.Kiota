@@ -24,7 +24,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException("the parent of a method should be a class");
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException("the parent of a method should be a class");
+        }
+
         var returnType = codeElement.Kind == CodeMethodKind.Constructor ? "void" : conventions.GetTypeString(codeElement.ReturnType, codeElement);
         var inherits = parentClass.StartBlock.Inherits != null;
         var extendsModelClass = inherits && parentClass.StartBlock.Inherits?.TypeDefinition is CodeClass codeClass &&
@@ -128,10 +131,11 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
         {
             writer.WriteLine($"parent::__construct(${(requestAdapterParameter?.Name ?? "requestAdapter")}, {(pathParametersProperty?.DefaultValue ?? "[]")}, {(urlTemplateProperty?.DefaultValue.ReplaceDoubleQuoteWithSingleQuote() ?? "")});");
         }
-        else if (parentClass.IsOfKind(CodeClassKind.RequestConfiguration))
+        else if (parentClass.IsOfKind(CodeClassKind.RequestConfiguration)) {
             writer.WriteLine($"parent::__construct(${(requestHeadersParameter?.Name ?? "headers")} ?? [], ${(requestOptionParameter?.Name ?? "options")} ?? []);");
-        else if (hasConstructor)
+        } else if (hasConstructor) {
             writer.WriteLine("parent::__construct();");
+        }
     }
 
     private static bool TryGetDefaultValue(string defaultValue, CodeType propertyType, out string? convertedDefaultValue, out bool checkParsedValue)
@@ -141,8 +145,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
         switch (propertyType.Name.ToLowerInvariant())
         {
             case "boolean":
-                if (PrimitiveDefaultValueUtils.TryNormalizeBooleanLiteral(defaultValue, out var booleanDefaultValue))
+                if (PrimitiveDefaultValueUtils.TryNormalizeBooleanLiteral(defaultValue, out var booleanDefaultValue)) {
                     convertedDefaultValue = booleanDefaultValue;
+                }
+
                 return true;
             case "byte":
             case "decimal":
@@ -153,8 +159,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             case "integer":
             case "number":
             case "sbyte":
-                if (PrimitiveDefaultValueUtils.TryNormalizeNumericLiteral(defaultValue.TrimQuotes(), propertyType.Name, out var numericDefaultValue))
+                if (PrimitiveDefaultValueUtils.TryNormalizeNumericLiteral(defaultValue.TrimQuotes(), propertyType.Name, out var numericDefaultValue)) {
                     convertedDefaultValue = numericDefaultValue;
+                }
+
                 return true;
             case "date":
                 convertedDefaultValue = $"new Date({defaultValue})";
@@ -176,8 +184,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
     private void WriteModelConstructorBody(CodeClass parentClass, LanguageWriter writer)
     {
         var backingStoreProperty = parentClass.GetPropertyOfKind(CodePropertyKind.BackingStore);
-        if (backingStoreProperty != null && !string.IsNullOrEmpty(backingStoreProperty.DefaultValue))
+        if (backingStoreProperty != null && !string.IsNullOrEmpty(backingStoreProperty.DefaultValue)) {
             writer.WriteLine($"$this->{backingStoreProperty.Name.ToFirstCharacterLowerCase()} = {backingStoreProperty.DefaultValue.ReplaceDoubleQuoteWithSingleQuote()};");
+        }
+
         foreach (var propWithDefault in parentClass.GetPropertiesOfKind(CodePropertyKind.AdditionalData, CodePropertyKind.Custom) //additional data and custom properties rely on accessors
             .Where(static x => !string.IsNullOrEmpty(x.DefaultValue))
             // do not apply the default value if the type is composed as the default value may not necessarily which type to use
@@ -199,8 +209,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             else if (propWithDefault.Type is CodeType propType &&
                 TryGetDefaultValue(defaultValue, propType, out var convertedDefaultValue, out checkParsedValue))
             {
-                if (convertedDefaultValue is null)
+                if (convertedDefaultValue is null) {
                     continue;
+                }
+
                 defaultValue = convertedDefaultValue;
             }
 
@@ -306,9 +318,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                     : parameter.SerializationName;
                 writer.WriteLine($"{UrlTemplateTempVarName}['{key.SanitizeSingleQuote()}'] = ${parameter.Name.ToFirstCharacterLowerCase()};");
             });
-        if (pathParametersProperty != null)
+        if (pathParametersProperty != null) {
             writer.WriteLine(
                 $"{GetPropertyCall(pathParametersProperty, "[]")} = {UrlTemplateTempVarName};");
+        }
     }
     private static void AssignPropertyFromParameter(CodeClass parentClass, CodeMethod currentMethod, CodeParameterKind parameterKind, CodePropertyKind propertyKind, LanguageWriter writer)
     {
@@ -347,7 +360,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                 ? $"@return Promise<{returnDocString}|null>"
                 : $"@return {returnDocString}{nullableSuffix}";
         }
-        else returnDocString = string.Empty;
+        else {
+            returnDocString = string.Empty;
+        }
 
         var throwsArray = methodThrows ? ["@throws Exception"] : Array.Empty<string>();
         conventions.WriteLongDescription(codeMethod,
@@ -402,16 +417,18 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
 
     private void WriteSerializerBody(CodeClass parentClass, LanguageWriter writer, bool extendsModelClass = false)
     {
-        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType)
+        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType) {
             WriteSerializerBodyForUnionModel(parentClass, writer);
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        } else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             WriteSerializerBodyForIntersectionModel(parentClass, writer);
-        else
+        } else {
             WriteSerializerBodyForInheritedModel(parentClass, writer, extendsModelClass);
+        }
 
         if (parentClass.GetPropertiesOfKind(CodePropertyKind.AdditionalData).FirstOrDefault() is CodeProperty additionalDataProperty &&
-            additionalDataProperty.Getter != null)
+            additionalDataProperty.Getter != null) {
             writer.WriteLine($"$writer->writeAdditionalData($this->{additionalDataProperty.Getter.Name}());");
+        }
     }
 
     private void WriteSerializerBodyForIntersectionModel(CodeClass parentClass, LanguageWriter writer)
@@ -429,8 +446,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             writer.StartBlock($"{(includeElse ? "} else " : string.Empty)}if ($this->{otherProp.Getter!.Name.ToFirstCharacterLowerCase()}() !== null) {{");
             WriteSerializationMethodCall(otherProp, writer, "null");
             writer.DecreaseIndent();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
         var complexProperties = parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .Where(static x => x.Getter != null)
@@ -472,26 +490,33 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             writer.StartBlock($"{(includeElse ? "} else " : string.Empty)}if ($this->{otherProp.Getter!.Name.ToFirstCharacterLowerCase()}() !== null) {{");
             WriteSerializationMethodCall(otherProp, writer, "null");
             writer.DecreaseIndent();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
-        if (otherProps.Length != 0)
+        if (otherProps.Length != 0) {
             writer.CloseBlock(decreaseIndent: false);
+        }
     }
 
     private void WriteSerializationMethodCall(CodeProperty otherProp, LanguageWriter writer, string serializationKey, string? dataToSerialize = default)
     {
-        if (string.IsNullOrEmpty(dataToSerialize))
+        if (string.IsNullOrEmpty(dataToSerialize)) {
             dataToSerialize = $"$this->{(otherProp.Getter?.Name?.ToFirstCharacterLowerCase() is string gName && !string.IsNullOrEmpty(gName) ? gName : "get" + otherProp.Name.ToFirstCharacterUpperCase())}()";
+        }
+
         writer.WriteLine($"$writer->{GetSerializationMethodName(otherProp.Type)}({serializationKey}, {dataToSerialize});");
     }
 
     private void WriteSerializerBodyForInheritedModel(CodeClass parentClass, LanguageWriter writer, bool extendsModelClass = false)
     {
-        if (extendsModelClass)
+        if (extendsModelClass) {
             writer.WriteLine("parent::serialize($writer);");
-        foreach (var otherProp in parentClass.GetPropertiesOfKind(CodePropertyKind.Custom).Where(static x => !x.ExistsInBaseType && !x.ReadOnly))
+        }
+
+        foreach (var otherProp in parentClass.GetPropertiesOfKind(CodePropertyKind.Custom).Where(static x => !x.ExistsInBaseType && !x.ReadOnly)) {
             WriteSerializationMethodCall(otherProp, writer, $"'{otherProp.WireName.SanitizeSingleQuote()}'");
+        }
     }
 
     private string GetSerializationMethodName(CodeTypeBase propType)
@@ -539,20 +564,21 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
         var parseNodeMethod = (string.Empty, string.Empty);
         if (propType is CodeType currentType)
         {
-            if (isCollection)
+            if (isCollection) {
                 parseNodeMethod = currentType.TypeDefinition switch
                 {
                     CodeEnum enumType => (string.Empty, $"getCollectionOfEnumValues({enumType.Name.ToFirstCharacterUpperCase()}::class)"),
                     CodeClass => (string.Empty, $"getCollectionOfObjectValues([{conventions.TranslateType(propType)}::class, '{CreateDiscriminatorMethodName}'])"),
                     _ => (conventions.TranslateType(propType), $"getCollectionOfPrimitiveValues('{conventions.TranslateType(propType)}')")
                 };
-            else if (currentType.TypeDefinition is CodeEnum)
+            } else if (currentType.TypeDefinition is CodeEnum) {
                 parseNodeMethod = (string.Empty, $"getEnumValue({propertyType.ToFirstCharacterUpperCase()}::class)");
+            }
         }
 
         var lowerCaseType = propertyType.ToLowerInvariant();
         var res = parseNodeMethod;
-        if (string.IsNullOrEmpty(parseNodeMethod.Item2))
+        if (string.IsNullOrEmpty(parseNodeMethod.Item2)) {
             res = (string.Empty, lowerCaseType switch
             {
                 "int" => "getIntegerValue()",
@@ -566,6 +592,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                 _ =>
                     $"getObjectValue([{propertyType.ToFirstCharacterUpperCase()}::class, '{CreateDiscriminatorMethodName}'])",
             });
+        }
 
         return res;
     }
@@ -574,10 +601,11 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
     {
         var propertyName = codeElement.AccessedProperty?.Name.ToFirstCharacterLowerCase();
         var isBackingStoreSetter = codeElement.AccessedProperty?.Kind == CodePropertyKind.BackingStore;
-        if (UseBackingStore && !isBackingStoreSetter && parentClass.GetBackingStoreProperty() is CodeProperty backingStoreProperty && backingStoreProperty.Getter != null)
+        if (UseBackingStore && !isBackingStoreSetter && parentClass.GetBackingStoreProperty() is CodeProperty backingStoreProperty && backingStoreProperty.Getter != null) {
             writer.WriteLine($"$this->{backingStoreProperty.Getter!.Name}()->set('{propertyName.ToFirstCharacterLowerCase()}', $value);");
-        else
+        } else {
             writer.WriteLine($"$this->{propertyName.ToFirstCharacterLowerCase()} = $value;");
+        }
     }
 
     private void WriteGetterBody(LanguageWriter writer, CodeMethod codeMethod, CodeClass parentClass)
@@ -627,7 +655,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
     private static string GetPropertyCall(CodeProperty property, string defaultValue) => property == null ? defaultValue : $"$this->{property.Name}";
     private void WriteRequestGeneratorBody(CodeMethod codeElement, RequestParams requestParams, CodeClass currentClass, LanguageWriter writer)
     {
-        if (codeElement.HttpMethod == null) throw new InvalidOperationException("http method cannot be null");
+        if (codeElement.HttpMethod == null) {
+            throw new InvalidOperationException("http method cannot be null");
+        }
+
         var requestInformationClass = "RequestInformation";
         writer.WriteLine($"{RequestInfoVarName} = new {requestInformationClass}();");
         if (currentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty &&
@@ -646,16 +677,19 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             var sanitizedRequestBodyContentType = PhpConventionService.SanitizePhpDoubleQuoteLiteral(codeElement.RequestBodyContentType);
             if (requestParams.requestBody.Type.Name.Equals(conventions.StreamTypeName, StringComparison.OrdinalIgnoreCase))
             {
-                if (requestParams.requestContentType is not null)
+                if (requestParams.requestContentType is not null) {
                     writer.WriteLine($"{RequestInfoVarName}->setStreamContent({conventions.GetParameterName(requestParams.requestBody)}, {conventions.GetParameterName(requestParams.requestContentType)});");
-                else if (!string.IsNullOrEmpty(codeElement.RequestBodyContentType))
+                } else if (!string.IsNullOrEmpty(codeElement.RequestBodyContentType)) {
                     writer.WriteLine($"{RequestInfoVarName}->setStreamContent({conventions.GetParameterName(requestParams.requestBody)}, \"{sanitizedRequestBodyContentType}\");");
+                }
             }
-            else if (currentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty)
-                if (requestParams.requestBody.Type is CodeType bodyType && (bodyType.TypeDefinition is CodeClass || bodyType.Name.Equals("MultiPartBody", StringComparison.OrdinalIgnoreCase)))
+            else if (currentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty) {
+                if (requestParams.requestBody.Type is CodeType bodyType && (bodyType.TypeDefinition is CodeClass || bodyType.Name.Equals("MultiPartBody", StringComparison.OrdinalIgnoreCase))) {
                     writer.WriteLine($"{RequestInfoVarName}->setContentFromParsable{suffix}($this->{requestAdapterProperty.Name.ToFirstCharacterLowerCase()}, \"{sanitizedRequestBodyContentType}\", {conventions.GetParameterName(requestParams.requestBody)});");
-                else
+                } else {
                     writer.WriteLine($"{RequestInfoVarName}->setContentFromScalar{suffix}($this->{requestAdapterProperty.Name.ToFirstCharacterLowerCase()}, \"{sanitizedRequestBodyContentType}\", {conventions.GetParameterName(requestParams.requestBody)});");
+                }
+            }
         }
 
         writer.WriteLine($"return {RequestInfoVarName};");
@@ -687,17 +721,19 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
 
     private void WriteAcceptHeaderDef(CodeMethod codeMethod, LanguageWriter writer)
     {
-        if (codeMethod.ShouldAddAcceptHeader)
+        if (codeMethod.ShouldAddAcceptHeader) {
             writer.WriteLine($"{RequestInfoVarName}->tryAddHeader('Accept', \"{PhpConventionService.SanitizePhpDoubleQuoteLiteral(codeMethod.AcceptHeaderValue)}\");");
+        }
     }
     private void WriteDeserializerBody(CodeClass parentClass, LanguageWriter writer, CodeMethod method, bool extendsModelClass = false)
     {
-        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType)
+        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType) {
             WriteDeserializerBodyForUnionModel(method, parentClass, writer);
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        } else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             WriteDeserializerBodyForIntersectionModel(parentClass, writer);
-        else
+        } else {
             WriteDeserializerBodyForInheritedModel(method, parentClass, writer, extendsModelClass);
+        }
     }
     private void WriteDeserializerBodyForInheritedModel(CodeMethod method, CodeClass parentClass, LanguageWriter writer, bool extendsModelClass = false)
     {
@@ -780,11 +816,14 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             writer.StartBlock($"{(includeElse ? "} else " : string.Empty)}if ($this->{otherPropGetter}() !== null) {{");
             writer.WriteLine($"return $this->{otherPropGetter}()->{method.Name.ToFirstCharacterLowerCase()}();");
             writer.DecreaseIndent();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
-        if (otherPropGetters.Length != 0)
+        if (otherPropGetters.Length != 0) {
             writer.CloseBlock(decreaseIndent: false);
+        }
+
         writer.WriteLine($"return [];");
     }
 
@@ -792,9 +831,11 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
     {
         var pathParameters = codeElement.Parameters.Where(static x => x.IsOfKind(CodeParameterKind.Path));
         if (parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty &&
-            codeElement.OriginalIndexer != null)
+            codeElement.OriginalIndexer != null) {
             conventions.AddParametersAssignment(writer, pathParametersProperty.Type, $"$this->{pathParametersProperty.Name}",
                 (codeElement.OriginalIndexer.IndexParameter.Type, codeElement.OriginalIndexer.IndexParameter.SerializationName, $"${codeElement.OriginalIndexer.IndexParameter.Name.ToFirstCharacterLowerCase()}"));
+        }
+
         conventions.AddRequestBuilderBody(parentClass, returnType, writer, conventions.TempDictionaryVarName, pathParameters);
     }
 
@@ -861,43 +902,61 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                 "return $result;"
                 );
         }
-        else writer.WriteLines(
+        else {
+            writer.WriteLines(
             $"return {methodCall}");
+        }
     }
 
     private static void WriteApiConstructorBody(CodeClass parentClass, CodeMethod codeMethod, LanguageWriter writer)
     {
         WriteSerializationRegistration(codeMethod.SerializerModules, writer, "registerDefaultSerializer");
         WriteSerializationRegistration(codeMethod.DeserializerModules, writer, "registerDefaultDeserializer");
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is not CodeProperty requestAdapterProperty) return;
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is not CodeProperty requestAdapterProperty) {
+            return;
+        }
+
         if (!string.IsNullOrEmpty(codeMethod.BaseUrl))
         {
             writer.StartBlock($"if (empty({GetPropertyCall(requestAdapterProperty, string.Empty)}->getBaseUrl())) {{");
             writer.WriteLine($"{GetPropertyCall(requestAdapterProperty, string.Empty)}->setBaseUrl('{codeMethod.BaseUrl.SanitizeSingleQuote()}');");
             writer.CloseBlock();
-            if (parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty)
+            if (parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty) {
                 writer.WriteLine($"{GetPropertyCall(pathParametersProperty, string.Empty)}['baseurl'] = {GetPropertyCall(requestAdapterProperty, string.Empty)}->getBaseUrl();");
+            }
         }
-        if (codeMethod.Parameters.OfKind(CodeParameterKind.BackingStore) is CodeParameter backingStoreParam)
+        if (codeMethod.Parameters.OfKind(CodeParameterKind.BackingStore) is CodeParameter backingStoreParam) {
             writer.WriteLine($"{GetPropertyCall(requestAdapterProperty, string.Empty)}->enableBackingStore(${backingStoreParam.Name} ?? BackingStoreFactorySingleton::getInstance());");
+        }
     }
 
     private static void WriteSerializationRegistration(HashSet<string> serializationModules, LanguageWriter writer, string methodName)
     {
-        if (serializationModules != null)
-            foreach (var module in serializationModules)
+        if (serializationModules != null) {
+            foreach (var module in serializationModules) {
                 writer.WriteLine($"ApiClientBuilder::{methodName}({module}::class);");
+            }
+        }
     }
 
     protected string GetSendRequestMethodName(bool isVoid, bool isStream, bool isCollection, bool isEnum, string returnType)
     {
-        if (isVoid) return "sendNoContentAsync";
-        if (isStream || isEnum || conventions.PrimitiveTypes.Contains(returnType))
-            if (isCollection)
+        if (isVoid) {
+            return "sendNoContentAsync";
+        }
+
+        if (isStream || isEnum || conventions.PrimitiveTypes.Contains(returnType)) {
+            if (isCollection) {
                 return "sendPrimitiveCollectionAsync";
-            else
+            } else {
                 return "sendPrimitiveAsync";
-        if (isCollection) return "sendCollectionAsync";
+            }
+        }
+
+        if (isCollection) {
+            return "sendCollectionAsync";
+        }
+
         return "sendAsync";
     }
 
@@ -920,8 +979,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
 
     private void WriteModelFactoryMethodBody(CodeMethod codeElement, CodeClass parentClass, LanguageWriter writer)
     {
-        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType || parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType || parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             writer.WriteLine($"{ResultVarName} = new {parentClass.Name.ToFirstCharacterUpperCase()}();");
+        }
+
         var writeDiscriminatorValueRead = parentClass.DiscriminatorInformation is { ShouldWriteParseNodeCheck: true, ShouldWriteDiscriminatorForIntersectionType: false, HasBasicDiscriminatorInformation: true };
 
         if (writeDiscriminatorValueRead &&
@@ -933,12 +994,13 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             writer.WriteLines($"{DiscriminatorMappingVarName} = $mappingValueNode->getStringValue();");
         }
 
-        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForInheritedType)
+        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForInheritedType) {
             WriteFactoryMethodBodyForInheritedModel(parentClass.DiscriminatorInformation.DiscriminatorMappings, writer, codeElement);
-        else if (parentClass.DiscriminatorInformation is { ShouldWriteDiscriminatorForUnionType: true, HasBasicDiscriminatorInformation: true })
+        } else if (parentClass.DiscriminatorInformation is { ShouldWriteDiscriminatorForUnionType: true, HasBasicDiscriminatorInformation: true }) {
             WriteFactoryMethodBodyForUnionModelForDiscriminatedTypes(codeElement, parentClass, writer);
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        } else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             WriteFactoryMethodBodyForIntersectionModel(codeElement, parentClass, writer);
+        }
 
         if (writeDiscriminatorValueRead)
         {
@@ -946,12 +1008,15 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
         }
         if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType || parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
         {
-            if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType)
+            if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType) {
                 WriteFactoryMethodBodyForUnionModelForUnDiscriminatedTypes(codeElement, parentClass, writer);
+            }
+
             writer.WriteLine($"return {ResultVarName};");
         }
-        else
+        else {
             writer.WriteLine($"return new {parentClass.Name.ToFirstCharacterUpperCase()}();");
+        }
     }
 
     private void WriteFactoryMethodBodyForIntersectionModel(CodeMethod codeElement, CodeClass parentClass, LanguageWriter writer)
@@ -973,8 +1038,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                 writer.WriteLine($"{ResultVarName}->{property.Setter!.Name.ToFirstCharacterLowerCase()}({deserializationMethodName});");
                 writer.DecreaseIndent();
             }
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
         var complexProperties = parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                         .Where(static x => x.Setter != null && x.Type is CodeType)
@@ -983,15 +1049,21 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                                         .ToArray();
         if (complexProperties.Length != 0)
         {
-            if (includeElse)
+            if (includeElse) {
                 writer.StartBlock("} else {");
-            foreach (var property in complexProperties)
+            }
+
+            foreach (var property in complexProperties) {
                 writer.WriteLine($"{ResultVarName}->{property.Item1.Setter!.Name.ToFirstCharacterLowerCase()}(new {conventions.GetTypeString(property.Item2, codeElement, false)}());");
-            if (includeElse)
+            }
+
+            if (includeElse) {
                 writer.CloseBlock();
+            }
         }
-        else if (otherProps.Length != 0)
+        else if (otherProps.Length != 0) {
             writer.CloseBlock(decreaseIndent: false);
+        }
     }
 
     private void WriteFactoryMethodBodyForUnionModelForDiscriminatedTypes(CodeMethod codeElement, CodeClass parentClass, LanguageWriter writer)
@@ -1006,7 +1078,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
         foreach (var property in otherProps)
         {
             var propertyType = (CodeType)property.Type;
-            if (propertyType.TypeDefinition is CodeInterface { OriginalClass: { } } typeInterface)
+            if (propertyType.TypeDefinition is CodeInterface { OriginalClass: { } } typeInterface) {
                 propertyType = new CodeType
                 {
                     Name = typeInterface.OriginalClass.Name,
@@ -1014,17 +1086,23 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
                     CollectionKind = propertyType.CollectionKind,
                     IsNullable = propertyType.IsNullable,
                 };
+            }
+
             var mappedType = parentClass.DiscriminatorInformation.DiscriminatorMappings.FirstOrDefault(x => x.Value.Name.Equals(propertyType.Name, StringComparison.OrdinalIgnoreCase));
-            if (string.IsNullOrEmpty(mappedType.Key))
+            if (string.IsNullOrEmpty(mappedType.Key)) {
                 continue;
+            }
+
             writer.StartBlock($"{(includeElse ? "} else " : string.Empty)}if ('{mappedType.Key.SanitizeSingleQuote()}' === {DiscriminatorMappingVarName}) {{");
             writer.WriteLine($"{ResultVarName}->{property.Setter!.Name.ToFirstCharacterLowerCase()}(new {conventions.GetTypeString(propertyType, codeElement, false)}());");
             writer.DecreaseIndent();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
-        if (includeElse)
+        if (includeElse) {
             writer.CloseBlock(decreaseIndent: false);
+        }
     }
 
     private static readonly CodePropertyTypeComparer CodePropertyTypeForwardComparer = new();
@@ -1051,17 +1129,21 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, PhpConventionServi
             writer.WriteLine($"{finalValueName} = {serializationMethodName};");
             writer.WriteLine($"{ResultVarName}->{property.Setter!.Name.ToFirstCharacterLowerCase()}({finalValueName});");
             writer.DecreaseIndent();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
-        if (otherProps.Length != 0)
+        if (otherProps.Length != 0) {
             writer.CloseBlock(decreaseIndent: false);
+        }
     }
 
     private void WriteFactoryMethodBodyForInheritedModel(IOrderedEnumerable<KeyValuePair<string, CodeType>> discriminatorMappings, LanguageWriter writer, CodeMethod method, string? varName = default)
     {
-        if (string.IsNullOrEmpty(varName))
+        if (string.IsNullOrEmpty(varName)) {
             varName = DiscriminatorMappingVarName;
+        }
+
         writer.StartBlock($"switch ({varName}) {{");
         foreach (var mappedType in discriminatorMappings)
         {

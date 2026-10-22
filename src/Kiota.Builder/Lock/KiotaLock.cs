@@ -115,11 +115,15 @@ public class KiotaLock
     {
         ArgumentNullException.ThrowIfNull(config);
         config.ClientClassName = ClientClassName;
-        if (Enum.TryParse<GenerationLanguage>(Language, out var parsedLanguage))
+        if (Enum.TryParse<GenerationLanguage>(Language, out var parsedLanguage)) {
             config.Language = parsedLanguage;
+        }
+
         config.ClientNamespaceName = ClientNamespaceName;
-        if (Enum.TryParse<AccessModifier>(TypeAccessModifier, out var parsedAccessModifier))
+        if (Enum.TryParse<AccessModifier>(TypeAccessModifier, out var parsedAccessModifier)) {
             config.TypeAccessModifier = parsedAccessModifier;
+        }
+
         config.UsesBackingStore = UsesBackingStore;
         config.ExcludeBackwardCompatible = ExcludeBackwardCompatible;
         config.IncludeAdditionalData = IncludeAdditionalData;

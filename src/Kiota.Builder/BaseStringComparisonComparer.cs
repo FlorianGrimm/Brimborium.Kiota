@@ -20,11 +20,12 @@ public abstract class BaseStringComparisonComparer<T> : IComparer<T>
     }
     private static int NormalizeComparisonResult(int result)
     {
-        if (result < 0)
+        if (result < 0) {
             return -1;
-        else if (result > 0)
+        } else if (result > 0) {
             return 1;
-        else
+        } else {
             return 0;
+        }
     }
 }

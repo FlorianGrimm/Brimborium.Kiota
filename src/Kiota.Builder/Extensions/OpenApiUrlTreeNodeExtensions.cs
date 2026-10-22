@@ -59,8 +59,10 @@ public static partial class OpenApiUrlTreeNodeExtensions
             WithKeyword + match.Groups["paramName"].Value.ToFirstCharacterUpperCase();
     internal static string CleanupParametersFromPath(string pathSegment)
     {
-        if (string.IsNullOrEmpty(pathSegment))
+        if (string.IsNullOrEmpty(pathSegment)) {
             return pathSegment;
+        }
+
         return PathParametersRegex().Replace(
                                         AtSignPathParameterRegex().Replace(pathSegment, "={$1}"),
                                         requestParametersMatchEvaluator)
@@ -77,14 +79,17 @@ public static partial class OpenApiUrlTreeNodeExtensions
     public static IEnumerable<IOpenApiParameter> GetPathParametersForCurrentSegment(this OpenApiUrlTreeNode node)
     {
         if (node != null &&
-            node.IsComplexPathMultipleParameters())
-            if (node.PathItems.TryGetValue(Constants.DefaultOpenApiLabel, out var pathItem))
+            node.IsComplexPathMultipleParameters()) {
+            if (node.PathItems.TryGetValue(Constants.DefaultOpenApiLabel, out var pathItem)) {
                 return GetParametersForPathItem(pathItem, node.DeduplicatedSegment());
-            else if (node.Children.Count > 0)
+            } else if (node.Children.Count > 0) {
                 return node.Children
                             .Where(static x => x.Value.PathItems.ContainsKey(Constants.DefaultOpenApiLabel))
                             .SelectMany(x => GetParametersForPathItem(x.Value.PathItems[Constants.DefaultOpenApiLabel], node.DeduplicatedSegment()))
                             .Distinct();
+            }
+        }
+
         return [];
     }
     private const char PathNameSeparator = '\\';
@@ -102,8 +107,10 @@ public static partial class OpenApiUrlTreeNodeExtensions
     {
         ArgumentNullException.ThrowIfNull(currentNode);
         var result = currentNode.GetSegmentName(structuredMimeTypes, suffix, prefix, operation, response, schema, requestBody, static x => string.Join(string.Empty, x.Select(static (y, idx) => idx == 0 ? y : y.ToFirstCharacterUpperCase())), false, placeholder);
-        if (httpVerbs.Contains(result))
+        if (httpVerbs.Contains(result)) {
             return $"{result}Path"; // we don't run the change of an operation conflicting with a path on the same request builder
+        }
+
         return result;
     }
     private static readonly HashSet<string> httpVerbs = new(8, StringComparer.OrdinalIgnoreCase) { "get", "post", "put", "patch", "delete", "head", "options", "trace" };
@@ -117,29 +124,37 @@ public static partial class OpenApiUrlTreeNodeExtensions
                                 ((requestBody ? operation?.GetRequestSchema(structuredMimeTypes) : operation?.GetResponseSchema(structuredMimeTypes))?.GetClassName() is string requestClassName && !string.IsNullOrEmpty(requestClassName) ?
                                     requestClassName :
                                     CleanupParametersFromPath(currentNode.DeduplicatedSegment())?.ReplaceValueIdentifier()));
-        if (string.IsNullOrEmpty(rawClassName) && !string.IsNullOrEmpty(placeholder))
+        if (string.IsNullOrEmpty(rawClassName) && !string.IsNullOrEmpty(placeholder)) {
             rawClassName = placeholder;
+        }
+
         if (!string.IsNullOrEmpty(rawClassName) && string.IsNullOrEmpty(referenceName))
         {
             if (stripExtensionForIndexersTestRegex().IsMatch(rawClassName)) // {id}.json is considered as indexer
+{
                 rawClassName = stripExtensionForIndexersRegex().Replace(rawClassName, string.Empty);
+            }
+
             if ((currentNode?.DoesNodeBelongToItemSubnamespace() ?? false) && idClassNameCleanup().Replace(rawClassName, string.Empty) is string cleanedUpClassName && !cleanedUpClassName.Equals(rawClassName, StringComparison.Ordinal))
             {
                 rawClassName = cleanedUpClassName;
                 if (WithKeyword.Equals(rawClassName, StringComparison.Ordinal)) // in case the single parameter doesn't follow {classname-id} we get the previous segment
+{
                     rawClassName = currentNode.Path
                                             .Split(PathNameSeparator, StringSplitOptions.RemoveEmptyEntries)
                                             .SkipLast(1)
                                             .Last()
                                             .ToFirstCharacterUpperCase();
+                }
             }
         }
 
         var classNameSegments = rawClassName?.Split('.', StringSplitOptions.RemoveEmptyEntries).AsEnumerable() ?? Enumerable.Empty<string>();
         // only apply the exceptions if we had multiple segments.
         // Otherwise a single segment class name like `Json` will be returned as an empty string.
-        if (skipExtension && classNameSegments.Count() > 1)
+        if (skipExtension && classNameSegments.Count() > 1) {
             classNameSegments = classNameSegments.Except(SegmentsToSkipForClassNames, StringComparer.OrdinalIgnoreCase);
+        }
 
         return (prefix + segmentsReducer(classNameSegments) + suffix).CleanupSymbolName();
     }
@@ -156,13 +171,15 @@ public static partial class OpenApiUrlTreeNodeExtensions
     public static string CleanupDescription(this string? description) => string.IsNullOrEmpty(description) ? string.Empty : descriptionCleanupRegex().Replace(description, string.Empty);
     public static string GetPathItemDescription(this OpenApiUrlTreeNode currentNode, string label, string? defaultValue = default)
     {
-        if (currentNode != null && !string.IsNullOrEmpty(label) && currentNode.PathItems.TryGetValue(label, out var pathItem))
+        if (currentNode != null && !string.IsNullOrEmpty(label) && currentNode.PathItems.TryGetValue(label, out var pathItem)) {
             return ((string.IsNullOrEmpty(pathItem.Description), string.IsNullOrEmpty(pathItem.Summary)) switch
             {
                 (false, _) => pathItem.Description,
                 (_, false) => pathItem.Summary,
                 (_, _) => defaultValue,
             }).CleanupDescription();
+        }
+
         return string.IsNullOrEmpty(defaultValue) ? string.Empty : defaultValue;
     }
     public static bool DoesNodeBelongToItemSubnamespace(this OpenApiUrlTreeNode currentNode) => currentNode.IsPathSegmentWithSingleSimpleParameter();
@@ -170,7 +187,10 @@ public static partial class OpenApiUrlTreeNodeExtensions
         currentNode?.DeduplicatedSegment().IsPathSegmentWithSingleSimpleParameter() ?? false;
     internal static bool IsPathSegmentWithSingleSimpleParameter(this string currentSegment)
     {
-        if (string.IsNullOrEmpty(currentSegment)) return false;
+        if (string.IsNullOrEmpty(currentSegment)) {
+            return false;
+        }
+
         var segmentWithoutExtension = stripExtensionForIndexersRegex().Replace(currentSegment, string.Empty);
 
         return segmentWithoutExtension.StartsWith(RequestParametersChar) &&
@@ -179,7 +199,9 @@ public static partial class OpenApiUrlTreeNodeExtensions
     }
     private static bool IsPathSegmentWithNumberOfParameters(this string currentSegment, Func<IEnumerable<char>, bool> eval)
     {
-        if (string.IsNullOrEmpty(currentSegment)) return false;
+        if (string.IsNullOrEmpty(currentSegment)) {
+            return false;
+        }
 
         return eval(currentSegment.Where(static x => x == RequestParametersChar));
     }
@@ -193,8 +215,9 @@ public static partial class OpenApiUrlTreeNodeExtensions
     public static bool HasRequiredQueryParametersAcrossOperations(this OpenApiUrlTreeNode currentNode)
     {
         ArgumentNullException.ThrowIfNull(currentNode);
-        if (!currentNode.PathItems.TryGetValue(Constants.DefaultOpenApiLabel, out var pathItem))
+        if (!currentNode.PathItems.TryGetValue(Constants.DefaultOpenApiLabel, out var pathItem)) {
             return false;
+        }
 
         var operationQueryParameters = pathItem.Operations?.SelectMany(static x => x.Value.Parameters ?? Enumerable.Empty<IOpenApiParameter>()) ?? [];
         return operationQueryParameters.Union(pathItem.Parameters ?? []).Where(static x => x.In == ParameterLocation.Query)
@@ -233,8 +256,9 @@ public static partial class OpenApiUrlTreeNodeExtensions
                 if (excludeOperationSpecificRequiredQueryParameters)
                 {
                     var operationSpecificNames = GetOperationSpecificRequiredQueryParameterNames(pathItem);
-                    if (operationSpecificNames.Count > 0)
+                    if (operationSpecificNames.Count > 0) {
                         requiredParams = requiredParams.Where(x => !operationSpecificNames.Contains(x.Name!));
+                    }
                 }
                 var requiredParameters = string.Join("&", requiredParams
                                                 .Select(static x =>
@@ -272,12 +296,14 @@ public static partial class OpenApiUrlTreeNodeExtensions
     public static string GetUrlTemplateForPathItem(this OpenApiUrlTreeNode currentNode)
     {
         ArgumentNullException.ThrowIfNull(currentNode);
-        if (!currentNode.HasOperations(Constants.DefaultOpenApiLabel))
+        if (!currentNode.HasOperations(Constants.DefaultOpenApiLabel)) {
             return currentNode.GetUrlTemplate();
+        }
 
         var pathItem = currentNode.PathItems[Constants.DefaultOpenApiLabel];
-        if (pathItem.Operations is not { Count: > 0 })
+        if (pathItem.Operations is not { Count: > 0 }) {
             return currentNode.GetUrlTemplate();
+        }
 
         return currentNode.GetUrlTemplate(operationType: null, includeQueryParameters: true, includeBaseUrl: true, excludeOperationSpecificRequiredQueryParameters: true);
     }
@@ -289,13 +315,15 @@ public static partial class OpenApiUrlTreeNodeExtensions
     public static bool HasOperationSpecificRequiredQueryParameters(this OpenApiUrlTreeNode currentNode, HttpMethod operationType)
     {
         ArgumentNullException.ThrowIfNull(currentNode);
-        if (!currentNode.HasOperations(Constants.DefaultOpenApiLabel))
+        if (!currentNode.HasOperations(Constants.DefaultOpenApiLabel)) {
             return false;
+        }
 
         var pathItem = currentNode.PathItems[Constants.DefaultOpenApiLabel];
         var operationSpecificRequiredNames = GetOperationSpecificRequiredQueryParameterNames(pathItem);
-        if (operationSpecificRequiredNames.Count == 0)
+        if (operationSpecificRequiredNames.Count == 0) {
             return false;
+        }
 
         var operationParams = pathItem.GetParameters(operationType);
         return operationParams.Any(p => p.Required && operationSpecificRequiredNames.Contains(p.Name!));
@@ -306,8 +334,9 @@ public static partial class OpenApiUrlTreeNodeExtensions
     /// </summary>
     private static HashSet<string> GetOperationSpecificRequiredQueryParameterNames(IOpenApiPathItem pathItem)
     {
-        if (pathItem.Operations is not { Count: > 0 })
+        if (pathItem.Operations is not { Count: > 0 }) {
             return [];
+        }
 
         // Path-item-level required query parameters are always common
         var pathItemRequiredNames = (pathItem.Parameters ?? Enumerable.Empty<IOpenApiParameter>())
@@ -364,7 +393,10 @@ public static partial class OpenApiUrlTreeNodeExtensions
     private static partial Regex pathParamMatcher();
     private static string SanitizePathParameterNamesForUrlTemplate(string original, HashSet<string> reservedParameterNames)
     {
-        if (string.IsNullOrEmpty(original) || !original.Contains('{', StringComparison.OrdinalIgnoreCase)) return original;
+        if (string.IsNullOrEmpty(original) || !original.Contains('{', StringComparison.OrdinalIgnoreCase)) {
+            return original;
+        }
+
         var updated = original;
         foreach (var match in pathParamMatcher().EnumerateMatches(original))
         {
@@ -375,7 +407,10 @@ public static partial class OpenApiUrlTreeNodeExtensions
     }
     public static string SanitizeParameterNameForUrlTemplate(this string original)
     {
-        if (string.IsNullOrEmpty(original)) return original;
+        if (string.IsNullOrEmpty(original)) {
+            return original;
+        }
+
         return Uri.EscapeDataString(stripExtensionForIndexersRegex()
                                         .Replace(original, string.Empty) // {param-name}.json becomes {param-name}
                                 .TrimStart('{')
@@ -386,7 +421,10 @@ public static partial class OpenApiUrlTreeNodeExtensions
     }
     public static string DeSanitizeUrlTemplateParameter(this string original)
     {
-        if (string.IsNullOrEmpty(original)) return original;
+        if (string.IsNullOrEmpty(original)) {
+            return original;
+        }
+
         return Uri.UnescapeDataString(original.Replace("%2D", "-", StringComparison.OrdinalIgnoreCase)
                     .Replace("%2E", ".", StringComparison.OrdinalIgnoreCase)
                     .Replace("%7E", "~", StringComparison.OrdinalIgnoreCase));
@@ -395,15 +433,23 @@ public static partial class OpenApiUrlTreeNodeExtensions
     private static partial Regex removePctEncodedCharacters();
     public static string SanitizeParameterNameForCodeSymbols(this string original, string replaceEncodedCharactersWith = "")
     {
-        if (string.IsNullOrEmpty(original)) return original;
+        if (string.IsNullOrEmpty(original)) {
+            return original;
+        }
+
         return removePctEncodedCharacters().Replace(original.ToOriginalCamelCase('-', '.', '~').SanitizeParameterNameForUrlTemplate(), replaceEncodedCharactersWith);
     }
     private const string DeduplicatedSegmentKey = "x-ms-kiota-deduplicatedSegment";
     public static string DeduplicatedSegment(this OpenApiUrlTreeNode currentNode)
     {
-        if (currentNode is null) return string.Empty;
-        if (currentNode.AdditionalData.TryGetValue(DeduplicatedSegmentKey, out var deduplicatedSegment) && deduplicatedSegment.FirstOrDefault() is string deduplicatedSegmentString)
+        if (currentNode is null) {
+            return string.Empty;
+        }
+
+        if (currentNode.AdditionalData.TryGetValue(DeduplicatedSegmentKey, out var deduplicatedSegment) && deduplicatedSegment.FirstOrDefault() is string deduplicatedSegmentString) {
             return deduplicatedSegmentString;
+        }
+
         return currentNode.Segment;
     }
     public static void AddDeduplicatedSegment(this OpenApiUrlTreeNode openApiUrlTreeNode, string newName)
@@ -438,13 +484,16 @@ public static partial class OpenApiUrlTreeNodeExtensions
             ReplaceParameterInPathForAllChildNodes(indexNode.Value, segmentIndex, newSegmentParameterName);
         }
 
-        foreach (var child in node.Children.Values)
+        foreach (var child in node.Children.Values) {
             MergeIndexNodesAtSameLevel(child, logger);
+        }
     }
     private static void ReplaceParameterInPathForAllChildNodes(OpenApiUrlTreeNode node, int parameterIndex, string newParameterName)
     {
-        if (parameterIndex < 0)
+        if (parameterIndex < 0) {
             return;
+        }
+
         foreach (var child in node.Children.Values)
         {
             var splatPath = child.Path.Split('\\', StringSplitOptions.RemoveEmptyEntries);
@@ -481,8 +530,9 @@ public static partial class OpenApiUrlTreeNodeExtensions
         foreach (var child in source.Children)
         {
             child.Value.Path = child.Value.Path.Replace(pathParameterNameToReplace, pathParameterNameReplacement, StringComparison.OrdinalIgnoreCase);
-            if (!destination.Children.TryAdd(child.Key, child.Value))
+            if (!destination.Children.TryAdd(child.Key, child.Value)) {
                 CopyNodeIntoOtherNode(child.Value, destination.Children[child.Key], pathParameterNameToReplace, pathParameterNameReplacement, logger);
+            }
         }
         pathParameterNameToReplace = pathParameterNameToReplace.Trim('{', '}');
         pathParameterNameReplacement = pathParameterNameReplacement.Trim('{', '}');

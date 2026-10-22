@@ -26,8 +26,10 @@ public class LanguagesInformation : Dictionary<string, LanguageInformation>, IOp
     public object Clone()
     {
         var result = new LanguagesInformation();
-        foreach (var entry in this)
+        foreach (var entry in this) {
             result.Add(entry.Key, entry.Value);// records don't need to be cloned as they are immutable
+        }
+
         return result;
     }
 

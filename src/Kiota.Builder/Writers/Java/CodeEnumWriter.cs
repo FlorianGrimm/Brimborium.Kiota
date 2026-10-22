@@ -12,8 +12,10 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, JavaConventionService>
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
         var enumOptions = codeElement.Options.ToArray();
-        if (enumOptions.Length == 0)
+        if (enumOptions.Length == 0) {
             return;
+        }
+
         var enumName = codeElement.Name;
         writer.WriteLines($"package {(codeElement.Parent as CodeNamespace)?.Name};",
             string.Empty,

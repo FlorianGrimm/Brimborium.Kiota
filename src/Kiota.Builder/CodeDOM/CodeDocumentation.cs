@@ -16,8 +16,9 @@ public class CodeDocumentation : ICloneable
     /// <param name="typeReferences">The references used by the description</param>
     public CodeDocumentation(Dictionary<string, CodeTypeBase>? typeReferences = null)
     {
-        if (typeReferences is not null)
+        if (typeReferences is not null) {
             TypeReferences = new(typeReferences, StringComparer.OrdinalIgnoreCase);
+        }
     }
     /// <summary>
     /// The description of the current element.
@@ -64,10 +65,12 @@ public class CodeDocumentation : ICloneable
     internal static string GetDescriptionInternal(string descriptionTemplate, Func<CodeTypeBase, string> typeReferenceResolver, IDictionary<string, CodeTypeBase>? typeReferences = null, string? typeReferencePrefix = null, string? typeReferenceSuffix = null, Func<string, string>? normalizationFunc = null)
     {
         ArgumentNullException.ThrowIfNull(typeReferenceResolver);
-        if (string.IsNullOrEmpty(descriptionTemplate))
+        if (string.IsNullOrEmpty(descriptionTemplate)) {
             return string.Empty;
+        }
+
         var description = normalizationFunc is null ? descriptionTemplate : normalizationFunc(descriptionTemplate);
-        if (typeReferences is not null)
+        if (typeReferences is not null) {
             foreach (var (key, value) in typeReferences)
             {
                 var resolvedValue = value switch
@@ -76,9 +79,12 @@ public class CodeDocumentation : ICloneable
                                                                         s : typeReferenceResolver(value),
                     _ => $"{typeReferencePrefix}{typeReferenceResolver(value)}{typeReferenceSuffix}",
                 };
-                if (!string.IsNullOrEmpty(resolvedValue))
+                if (!string.IsNullOrEmpty(resolvedValue)) {
                     description = description.Replace($"{{{key}}}", resolvedValue, StringComparison.OrdinalIgnoreCase);
+                }
             }
+        }
+
         return description;
     }
     public bool DescriptionAvailable

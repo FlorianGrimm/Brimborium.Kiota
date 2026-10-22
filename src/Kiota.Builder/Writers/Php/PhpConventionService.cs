@@ -49,8 +49,10 @@ public class PhpConventionService : CommonLanguageConventionService
     internal readonly HashSet<string> CustomTypes = new(StringComparer.OrdinalIgnoreCase) { "Date", "DateTime", "StreamInterface", "Byte", "Time" };
     public override string GetTypeString(CodeTypeBase code, CodeElement targetElement, bool includeCollectionInformation = true, LanguageWriter? writer = null)
     {
-        if (code is CodeComposedTypeBase)
+        if (code is CodeComposedTypeBase) {
             throw new InvalidOperationException($"PHP does not support union types, the union type {code.Name} should have been filtered out by the refiner.");
+        }
+
         if (code is CodeType currentType)
         {
             if (includeCollectionInformation && code.IsCollection)
@@ -145,8 +147,13 @@ public class PhpConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
 
@@ -161,8 +168,14 @@ public class PhpConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (element.Documentation is not { } documentation) return;
-        if (element is not CodeElement codeElement) return;
+        if (element.Documentation is not { } documentation) {
+            return;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return;
+        }
+
         additionalRemarks ??= [];
 
         var enumerableArray = additionalRemarks as string[] ?? additionalRemarks.ToArray();
@@ -175,8 +188,9 @@ public class PhpConventionService : CommonLanguageConventionService
                 var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
                 writer.WriteLine($"{DocCommentPrefix}{description}");
             }
-            foreach (var additionalRemark in enumerableArray.Where(static x => !string.IsNullOrEmpty(x)))
+            foreach (var additionalRemark in enumerableArray.Where(static x => !string.IsNullOrEmpty(x))) {
                 writer.WriteLine($"{DocCommentPrefix}{additionalRemark}");
+            }
 
             if (documentation.ExternalDocumentationAvailable)
             {
@@ -262,24 +276,31 @@ public class PhpConventionService : CommonLanguageConventionService
         var urlTemplateParams = string.IsNullOrEmpty(urlTemplateVarName) && parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty ?
             $"$this->{pathParametersProperty.Name}" :
             urlTemplateVarName;
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty)
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty) {
             writer.WriteLines($"return new {returnType}(${urlTemplateParams}, $this->{requestAdapterProperty.Name}{codePathParametersSuffix});");
+        }
     }
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase pathParametersType, string pathParametersReference, params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         writer.WriteLine($"${TempDictionaryVarName} = {pathParametersReference};");
-        if (parameters.Length != 0)
+        if (parameters.Length != 0) {
             writer.WriteLines(parameters.Select(p =>
                 $"${TempDictionaryVarName}['{p.Item2.SanitizeSingleQuote()}'] = {p.Item3};"
             ));
+        }
     }
 
     private static bool IsSymbolDuplicated(string symbol, CodeElement targetElement)
     {
         var targetClass = targetElement?.GetImmediateParentOfType<CodeClass>();
-        if (targetClass?.Parent is CodeClass parentClass)
+        if (targetClass?.Parent is CodeClass parentClass) {
             targetClass = parentClass;
+        }
+
         return targetClass?.StartBlock
             ?.Usings
             ?.Where(x => !x.IsExternal && symbol.Equals(x.Declaration?.TypeDefinition?.Name, StringComparison.OrdinalIgnoreCase))

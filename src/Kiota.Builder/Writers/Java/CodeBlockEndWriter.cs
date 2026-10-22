@@ -9,7 +9,10 @@ public class CodeBlockEndWriter : ICodeElementWriter<BlockEnd>
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(codeElement);
-        if (codeElement.Parent is CodeNamespace || codeElement.Parent is CodeEnum) return;
+        if (codeElement.Parent is CodeNamespace || codeElement.Parent is CodeEnum) {
+            return;
+        }
+
         writer.CloseBlock();
     }
 }

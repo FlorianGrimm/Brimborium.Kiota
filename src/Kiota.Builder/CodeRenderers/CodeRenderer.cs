@@ -33,15 +33,19 @@ public class CodeRenderer
         var sw = new StreamWriter(stream);
         writer.SetTextWriter(sw);
         RenderCode(writer, codeElement);
-        if (!cancellationToken.IsCancellationRequested)
+        if (!cancellationToken.IsCancellationRequested) {
             await sw.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
     // We created barrels for code namespaces. Skipping for empty namespaces, ones created for users, and ones with same namespace as class name.
     public async Task RenderCodeNamespaceToFilePerClassAsync(LanguageWriter writer, CodeNamespace currentNamespace, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(currentNamespace);
-        if (cancellationToken.IsCancellationRequested) return;
+        if (cancellationToken.IsCancellationRequested) {
+            return;
+        }
+
         foreach (var codeElement in currentNamespace.GetChildElements(true))
         {
             switch (codeElement)
@@ -51,8 +55,10 @@ public class CodeRenderer
                 case CodeFunction:
                 case CodeInterface:
                 case CodeFile:
-                    if (writer.PathSegmenter?.GetPath(currentNamespace, codeElement) is string path)
+                    if (writer.PathSegmenter?.GetPath(currentNamespace, codeElement) is string path) {
                         await RenderCodeNamespaceToSingleFileAsync(writer, codeElement, path, cancellationToken).ConfigureAwait(false);
+                    }
+
                     break;
                 case CodeNamespace codeNamespace:
                     await RenderBarrelAsync(writer, currentNamespace, codeNamespace, cancellationToken).ConfigureAwait(false);
@@ -81,18 +87,20 @@ public class CodeRenderer
     private void RenderCode(LanguageWriter writer, CodeElement element)
     {
         writer.Write(element);
-        if (element is not CodeNamespace)
+        if (element is not CodeNamespace) {
             foreach (var childElement in element.GetChildElements()
                                                 .Order(_rendererElementComparer))
             {
                 RenderCode(writer, childElement);
             }
-
+        }
     }
 
     public virtual bool ShouldRenderNamespaceFile(CodeNamespace codeNamespace)
     {
-        if (codeNamespace is null) return false;
+        if (codeNamespace is null) {
+            return false;
+        }
         // if the module already has a class with the same name, it's going to be declared automatically
         var namespaceNameLastSegment = codeNamespace.Name.Split('.')[^1];
         return Configuration.ShouldWriteBarrelsIfClassExists || codeNamespace.FindChildByName<CodeClass>(namespaceNameLastSegment, false) == null;

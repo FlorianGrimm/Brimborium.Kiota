@@ -19,7 +19,10 @@ public class CodeEnum : CodeBlock<BlockDeclaration, BlockEnd>, IDocumentedElemen
 
     public void AddOption(params CodeEnumOption[] codeEnumOptions)
     {
-        if (codeEnumOptions is null) return;
+        if (codeEnumOptions is null) {
+            return;
+        }
+
         var result = AddRange(codeEnumOptions);
         foreach (var option in result.Distinct())
         {

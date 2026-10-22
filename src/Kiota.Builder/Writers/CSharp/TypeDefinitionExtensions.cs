@@ -17,8 +17,9 @@ internal static class TypeDefinitionExtensions
 
     private static StringBuilder AppendTypeName(ITypeDefinition typeDefinition, StringBuilder fullNameBuilder)
     {
-        if (string.IsNullOrEmpty(typeDefinition.Name))
+        if (string.IsNullOrEmpty(typeDefinition.Name)) {
             throw new ArgumentException("Cannot append a full name for a type without a name.", nameof(typeDefinition));
+        }
 
         fullNameBuilder.Insert(0, typeDefinition.Name.ToFirstCharacterUpperCase());
         switch (typeDefinition.Parent)
@@ -32,8 +33,9 @@ internal static class TypeDefinitionExtensions
                 }
             case CodeNamespace codeNamespace:
                 {
-                    if (!string.IsNullOrEmpty(codeNamespace.Name))
+                    if (!string.IsNullOrEmpty(codeNamespace.Name)) {
                         fullNameBuilder.Insert(0, $"global::{codeNamespace.Name}.");
+                    }
 
                     return fullNameBuilder;
                 }

@@ -11,7 +11,10 @@ public class CodeBlockEndWriter : BaseElementWriter<BlockEnd, RubyConventionServ
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is CodeEnum) return;
+        if (codeElement.Parent is CodeEnum) {
+            return;
+        }
+
         writer.CloseBlock(End);
         if (codeElement?.Parent is CodeClass codeClass && codeClass.Parent is CodeNamespace ns)
         {

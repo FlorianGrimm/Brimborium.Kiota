@@ -52,7 +52,7 @@ internal partial class OpenApiDocumentDownloadService
             input = descriptionStream;
             isDescriptionFromWorkspaceCopy = true;
         }
-        else if (inputPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        else if (inputPath.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
             try
             {
                 var cachingProvider = new DocumentCachingProvider(HttpClient, Logger)
@@ -68,7 +68,7 @@ internal partial class OpenApiDocumentDownloadService
             {
                 throw new InvalidOperationException($"Could not download the file at {inputPath}, reason: {ex.Message}", ex);
             }
-        else
+        } else {
             try
             {
                 var inMemoryStream = new MemoryStream();
@@ -91,6 +91,8 @@ internal partial class OpenApiDocumentDownloadService
             {
                 throw new InvalidOperationException($"Could not open the file at {inputPath}, reason: {ex.Message}", ex);
             }
+        }
+
         stopwatch.Stop();
         LogReadOpenApiFile(stopwatch.ElapsedMilliseconds, inputPath);
         return (input, isDescriptionFromWorkspaceCopy);
@@ -105,31 +107,37 @@ internal partial class OpenApiDocumentDownloadService
                     ValidationRuleSet.GetEmptyRuleSet() :
                     ValidationRuleSet.GetDefaultRuleSet(); //workaround since validation rule set doesn't support clearing rules
         bool generatingMode = generating || config.IncludeKiotaValidationRules == true;
-        if (generatingMode)
+        if (generatingMode) {
             ruleSet.AddKiotaValidationRules(config);
+        }
+
         var settings = new OpenApiReaderSettings
         {
             RuleSet = ruleSet,
             LoadExternalRefs = true,
             LeaveStreamOpen = true,
         };
-        if (!config.AllowedExternalOrigins.Contains("*"))
+        if (!config.AllowedExternalOrigins.Contains("*")) {
             settings.CustomExternalLoader = new AllowedExternalOriginsStreamLoader(HttpClient, config.AllowedExternalOrigins);
+        }
 
         // Add all extensions for generation
         settings.AddGenerationExtensions();
         settings.AddYamlReader();
         // Add plugins extensions to parse from the OpenAPI file
         bool addPluginsExtensions = config.IsPluginConfiguration || config.IncludePluginExtensions == true;
-        if (addPluginsExtensions)
+        if (addPluginsExtensions) {
             settings.AddPluginsExtensions();// Add all extensions for plugins
+        }
 
         try
         {
             var rawUri = config.OpenAPIFilePath.TrimEnd(KiotaBuilder.ForwardSlash);
             var lastSlashIndex = rawUri.LastIndexOf(KiotaBuilder.ForwardSlash);
-            if (lastSlashIndex < 0)
+            if (lastSlashIndex < 0) {
                 lastSlashIndex = rawUri.Length - 1;
+            }
+
             var documentUri = new Uri(rawUri[..lastSlashIndex]);
             settings.BaseUrl = documentUri;
         }
@@ -151,9 +159,12 @@ internal partial class OpenApiDocumentDownloadService
             throw;
         }
         stopwatch.Stop();
-        if (generatingMode && readResult.Diagnostic?.Warnings is { Count: > 0 })
-            foreach (var warning in readResult.Diagnostic.Warnings)
+        if (generatingMode && readResult.Diagnostic?.Warnings is { Count: > 0 }) {
+            foreach (var warning in readResult.Diagnostic.Warnings) {
                 LogOpenApiWarning(warning.Pointer, warning.Message);
+            }
+        }
+
         if (readResult.Diagnostic?.Errors is { Count: > 0 })
         {
             LogParsedOpenApiWithErrors(stopwatch.ElapsedMilliseconds, readResult.Document?.Paths?.Count ?? 0);

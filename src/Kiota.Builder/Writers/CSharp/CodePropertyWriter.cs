@@ -11,7 +11,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, CSharpConventi
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.ExistsInExternalBaseType) return;
+        if (codeElement.ExistsInExternalBaseType) {
+            return;
+        }
+
         var propertyType = conventions.GetTypeString(codeElement.Type, codeElement);
         var isNullableReferenceType = !propertyType.EndsWith('?')
                                       && codeElement.IsOfKind(
@@ -39,7 +42,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, CSharpConventi
 
     private void WritePropertyInternal(CodeProperty codeElement, LanguageWriter writer, string propertyType)
     {
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException("The parent of a property should be a class");
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException("The parent of a property should be a class");
+        }
+
         var backingStoreProperty = parentClass.GetBackingStoreProperty();
         var setterAccessModifier = codeElement.ReadOnly && codeElement.Access > AccessModifier.Private ? "private " : string.Empty;
         var simpleBody = $"get; {setterAccessModifier}set;";
@@ -72,10 +78,12 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, CSharpConventi
                 writer.WriteLine($"public {propertyType}? GetAdditionalData() => _{propertyName};");
                 break;
             case CodePropertyKind.ErrorMessageOverride when parentClass.IsErrorDefinition:
-                if (parentClass.GetPrimaryMessageCodePath(static x => x.Name.ToFirstCharacterUpperCase(), static x => x.Name.ToFirstCharacterUpperCase(), "?.") is string primaryMessageCodePath && !string.IsNullOrEmpty(primaryMessageCodePath))
+                if (parentClass.GetPrimaryMessageCodePath(static x => x.Name.ToFirstCharacterUpperCase(), static x => x.Name.ToFirstCharacterUpperCase(), "?.") is string primaryMessageCodePath && !string.IsNullOrEmpty(primaryMessageCodePath)) {
                     writer.WriteLine($"public override {propertyType} {codeElement.Name.ToFirstCharacterUpperCase()} {{ get => {primaryMessageCodePath} ?? string.Empty; }}");
-                else
+                } else {
                     writer.WriteLine($"public override {propertyType} {codeElement.Name.ToFirstCharacterUpperCase()} {{ get => base.Message; }}");
+                }
+
                 break;
             case CodePropertyKind.QueryParameter when codeElement.IsNameEscaped:
                 writer.WriteLine($"[QueryParameter(\"{codeElement.SerializationName.SanitizeDoubleQuote()}\")]");

@@ -17,7 +17,9 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, CS
     public override void WriteCodeElement(ClassDeclaration codeElement, LanguageWriter writer) {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException($"The provided code element {codeElement.Name} doesn't have a parent of type {nameof(CodeClass)}");
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException($"The provided code element {codeElement.Name} doesn't have a parent of type {nameof(CodeClass)}");
+        }
 
         if (codeElement.Parent?.Parent is CodeNamespace) {
             writer.WriteLine(AutoGenerationHeader);
@@ -44,9 +46,15 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, CS
         bool hasDescription = conventions.WriteLongDescription(parentClass, writer);
         conventions.WriteDeprecationAttribute(parentClass, writer);
         writer.WriteLine(GeneratedCodeAttribute);
-        if (!hasDescription) conventions.WritePragmaDisable(writer, CSharpConventionService.CS1591);
+        if (!hasDescription) {
+            conventions.WritePragmaDisable(writer, CSharpConventionService.CS1591);
+        }
+
         writer.WriteLine($"{conventions.GetAccessModifier(parentClass.Access)} partial class {codeElement.Name.ToFirstCharacterUpperCase()} {derivation}");
-        if (!hasDescription) conventions.WritePragmaRestore(writer, CSharpConventionService.CS1591);
+        if (!hasDescription) {
+            conventions.WritePragmaRestore(writer, CSharpConventionService.CS1591);
+        }
+
         writer.StartBlock();
     }
 }

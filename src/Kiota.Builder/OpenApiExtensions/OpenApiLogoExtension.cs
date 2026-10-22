@@ -17,7 +17,10 @@ public class OpenApiLogoExtension : IOpenApiExtension
     }
     public static OpenApiLogoExtension Parse(JsonNode source)
     {
-        if (source is not JsonObject rawObject) throw new ArgumentOutOfRangeException(nameof(source));
+        if (source is not JsonObject rawObject) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         var extension = new OpenApiLogoExtension();
         if (rawObject.TryGetPropertyValue(nameof(Url).ToFirstCharacterLowerCase(), out var url) && url is JsonValue urlValue && urlValue.GetValueKind() is JsonValueKind.String && urlValue.TryGetValue<string>(out var urlStrValue))
         {

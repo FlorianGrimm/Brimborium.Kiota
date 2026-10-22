@@ -19,8 +19,13 @@ public class HttpConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
         writer.WriteLine($"{DocCommentPrefix} {prefix}{description}{prefix}");
@@ -50,11 +55,14 @@ public class HttpConventionService : CommonLanguageConventionService
             var nullableSuffix = code.IsNullable ? NullableMarkerAsString : string.Empty;
             var collectionPrefix = currentType.IsCollection && includeCollectionInformation ? "[" : string.Empty;
             var collectionSuffix = currentType.IsCollection && includeCollectionInformation ? $"]{nullableSuffix}" : string.Empty;
-            if (currentType.IsCollection && !string.IsNullOrEmpty(nullableSuffix))
+            if (currentType.IsCollection && !string.IsNullOrEmpty(nullableSuffix)) {
                 nullableSuffix = string.Empty;
+            }
 
-            if (currentType.ActionOf)
+            if (currentType.ActionOf) {
                 return $"({collectionPrefix}{typeName}{nullableSuffix}{collectionSuffix}>) -> Void";
+            }
+
             return $"{collectionPrefix}{typeName}{nullableSuffix}{collectionSuffix}";
         }
 

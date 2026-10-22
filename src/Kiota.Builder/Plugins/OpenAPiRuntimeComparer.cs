@@ -31,7 +31,10 @@ internal class OpenAPIRuntimeComparer : IEqualityComparer<OpenApiRuntime>
     public bool Equals(OpenApiRuntime? x, OpenApiRuntime? y)
     {
         // Unit tests check for this
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
         bool functionsEqual = !EvaluateFunctions || _stringIEnumerableDeepComparer.Equals(x.RunForFunctions, y.RunForFunctions);
         return functionsEqual && _openApiRuntimeSpecComparer.Equals(x.Spec, y.Spec) && _authComparer.Equals(x.Auth, y.Auth);
     }
@@ -39,8 +42,14 @@ internal class OpenAPIRuntimeComparer : IEqualityComparer<OpenApiRuntime>
     public int GetHashCode([DisallowNull] OpenApiRuntime obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
-        if (EvaluateFunctions) hash.Add(obj.RunForFunctions, _stringIEnumerableDeepComparer);
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
+        if (EvaluateFunctions) {
+            hash.Add(obj.RunForFunctions, _stringIEnumerableDeepComparer);
+        }
+
         hash.Add(obj.Spec, _openApiRuntimeSpecComparer);
         hash.Add(obj.Auth, _authComparer);
         return hash.ToHashCode();

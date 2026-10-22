@@ -70,7 +70,9 @@ internal static class GoFieldFormatter
             var isField = content.Length > 0 && !content.StartsWith("//", StringComparison.Ordinal);
             if (isField)
             {
-                if (groupStart < 0) groupStart = i;
+                if (groupStart < 0) {
+                    groupStart = i;
+                }
             }
             else if (groupStart >= 0)
             {
@@ -78,14 +80,19 @@ internal static class GoFieldFormatter
                 groupStart = -1;
             }
         }
-        if (groupStart >= 0)
+        if (groupStart >= 0) {
             AlignFieldGroup(result, groupStart, result.Count - 1);
+        }
+
         return result;
     }
 
     private static void AlignFieldGroup(List<string> lines, int start, int end)
     {
-        if (end <= start) return; // a single field never needs alignment
+        if (end <= start) {
+            return; // a single field never needs alignment
+        }
+
         var indents = new string[end - start + 1];
         var rows = new List<string[]>(end - start + 1);
         for (var i = start; i <= end; i++)
@@ -98,9 +105,11 @@ internal static class GoFieldFormatter
         // tabwriter only pads a cell when another cell follows it on the same row; the width of a
         // column is the widest such cell across the group
         var columnWidths = new Dictionary<int, int>();
-        foreach (var cells in rows)
-            for (var c = 0; c < cells.Length - 1; c++)
+        foreach (var cells in rows) {
+            for (var c = 0; c < cells.Length - 1; c++) {
                 columnWidths[c] = Math.Max(columnWidths.GetValueOrDefault(c), cells[c].Length);
+            }
+        }
 
         for (var i = 0; i < rows.Count; i++)
         {
@@ -109,9 +118,10 @@ internal static class GoFieldFormatter
             for (var c = 0; c < cells.Length; c++)
             {
                 builder.Append(cells[c]);
-                if (c < cells.Length - 1)
+                if (c < cells.Length - 1) {
                     // pad to the column width plus the single space gofmt keeps between columns
                     builder.Append(' ', columnWidths[c] - cells[c].Length + 1);
+                }
             }
             lines[start + i] = builder.ToString();
         }
@@ -125,11 +135,17 @@ internal static class GoFieldFormatter
     private static string[] SplitFieldCells(string field)
     {
         var firstSpace = field.IndexOf(' ', StringComparison.Ordinal);
-        if (firstSpace < 0) return [field];
+        if (firstSpace < 0) {
+            return [field];
+        }
+
         var name = field[..firstSpace];
         var rest = field[(firstSpace + 1)..].TrimStart();
         var secondSpace = rest.IndexOf(' ', StringComparison.Ordinal);
-        if (secondSpace < 0) return [name, rest];
+        if (secondSpace < 0) {
+            return [name, rest];
+        }
+
         return [name, rest[..secondSpace], rest[(secondSpace + 1)..].TrimStart()];
     }
 }

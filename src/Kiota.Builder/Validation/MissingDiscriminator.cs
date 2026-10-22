@@ -14,11 +14,13 @@ public class MissingDiscriminator : ValidationRule<OpenApiDocument>
     {
         var idx = new ConcurrentDictionary<string, ConcurrentDictionary<string, bool>>(StringComparer.OrdinalIgnoreCase);
         document.InitializeInheritanceIndex(idx);
-        if (document.Components is { Schemas.Count: > 0 })
+        if (document.Components is { Schemas.Count: > 0 }) {
             Parallel.ForEach(document.Components.Schemas, entry =>
             {
                 ValidateSchema(entry.Value, context, idx, entry.Key);
             });
+        }
+
         var inlineSchemasToValidate = document.Paths
                                         ?.Where(static x => x.Value.Operations is not null)
                                         .SelectMany(static x => x.Value.Operations!.Values.Select(y => (x.Key, Operation: y)))
@@ -34,12 +36,17 @@ public class MissingDiscriminator : ValidationRule<OpenApiDocument>
     }
     private static void ValidateSchema(IOpenApiSchema schema, IValidationContext context, ConcurrentDictionary<string, ConcurrentDictionary<string, bool>> idx, string address)
     {
-        if (!schema.IsInclusiveUnion() && !schema.IsExclusiveUnion())
+        if (!schema.IsInclusiveUnion() && !schema.IsExclusiveUnion()) {
             return;
+        }
+
         if ((schema.AnyOf is null || schema.AnyOf.All(static x => !x.IsObjectType())) &&
-            (schema.OneOf is null || schema.OneOf.All(static x => !x.IsObjectType())))
+            (schema.OneOf is null || schema.OneOf.All(static x => !x.IsObjectType()))) {
             return;
-        if (string.IsNullOrEmpty(schema.GetDiscriminatorPropertyName()) || !schema.GetDiscriminatorMappings(idx).Any())
+        }
+
+        if (string.IsNullOrEmpty(schema.GetDiscriminatorPropertyName()) || !schema.GetDiscriminatorMappings(idx).Any()) {
             context.CreateWarning(nameof(MissingDiscriminator), $"The schema {address} is a polymorphic type but does not define a discriminator. This will result in serialization errors.");
+        }
     }
 }

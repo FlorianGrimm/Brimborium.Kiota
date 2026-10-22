@@ -7,8 +7,10 @@ public record DeprecationInformation(string? DescriptionTemplate, DateTimeOffset
 {
     public string GetDescription(Func<CodeTypeBase, string> typeReferenceResolver, string? typeReferencePrefix = null, string? typeReferenceSuffix = null, Func<string, string>? normalizationFunc = null)
     {
-        if (DescriptionTemplate is null)
+        if (DescriptionTemplate is null) {
             return string.Empty;
+        }
+
         return CodeDocumentation.GetDescriptionInternal(DescriptionTemplate, typeReferenceResolver, TypeReferences, typeReferencePrefix, typeReferenceSuffix, normalizationFunc);
     }
 };

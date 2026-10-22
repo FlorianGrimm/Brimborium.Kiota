@@ -35,11 +35,13 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
         var file = FindChildByName<CodeFile>(fileName, false) ?? new CodeFile { Name = fileName };
         RemoveChildElement(children);
         RemoveChildElementByName(fileName);
-        if (children is { Length: > 0 })
+        if (children is { Length: > 0 }) {
             file.AddElements(children);
+        }
 
-        if (!file.IsChildOf(this, true))
+        if (!file.IsChildOf(this, true)) {
             AddRange(file);
+        }
 
         return file;
     }
@@ -47,22 +49,31 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
     public bool IsParentOf(CodeNamespace childNamespace)
     {
         ArgumentNullException.ThrowIfNull(childNamespace);
-        if (this == childNamespace)
+        if (this == childNamespace) {
             return false;
+        }
+
         return childNamespace.Name.StartsWith(Name + ".", StringComparison.OrdinalIgnoreCase);
     }
     public IEnumerable<CodeClass> AddClass(params CodeClass[] codeClasses)
     {
-        if (codeClasses == null || Array.Exists(codeClasses, static x => x == null))
+        if (codeClasses == null || Array.Exists(codeClasses, static x => x == null)) {
             throw new ArgumentNullException(nameof(codeClasses));
-        if (codeClasses.Length == 0)
+        }
+
+        if (codeClasses.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(codeClasses));
+        }
+
         return AddRange(codeClasses);
     }
     private const char NamespaceNameSeparator = '.';
     public CodeNamespace GetRootNamespace()
     {
-        if (Parent is CodeNamespace parentNS) return parentNS.GetRootNamespace();
+        if (Parent is CodeNamespace parentNS) {
+            return parentNS.GetRootNamespace();
+        }
+
         return this;
     }
     public IEnumerable<CodeNamespace> Namespaces => InnerChildElements.Values.OfType<CodeNamespace>();
@@ -75,15 +86,21 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
     public CodeNamespace? FindNamespaceByName(string nsName, bool findInChildElements = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(nsName);
-        if (nsName.Equals(Name, StringComparison.OrdinalIgnoreCase)) return this;
+        if (nsName.Equals(Name, StringComparison.OrdinalIgnoreCase)) {
+            return this;
+        }
+
         var result = FindChildByName<CodeNamespace>(nsName, findInChildElements);
-        if (result == null)
+        if (result == null) {
             foreach (var childNS in InnerChildElements.Values.OfType<CodeNamespace>())
             {
                 result = childNS.FindNamespaceByName(nsName);
-                if (result != null)
+                if (result != null) {
                     break;
+                }
             }
+        }
+
         return result;
     }
     public CodeNamespace FindOrAddNamespace(string nsName) => FindNamespaceByName(nsName) ?? AddNamespace(nsName);
@@ -96,13 +113,15 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
         while (lastPresentSegmentIndex < namespaceNameSegments.Length)
         {
             var segmentNameSpace = lastPresentSegmentNamespace.FindNamespaceByName(namespaceNameSegments.Take(lastPresentSegmentIndex + 1).Aggregate(static (x, y) => $"{x}.{y}"));
-            if (segmentNameSpace is not null)
+            if (segmentNameSpace is not null) {
                 lastPresentSegmentNamespace = segmentNameSpace;
-            else
+            } else {
                 break;
+            }
+
             lastPresentSegmentIndex++;
         }
-        foreach (var childSegment in namespaceNameSegments.Skip(lastPresentSegmentIndex))
+        foreach (var childSegment in namespaceNameSegments.Skip(lastPresentSegmentIndex)) {
             lastPresentSegmentNamespace = lastPresentSegmentNamespace
                                         .AddRange(
                                             new CodeNamespace
@@ -111,6 +130,8 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
                                                 Parent = lastPresentSegmentNamespace,
                                                 IsItemNamespace = childSegment.Equals(ItemNamespaceName, StringComparison.OrdinalIgnoreCase)
                                             }).First();
+        }
+
         return lastPresentSegmentNamespace;
     }
     private const string ItemNamespaceName = "item";
@@ -120,9 +141,14 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
     }
     public CodeNamespace EnsureItemNamespace()
     {
-        if (IsItemNamespace) return this;
-        if (string.IsNullOrEmpty(Name))
+        if (IsItemNamespace) {
+            return this;
+        }
+
+        if (string.IsNullOrEmpty(Name)) {
             throw new InvalidOperationException("adding an item namespace at the root is not supported");
+        }
+
         var childNamespace = InnerChildElements.Values.OfType<CodeNamespace>().FirstOrDefault(x => x.IsItemNamespace);
         if (childNamespace == null)
         {
@@ -133,35 +159,50 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
     }
     public IEnumerable<CodeEnum> AddEnum(params CodeEnum[] enumDeclarations)
     {
-        if (enumDeclarations == null || Array.Exists(enumDeclarations, static x => x == null))
+        if (enumDeclarations == null || Array.Exists(enumDeclarations, static x => x == null)) {
             throw new ArgumentNullException(nameof(enumDeclarations));
-        if (enumDeclarations.Length == 0)
+        }
+
+        if (enumDeclarations.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(enumDeclarations));
+        }
+
         return AddRange(enumDeclarations);
     }
     public int Depth
     {
         get
         {
-            if (Parent is CodeNamespace n) return n.Depth + 1;
+            if (Parent is CodeNamespace n) {
+                return n.Depth + 1;
+            }
+
             return 0;
         }
     }
 
     public IEnumerable<CodeFunction> AddFunction(params CodeFunction[] globalFunctions)
     {
-        if (globalFunctions == null || Array.Exists(globalFunctions, static x => x == null))
+        if (globalFunctions == null || Array.Exists(globalFunctions, static x => x == null)) {
             throw new ArgumentNullException(nameof(globalFunctions));
-        if (globalFunctions.Length == 0)
+        }
+
+        if (globalFunctions.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(globalFunctions));
+        }
+
         return AddRange(globalFunctions);
     }
     public IEnumerable<CodeInterface> AddInterface(params CodeInterface[] interfaces)
     {
-        if (interfaces == null || Array.Exists(interfaces, static x => x == null))
+        if (interfaces == null || Array.Exists(interfaces, static x => x == null)) {
             throw new ArgumentNullException(nameof(interfaces));
-        if (interfaces.Length == 0)
+        }
+
+        if (interfaces.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(interfaces));
+        }
+
         return AddRange(interfaces);
     }
     public NamespaceDifferentialTracker GetDifferential(CodeNamespace importNamespace, string namespacePrefix, char separator = '.')
@@ -169,7 +210,10 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
         ArgumentNullException.ThrowIfNull(importNamespace);
         ArgumentException.ThrowIfNullOrEmpty(namespacePrefix);
         if (this == importNamespace || Name.Equals(importNamespace.Name, StringComparison.OrdinalIgnoreCase)) // we're in the same namespace
+{
             return new();
+        }
+
         var prefixLength = namespacePrefix.Length;
         var currentNamespaceSegments = Name[prefixLength..]
                                 .Split(separator, StringSplitOptions.RemoveEmptyEntries);
@@ -181,10 +225,11 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
         var deeperMostSegmentIndex = 0;
         while (deeperMostSegmentIndex < Math.Min(importNamespaceSegmentsCount, currentNamespaceSegmentsCount))
         {
-            if (currentNamespaceSegments[deeperMostSegmentIndex].Equals(importNamespaceSegments[deeperMostSegmentIndex], StringComparison.OrdinalIgnoreCase))
+            if (currentNamespaceSegments[deeperMostSegmentIndex].Equals(importNamespaceSegments[deeperMostSegmentIndex], StringComparison.OrdinalIgnoreCase)) {
                 deeperMostSegmentIndex++;
-            else
+            } else {
                 break;
+            }
         }
         var upMoves = currentNamespaceSegmentsCount - deeperMostSegmentIndex;
         return new()
@@ -195,10 +240,14 @@ public class CodeNamespace : CodeBlock<BlockDeclaration, BlockEnd>
     }
     internal IEnumerable<CodeConstant> AddConstant(params CodeConstant[] codeConstants)
     {
-        if (codeConstants == null || Array.Exists(codeConstants, static x => x == null))
+        if (codeConstants == null || Array.Exists(codeConstants, static x => x == null)) {
             throw new ArgumentNullException(nameof(codeConstants));
-        if (codeConstants.Length == 0)
+        }
+
+        if (codeConstants.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(codeConstants));
+        }
+
         return AddRange(codeConstants);
     }
 }

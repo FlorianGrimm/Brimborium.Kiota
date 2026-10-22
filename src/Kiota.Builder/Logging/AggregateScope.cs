@@ -11,8 +11,10 @@ internal sealed class AggregateScope : IDisposable
     }
     public void Dispose()
     {
-        foreach (var scope in _scopes)
+        foreach (var scope in _scopes) {
             scope.Dispose();
+        }
+
         GC.SuppressFinalize(this);
     }
 }

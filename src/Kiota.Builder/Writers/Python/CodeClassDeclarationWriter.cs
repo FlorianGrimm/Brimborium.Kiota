@@ -35,10 +35,14 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Py
     {
         if (codeElement.Parent is CodeClass parentClass)
         {
-            if (codeElement.Inherits != null)
+            if (codeElement.Inherits != null) {
                 _codeUsingWriter.WriteDeferredImport(parentClass, codeElement.Inherits.Name, writer);
-            foreach (var implement in codeElement.Implements)
+            }
+
+            foreach (var implement in codeElement.Implements) {
                 _codeUsingWriter.WriteDeferredImport(parentClass, implement.Name, writer);
+            }
+
             if (parentClass.IsOfKind(CodeClassKind.Model) || parentClass.Parent is CodeClass)
             {
                 writer.WriteLine("@dataclass");

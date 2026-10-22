@@ -31,14 +31,17 @@ public class CodeUsingWriter
                                                         .ToArray();
         if (externalImportSymbolsAndPaths.Length != 0)
         {
-            foreach (var codeUsing in externalImportSymbolsAndPaths)
+            foreach (var codeUsing in externalImportSymbolsAndPaths) {
                 if (!string.IsNullOrWhiteSpace(codeUsing.Key))
                 {
-                    if ("-".Equals(codeUsing.Key, StringComparison.OrdinalIgnoreCase))
+                    if ("-".Equals(codeUsing.Key, StringComparison.OrdinalIgnoreCase)) {
                         writer.WriteLine($"import {codeUsing.Select(x => GetAliasedSymbol(x.Item1, x.Item2)).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).Aggregate(static (x, y) => x + ", " + y)}");
-                    else
+                    } else {
                         writer.WriteLine($"from {codeUsing.Key} import {codeUsing.Select(x => GetAliasedSymbol(x.Item1, x.Item2)).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).Aggregate(static (x, y) => x + ", " + y)}");
+                    }
                 }
+            }
+
             writer.WriteLine();
         }
     }
@@ -105,8 +108,10 @@ public class CodeUsingWriter
         {
             writer.WriteLine("if TYPE_CHECKING:");
             writer.IncreaseIndent();
-            foreach (var codeUsing in internalImportSymbolsAndPaths)
+            foreach (var codeUsing in internalImportSymbolsAndPaths) {
                 writer.WriteLine($"from {codeUsing.Key} import {codeUsing.Select(x => GetAliasedSymbol(x.Item1, x.Item2)).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).Aggregate(static (x, y) => x + ", " + y)}");
+            }
+
             writer.DecreaseIndent();
             writer.WriteLine();
 
@@ -139,8 +144,10 @@ public class CodeUsingWriter
     {
         if (importSymbolsAndPaths.Length != 0)
         {
-            foreach (var codeUsing in importSymbolsAndPaths)
+            foreach (var codeUsing in importSymbolsAndPaths) {
                 writer.WriteLine($"from {codeUsing.Key} import {codeUsing.Select(x => GetAliasedSymbol(x.Item1, x.Item2)).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).Aggregate(static (x, y) => x + ", " + y)}");
+            }
+
             writer.WriteLine();
         }
     }

@@ -49,21 +49,26 @@ public partial class StructuredMimeTypesCollection : ICollection<string>
     }
     public bool Contains(string item)
     {
-        if (string.IsNullOrEmpty(item))
+        if (string.IsNullOrEmpty(item)) {
             return false;
+        }
+
         return _mimeTypes.ContainsKey(item);
     }
     public float? GetPriority(string mimeType)
     {
-        if (string.IsNullOrEmpty(mimeType))
+        if (string.IsNullOrEmpty(mimeType)) {
             return null;
+        }
+
         return TryGetMimeType(mimeType, out var priority) ? priority : null;
     }
 
     public void Add(string item)
     {
-        if (GetKeyAndPriority(item) is { } result)
+        if (GetKeyAndPriority(item) is { } result) {
             _mimeTypes.TryAdd(result.Key, result.Value);
+        }
     }
 
     public void Clear()
@@ -82,10 +87,11 @@ public partial class StructuredMimeTypesCollection : ICollection<string>
     }
     private static string NormalizeMimeType(string key, float value)
     {
-        if (value >= 1f)
+        if (value >= 1f) {
             return key;
-        else
+        } else {
             return string.Create(CultureInfo.InvariantCulture, $"{key};q={value}");
+        }
     }
     ///<inheritdoc/>
     public bool Remove(string item)
@@ -95,8 +101,9 @@ public partial class StructuredMimeTypesCollection : ICollection<string>
             _mimeTypes.Remove(result.Key);
             return true;
         }
-        else
+        else {
             return false;
+        }
     }
     public IEnumerable<string> GetAcceptedTypes(IEnumerable<string> searchTypes)
     {

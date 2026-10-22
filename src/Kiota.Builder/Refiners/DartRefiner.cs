@@ -71,10 +71,11 @@ public class DartRefiner : CommonLanguageRefiner, ILanguageRefiner
                 if (s.Contains('_', StringComparison.OrdinalIgnoreCase) &&
                      s.ToPascalCase(UnderscoreArray) is string refinedName &&
                     !reservedNamesProvider.ReservedNames.Contains(s) &&
-                    !reservedNamesProvider.ReservedNames.Contains(refinedName))
+                    !reservedNamesProvider.ReservedNames.Contains(refinedName)) {
                     return refinedName;
-                else
+                } else {
                     return s;
+                }
             });
             CorrectCoreType(generatedCode, CorrectMethodType, CorrectPropertyType, CorrectImplements);
             ReplacePropertyNames(generatedCode,
@@ -247,15 +248,16 @@ public class DartRefiner : CommonLanguageRefiner, ILanguageRefiner
 
     private static void CorrectMethodType(CodeMethod currentMethod)
     {
-        if (currentMethod.IsOfKind(CodeMethodKind.Serializer))
+        if (currentMethod.IsOfKind(CodeMethodKind.Serializer)) {
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.Serializer)).ToList().ForEach(x =>
             {
                 x.Optional = false;
                 x.Type.IsNullable = true;
-                if (x.Type.Name.StartsWith('I'))
+                if (x.Type.Name.StartsWith('I')) {
                     x.Type.Name = x.Type.Name[1..];
+                }
             });
-        else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer))
+        } else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer))
         {
             currentMethod.ReturnType.Name = "Map<String, void Function(ParseNode)>";
             currentMethod.Name = "getFieldDeserializers";
@@ -278,11 +280,11 @@ public class DartRefiner : CommonLanguageRefiner, ILanguageRefiner
     {
         ArgumentNullException.ThrowIfNull(currentProperty);
 
-        if (currentProperty.IsOfKind(CodePropertyKind.Options))
+        if (currentProperty.IsOfKind(CodePropertyKind.Options)) {
             currentProperty.DefaultValue = "List<RequestOption>()";
-        else if (currentProperty.IsOfKind(CodePropertyKind.Headers))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.Headers)) {
             currentProperty.DefaultValue = $"{currentProperty.Type.Name.ToFirstCharacterLowerCase()}()";
-        else if (currentProperty.IsOfKind(CodePropertyKind.RequestAdapter))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.RequestAdapter))
         {
             currentProperty.Type.Name = "RequestAdapter";
             currentProperty.Type.IsNullable = true;
@@ -311,13 +313,15 @@ public class DartRefiner : CommonLanguageRefiner, ILanguageRefiner
         {
             currentProperty.Type.IsNullable = true;
             currentProperty.Type.Name = "Map<String, dynamic>";
-            if (!string.IsNullOrEmpty(currentProperty.DefaultValue))
+            if (!string.IsNullOrEmpty(currentProperty.DefaultValue)) {
                 currentProperty.DefaultValue = "{}";
+            }
         }
         else
         {
-            if (!currentProperty.IsNameEscaped)
+            if (!currentProperty.IsNameEscaped) {
                 currentProperty.SerializationName = currentProperty.Name;
+            }
 
             currentProperty.Name = currentProperty.Name.ToFirstCharacterLowerCase();
         }
@@ -340,8 +344,10 @@ public class DartRefiner : CommonLanguageRefiner, ILanguageRefiner
     }
     protected static void AddAsyncSuffix(CodeElement currentElement)
     {
-        if (currentElement is CodeMethod currentMethod && currentMethod.IsAsync)
+        if (currentElement is CodeMethod currentMethod && currentMethod.IsAsync) {
             currentMethod.Name += "Async";
+        }
+
         CrawlTree(currentElement, AddAsyncSuffix);
     }
     private void AddQueryParameterExtractorMethod(CodeElement currentElement, string methodName = "toMap")
@@ -405,8 +411,10 @@ public class DartRefiner : CommonLanguageRefiner, ILanguageRefiner
             if (sameNameProperty != null)
             {
                 currentClass.RemoveChildElement(sameNameProperty);
-                if (string.IsNullOrEmpty(sameNameProperty.SerializationName))
+                if (string.IsNullOrEmpty(sameNameProperty.SerializationName)) {
                     sameNameProperty.SerializationName = sameNameProperty.Name;
+                }
+
                 sameNameProperty.Name = $"{sameNameProperty.Name}Prop";
                 currentClass.AddProperty(sameNameProperty);
             }

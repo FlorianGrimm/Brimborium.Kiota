@@ -88,10 +88,14 @@ public class ApiClientConfiguration : BaseApiConsumerConfiguration, ICloneable
         ArgumentNullException.ThrowIfNull(config);
         ArgumentException.ThrowIfNullOrEmpty(clientName);
         config.ClientNamespaceName = ClientNamespaceName;
-        if (Enum.TryParse<GenerationLanguage>(Language, out var parsedLanguage))
+        if (Enum.TryParse<GenerationLanguage>(Language, out var parsedLanguage)) {
             config.Language = parsedLanguage;
-        if (Enum.TryParse<AccessModifier>(TypeAccessModifier, out var parsedTypeAccessModifier))
+        }
+
+        if (Enum.TryParse<AccessModifier>(TypeAccessModifier, out var parsedTypeAccessModifier)) {
             config.TypeAccessModifier = parsedTypeAccessModifier;
+        }
+
         config.UsesBackingStore = UsesBackingStore;
         config.ExcludeBackwardCompatible = ExcludeBackwardCompatible;
         config.IncludeAdditionalData = IncludeAdditionalData;

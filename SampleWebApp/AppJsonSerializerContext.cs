@@ -3,6 +3,7 @@
 namespace SampleWebApp;
 
 
+[JsonSerializable(typeof(List<Todo>))]
 [JsonSerializable(typeof(Todo[]))]
 [JsonSerializable(typeof(Todo))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext {

@@ -1,31 +1,4 @@
-﻿#if false
-using System.Text.Json.Serialization;
-
-using Microsoft.AspNetCore.Http.HttpResults;
-
-internal class Program
-{
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateSlimBuilder(args);
-
-
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
-
-        var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
-
-        app.Run();
-    }
-}
-
-#endif
-namespace SampleWebApp;
+﻿namespace SampleWebApp;
 
 public sealed class Program {
     public static async Task<int> Main(string[] args) {
@@ -234,6 +207,10 @@ public interface IConfigureWebApplication : IConfigureServices {
 /// <summary>
 /// Allows to register the minimalapi-endpoint(s).
 /// </summary>
+/// <example>
+/// [Injectio.Attributes.RegisterSingleton<IMinimalApiEndpoint>(Duplicate = DuplicateStrategy.Append)]
+/// public class TodoAPI : IMinimalApiEndpoint {}
+/// </example>
 public interface IMinimalApiEndpoint {
     /// <summary>
     /// Map the minimalapi

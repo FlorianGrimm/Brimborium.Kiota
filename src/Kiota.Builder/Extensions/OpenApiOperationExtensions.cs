@@ -13,10 +13,14 @@ public static class OpenApiOperationExtensions
     {
         var slashIndex = input.IndexOf('/', StringComparison.OrdinalIgnoreCase);
         var plusIndex = input.IndexOf('+', StringComparison.OrdinalIgnoreCase);
-        if (slashIndex == -1 || plusIndex == -1)
+        if (slashIndex == -1 || plusIndex == -1) {
             return input;
-        if (plusIndex < slashIndex)
+        }
+
+        if (plusIndex < slashIndex) {
             return input;
+        }
+
         return input[0..(slashIndex + 1)] + input[(plusIndex + 1)..];
     }
     /// <summary>
@@ -31,7 +35,9 @@ public static class OpenApiOperationExtensions
     }
     internal static IEnumerable<IOpenApiSchema> GetResponseSchemas(this OpenApiOperation operation, HashSet<string> successCodesToUse, StructuredMimeTypesCollection structuredMimeTypes)
     {
-        if (operation.Responses is null) return [];
+        if (operation.Responses is null) {
+            return [];
+        }
         // Return Schema that represents all the possible success responses!
         return operation.Responses.Where(r => successCodesToUse.Contains(r.Key))
                             .OrderBy(static x => x.Key, StringComparer.OrdinalIgnoreCase)
@@ -53,17 +59,28 @@ public static class OpenApiOperationExtensions
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(structuredMimeTypes);
-        if (structuredMimeTypes.Count == 0) return false;
-        if (!source.ContainsKey(multipartMimeTypes.First())) return false;
-        if (source.Count == 1 || !source.Keys.Where(static x => !multipartMimeTypes.Contains(x)).Any(structuredMimeTypes.Contains)) return true;
+        if (structuredMimeTypes.Count == 0) {
+            return false;
+        }
+
+        if (!source.ContainsKey(multipartMimeTypes.First())) {
+            return false;
+        }
+
+        if (source.Count == 1 || !source.Keys.Where(static x => !multipartMimeTypes.Contains(x)).Any(structuredMimeTypes.Contains)) {
+            return true;
+        }
+
         return structuredMimeTypes.First() == multipartMimeTypes.First();
     }
     internal static IEnumerable<IOpenApiSchema> GetValidSchemas(this IDictionary<string, IOpenApiMediaType> source, StructuredMimeTypesCollection structuredMimeTypes)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(structuredMimeTypes);
-        if (structuredMimeTypes.Count == 0)
+        if (structuredMimeTypes.Count == 0) {
             throw new ArgumentNullException(nameof(structuredMimeTypes));
+        }
+
         return source
                     .Where(static c => !string.IsNullOrEmpty(c.Key))
                     .Select(static c => (Key: c.Key.Split(';', StringSplitOptions.RemoveEmptyEntries)[0], c.Value))

@@ -22,7 +22,9 @@ public class KiotaLockComparer : IEqualityComparer<KiotaLock>
     /// <inheritdoc/>
     public bool Equals(KiotaLock? x, KiotaLock? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
         // Manual comparison to avoid false positives on hash collisions.
         return x.DisableSSLValidation == y.DisableSSLValidation
                && x.ExcludeBackwardCompatible == y.ExcludeBackwardCompatible
@@ -48,7 +50,10 @@ public class KiotaLockComparer : IEqualityComparer<KiotaLock>
     public int GetHashCode([DisallowNull] KiotaLock obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.DisableSSLValidation);
         hash.Add(obj.DisabledValidationRules, _stringIEnumerableDeepComparer);
         hash.Add(obj.KiotaVersion, _stringComparer);

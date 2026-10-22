@@ -12,8 +12,9 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, TypeScriptConv
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.ExistsInExternalBaseType)
+        if (codeElement.ExistsInExternalBaseType) {
             return;
+        }
 
         if (codeElement.Kind is CodePropertyKind.AdditionalData && codeElement.Parent is CodeInterface)
         {

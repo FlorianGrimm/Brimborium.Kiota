@@ -11,7 +11,9 @@ public static class ValidationRuleSetExtensions
     {
         ArgumentNullException.ThrowIfNull(ruleSet);
         configuration ??= new();
-        if (configuration.DisabledValidationRules.Contains(AllValidationRule)) return;
+        if (configuration.DisabledValidationRules.Contains(AllValidationRule)) {
+            return;
+        }
 
         ruleSet.AddRuleIfEnabled(configuration, new NoServerEntry(), typeof(OpenApiDocument));
         ruleSet.AddRuleIfEnabled(configuration, new MultipleServerEntries(), typeof(OpenApiDocument));
@@ -24,7 +26,8 @@ public static class ValidationRuleSetExtensions
     }
     private static void AddRuleIfEnabled<T>(this ValidationRuleSet ruleSet, GenerationConfiguration configuration, T instance, Type ruleType) where T : ValidationRule
     {
-        if (!configuration.DisabledValidationRules.Contains(typeof(T).Name))
+        if (!configuration.DisabledValidationRules.Contains(typeof(T).Name)) {
             ruleSet.Add(ruleType, instance);
+        }
     }
 }

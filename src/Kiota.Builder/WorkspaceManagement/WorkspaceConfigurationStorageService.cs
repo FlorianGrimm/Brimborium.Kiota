@@ -40,8 +40,10 @@ public class WorkspaceConfigurationStorageService
     });
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        if (await IsInitializedAsync(cancellationToken).ConfigureAwait(false))
+        if (await IsInitializedAsync(cancellationToken).ConfigureAwait(false)) {
             throw new InvalidOperationException("The workspace configuration already exists");
+        }
+
         await UpdateWorkspaceConfigurationAsync(new WorkspaceConfiguration(), null, cancellationToken).ConfigureAwait(false);
     }
     public async Task UpdateWorkspaceConfigurationAsync(WorkspaceConfiguration configuration, ApiManifestDocument? manifestDocument, CancellationToken cancellationToken = default)
@@ -49,8 +51,9 @@ public class WorkspaceConfigurationStorageService
         ArgumentNullException.ThrowIfNull(configuration);
         using (await localFilesLock.LockAsync(targetConfigurationFilePath, cancellationToken).ConfigureAwait(false))
         {
-            if (!Directory.Exists(TargetDirectory))
+            if (!Directory.Exists(TargetDirectory)) {
                 Directory.CreateDirectory(TargetDirectory);
+            }
 #pragma warning disable CA2007
             await using var configStream = File.Open(targetConfigurationFilePath, FileMode.Create);
 #pragma warning restore CA2007
@@ -79,7 +82,7 @@ public class WorkspaceConfigurationStorageService
     private static readonly WorkspaceConfigurationGenerationContext context = new(options);
     public async Task<(WorkspaceConfiguration?, ApiManifestDocument?)> GetWorkspaceConfigurationAsync(CancellationToken cancellationToken = default)
     {
-        if (File.Exists(targetConfigurationFilePath))
+        if (File.Exists(targetConfigurationFilePath)) {
             using (await localFilesLock.LockAsync(targetConfigurationFilePath, cancellationToken).ConfigureAwait(false))
             {
 #pragma warning disable CA2007
@@ -87,28 +90,36 @@ public class WorkspaceConfigurationStorageService
 #pragma warning restore CA2007
                 var config = await JsonSerializer.DeserializeAsync(configStream, context.WorkspaceConfiguration, cancellationToken).ConfigureAwait(false);
                 ValidateConsumerOutputPaths(config);
-                if (File.Exists(targetManifestFilePath))
+                if (File.Exists(targetManifestFilePath)) {
                     using (await localFilesLock.LockAsync(targetManifestFilePath, cancellationToken).ConfigureAwait(false))
                     {
 #pragma warning disable CA2007
                         await using var manifestStream = File.OpenRead(targetManifestFilePath);
 #pragma warning restore CA2007
                         var manifest = await manifestManagementService.DeserializeManifestDocumentAsync(manifestStream).ConfigureAwait(false);
-                        if (manifest is not null)
-                            foreach (var apiDependency in manifest.ApiDependencies.Select(static x => x.Value))
+                        if (manifest is not null) {
+                            foreach (var apiDependency in manifest.ApiDependencies.Select(static x => x.Value)) {
                                 apiDependency.Requests = apiDependency.Requests.Where(static x => !WorkspaceManagementService.MigrationPlaceholderPath.Equals(x.UriTemplate, StringComparison.Ordinal)).ToList();
+                            }
+                        }
                         // avoids migrations resulting in empty clients
                         return (config, manifest);
                     }
+                }
+
                 return (config, null);
             }
+        }
+
         return (null, null);
     }
     private void ValidateConsumerOutputPaths(WorkspaceConfiguration? configuration)
     {
-        if (configuration is null)
+        if (configuration is null) {
             return;
-        foreach (var client in configuration.Clients)
+        }
+
+        foreach (var client in configuration.Clients) {
             try
             {
                 DescriptionStorageService.ValidateConsumerName(client.Key);
@@ -118,7 +129,9 @@ public class WorkspaceConfigurationStorageService
             {
                 throw new InvalidOperationException($"The client {client.Key} has an invalid configuration: {ex.Message}", ex);
             }
-        foreach (var plugin in configuration.Plugins)
+        }
+
+        foreach (var plugin in configuration.Plugins) {
             try
             {
                 DescriptionStorageService.ValidateConsumerName(plugin.Key);
@@ -128,6 +141,7 @@ public class WorkspaceConfigurationStorageService
             {
                 throw new InvalidOperationException($"The plugin {plugin.Key} has an invalid configuration: {ex.Message}", ex);
             }
+        }
     }
     public async Task BackupConfigAsync(CancellationToken cancellationToken = default)
     {
@@ -143,9 +157,14 @@ public class WorkspaceConfigurationStorageService
             using (await localFilesLock.LockAsync(backupFilePath, cancellationToken).ConfigureAwait(false))
             {
                 var backupStorageDirectory = Path.GetDirectoryName(backupFilePath);
-                if (string.IsNullOrEmpty(backupStorageDirectory)) return;
-                if (!Directory.Exists(backupStorageDirectory))
+                if (string.IsNullOrEmpty(backupStorageDirectory)) {
+                    return;
+                }
+
+                if (!Directory.Exists(backupStorageDirectory)) {
                     Directory.CreateDirectory(backupStorageDirectory);
+                }
+
                 File.Copy(sourceFilePath, backupFilePath, true);
             }
         }
@@ -159,9 +178,14 @@ public class WorkspaceConfigurationStorageService
     {
         var sourceFilePath = Path.Combine(TargetDirectory, fileName);
         var targetDirectory = Path.GetDirectoryName(sourceFilePath);
-        if (string.IsNullOrEmpty(targetDirectory)) return;
-        if (!Directory.Exists(targetDirectory))
+        if (string.IsNullOrEmpty(targetDirectory)) {
+            return;
+        }
+
+        if (!Directory.Exists(targetDirectory)) {
             Directory.CreateDirectory(targetDirectory);
+        }
+
         var backupFilePath = GetBackupFilePath(TargetDirectory, fileName);
         if (File.Exists(backupFilePath))
         {

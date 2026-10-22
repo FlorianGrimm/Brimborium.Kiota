@@ -13,17 +13,23 @@ public class CodeMethodWriter(TypeScriptConventionService conventionService) : B
     public override void WriteCodeElement(CodeMethod codeElement, LanguageWriter writer)
     {
         ArgumentNullException.ThrowIfNull(codeElement);
-        if (codeElement.ReturnType == null) throw new InvalidOperationException($"{nameof(codeElement.ReturnType)} should not be null");
+        if (codeElement.ReturnType == null) {
+            throw new InvalidOperationException($"{nameof(codeElement.ReturnType)} should not be null");
+        }
+
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is CodeFunction) return;
+        if (codeElement.Parent is CodeFunction) {
+            return;
+        }
 
         var codeFile = codeElement.GetImmediateParentOfType<CodeFile>();
         var returnType = GetTypescriptTypeString(codeElement.ReturnType, codeFile, inlineComposedTypeString: true);
         var isVoid = "void".EqualsIgnoreCase(returnType);
         WriteMethodDocumentation(codeFile, codeElement, writer, isVoid);
         WriteMethodPrototype(codeElement, writer, returnType, isVoid);
-        if (codeElement.Parent is CodeClass)
+        if (codeElement.Parent is CodeClass) {
             throw new InvalidOperationException("No method implementations are generated in typescript: either functions or constants.");
+        }
     }
 
     private void WriteMethodDocumentation(CodeFile codeFile, CodeMethod code, LanguageWriter writer, bool isVoid)
@@ -49,7 +55,10 @@ public class CodeMethodWriter(TypeScriptConventionService conventionService) : B
     }
     private static IEnumerable<string> GetThrownExceptionsRemarks(CodeMethod code)
     {
-        if (code.Kind is not CodeMethodKind.RequestExecutor) yield break;
+        if (code.Kind is not CodeMethodKind.RequestExecutor) {
+            yield break;
+        }
+
         foreach (var errorMapping in code.ErrorMappings)
         {
             var statusCode = errorMapping.Key.ToUpperInvariant() switch

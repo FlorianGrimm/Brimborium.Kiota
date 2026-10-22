@@ -14,7 +14,10 @@ public class CodeClassDeclarationWriter : CodeProprietableBlockDeclarationWriter
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
         var className = codeElement.Name.ToFirstCharacterUpperCase();
-        if (codeElement.Parent is not CodeClass currentClass) throw new InvalidOperationException("The parent of a class declaration should be a class");
+        if (codeElement.Parent is not CodeClass currentClass) {
+            throw new InvalidOperationException("The parent of a class declaration should be a class");
+        }
+
         conventions.WriteShortDescription(currentClass, writer, $"{className} ");
         conventions.WriteDeprecation(currentClass, writer);
         conventions.WriteLinkDescription(currentClass.Documentation, writer);
@@ -30,10 +33,12 @@ public class CodeClassDeclarationWriter : CodeProprietableBlockDeclarationWriter
             }
             foreach (var property in currentClass.Properties
                                                 .Where(static x => !x.ExistsInBaseType)
-                                                .OrderBy(static x => x.Name, StringComparer.InvariantCultureIgnoreCase))
+                                                .OrderBy(static x => x.Name, StringComparer.InvariantCultureIgnoreCase)) {
                 CodePropertyWriter.WriteField(property, writer, conventions);
+            }
         });
-        foreach (var line in GoFieldFormatter.AlignFieldBlock(body))
+        foreach (var line in GoFieldFormatter.AlignFieldBlock(body)) {
             writer.WriteLine(line, includeIndent: false);
+        }
     }
 }

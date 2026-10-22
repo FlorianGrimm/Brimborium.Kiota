@@ -123,8 +123,10 @@ public class CSharpRefiner : CommonLanguageRefiner, ILanguageRefiner
             if (sameNameProperty != null)
             {
                 currentClass.RemoveChildElement(sameNameProperty);
-                if (string.IsNullOrEmpty(sameNameProperty.SerializationName))
+                if (string.IsNullOrEmpty(sameNameProperty.SerializationName)) {
                     sameNameProperty.SerializationName = sameNameProperty.Name;
+                }
+
                 sameNameProperty.Name = $"{sameNameProperty.Name}Prop";
                 currentClass.AddProperty(sameNameProperty);
             }
@@ -133,11 +135,13 @@ public class CSharpRefiner : CommonLanguageRefiner, ILanguageRefiner
     }
     protected static void MakeEnumPropertiesNullable(CodeElement currentElement)
     {
-        if (currentElement is CodeClass currentClass && currentClass.IsOfKind(CodeClassKind.Model))
+        if (currentElement is CodeClass currentClass && currentClass.IsOfKind(CodeClassKind.Model)) {
             currentClass.Properties
                         .Where(x => x.Type is CodeType propType && propType.TypeDefinition is CodeEnum)
                         .ToList()
                         .ForEach(x => x.Type.IsNullable = true);
+        }
+
         CrawlTree(currentElement, MakeEnumPropertiesNullable);
     }
     private const string AbstractionsNamespaceName = "Microsoft.Kiota.Abstractions";
@@ -200,23 +204,29 @@ public class CSharpRefiner : CommonLanguageRefiner, ILanguageRefiner
     private const string MultipartBodyClassName = "MultipartBody";
     protected static void CapitalizeNamespacesFirstLetters(CodeElement current)
     {
-        if (current is CodeNamespace currentNamespace)
+        if (current is CodeNamespace currentNamespace) {
             currentNamespace.Name = currentNamespace.Name.Split('.').Select(static x => x.ToFirstCharacterUpperCase()).Aggregate(static (x, y) => $"{x}.{y}");
+        }
+
         CrawlTree(current, CapitalizeNamespacesFirstLetters);
     }
     protected static void AddAsyncSuffix(CodeElement currentElement)
     {
-        if (currentElement is CodeMethod currentMethod && currentMethod.IsAsync)
+        if (currentElement is CodeMethod currentMethod && currentMethod.IsAsync) {
             currentMethod.Name += "Async";
+        }
+
         CrawlTree(currentElement, AddAsyncSuffix);
     }
     protected static void CorrectPropertyType(CodeProperty currentProperty)
     {
         ArgumentNullException.ThrowIfNull(currentProperty);
-        if (currentProperty.IsOfKind(CodePropertyKind.Options))
+        if (currentProperty.IsOfKind(CodePropertyKind.Options)) {
             currentProperty.DefaultValue = "new List<IRequestOption>()";
-        else if (currentProperty.IsOfKind(CodePropertyKind.Headers))
+        } else if (currentProperty.IsOfKind(CodePropertyKind.Headers)) {
             currentProperty.DefaultValue = $"new {currentProperty.Type.Name.ToFirstCharacterUpperCase()}()";
+        }
+
         CorrectCoreTypes(currentProperty.Parent as CodeClass, DateTypesReplacements, true, currentProperty.Type);
     }
     protected static void CorrectMethodType(CodeMethod currentMethod)
@@ -235,6 +245,7 @@ public class CSharpRefiner : CommonLanguageRefiner, ILanguageRefiner
 
     private static readonly Dictionary<string, (string, CodeUsing?)> DateTypesReplacements = new(StringComparer.OrdinalIgnoreCase)
     {
+        /*
         {
             "DateOnly",("Date", new CodeUsing
                 {
@@ -257,6 +268,7 @@ public class CSharpRefiner : CommonLanguageRefiner, ILanguageRefiner
                     },
                 })
         },
+        */
     };
 
     private void SetTypeAccessModifiers(CodeElement currentElement)

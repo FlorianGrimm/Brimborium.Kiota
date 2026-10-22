@@ -16,10 +16,15 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException("the parent of a method should be a class");
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException("the parent of a method should be a class");
+        }
+
         var returnType = conventions.GetTypeString(codeElement.ReturnType, codeElement);
-        if (parentClass.Properties.Any(static x => x.IsOfKind(CodePropertyKind.QueryParameter, CodePropertyKind.QueryParameters, CodePropertyKind.Headers, CodePropertyKind.Options)))
+        if (parentClass.Properties.Any(static x => x.IsOfKind(CodePropertyKind.QueryParameter, CodePropertyKind.QueryParameters, CodePropertyKind.Headers, CodePropertyKind.Options))) {
             writer.WriteLine();
+        }
+
         WriteMethodDocumentation(codeElement, writer);
         var inherits = parentClass.StartBlock.Inherits != null;
         var requestBodyParam = codeElement.Parameters.OfKind(CodeParameterKind.RequestBody);
@@ -110,17 +115,22 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
     }
     private static void AddNullChecks(CodeMethod codeElement, LanguageWriter writer)
     {
-        if (!codeElement.IsOverload)
+        if (!codeElement.IsOverload) {
             foreach (var parameter in codeElement.Parameters
                                                 .Where(static x => !x.Optional && !x.IsOfKind(CodeParameterKind.PathParameters, CodeParameterKind.RequestAdapter))
                                                 .Select(static x => x.Name.ToSnakeCase())
-                                                .OrderBy(static x => x))
+                                                .OrderBy(static x => x)) {
                 writer.WriteLine($"raise StandardError, '{parameter} cannot be null' if {parameter}.nil?");
+            }
+        }
     }
     private static void WriteQueryParametersMapper(CodeMethod codeElement, CodeClass parentClass, LanguageWriter writer)
     {
         var parameter = codeElement.Parameters.FirstOrDefault(static x => x.IsOfKind(CodeParameterKind.QueryParametersMapperParameter));
-        if (parameter == null) throw new InvalidOperationException("QueryParametersMapper should have a parameter of type QueryParametersMapper");
+        if (parameter == null) {
+            throw new InvalidOperationException("QueryParametersMapper should have a parameter of type QueryParametersMapper");
+        }
+
         var parameterName = parameter.Name.ToSnakeCase();
         writer.StartBlock($"case {parameterName}", false);
         var escapedProperties = parentClass.Properties.Where(static x => x.IsOfKind(CodePropertyKind.QueryParameter) && x.IsNameEscaped);
@@ -152,37 +162,45 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
             writer.StartBlock($"if @{requestAdapterPropertyName}.get_base_url.nil? || @{requestAdapterPropertyName}.get_base_url.empty?");
             writer.WriteLine($"@{requestAdapterPropertyName}.set_base_url('{method.BaseUrl.SanitizeSingleQuote()}')");
             writer.CloseBlock("end");
-            if (pathParametersProperty != null)
+            if (pathParametersProperty != null) {
                 writer.WriteLine($"@{pathParametersProperty.Name.ToSnakeCase()}['baseurl'] = @{requestAdapterPropertyName}.get_base_url");
+            }
         }
     }
     private static void WriteSerializationRegistration(CodeClass parentClass, HashSet<string> serializationClassNames, LanguageWriter writer, string methodName)
     {
-        if (serializationClassNames != null)
+        if (serializationClassNames != null) {
             foreach (var serializationClassName in serializationClassNames)
             {
                 var prefix = parentClass.Usings.FirstOrDefault(x => x.IsExternal && x.Name.Equals(serializationClassName, StringComparison.OrdinalIgnoreCase))?.Declaration?.Name;
-                if (!string.IsNullOrEmpty(prefix))
+                if (!string.IsNullOrEmpty(prefix)) {
                     prefix = $"{prefix.ToPascalCase(['_'])}::";
+                }
+
                 writer.WriteLine($"MicrosoftKiotaAbstractions::ApiClientBuilder.{methodName}({prefix}{serializationClassName})");
             }
+        }
     }
     private void WriteConstructorBody(CodeClass parentClass, CodeMethod currentMethod, LanguageWriter writer, bool inherits)
     {
-        if (inherits)
+        if (inherits) {
             if (parentClass.IsOfKind(CodeClassKind.RequestBuilder) &&
                 currentMethod.Parameters.OfKind(CodeParameterKind.RequestAdapter) is CodeParameter requestAdapterParameter &&
                 parentClass.Properties.FirstOrDefaultOfKind(CodePropertyKind.UrlTemplate) is CodeProperty urlTemplateProperty &&
                 !string.IsNullOrEmpty(urlTemplateProperty.DefaultValue))
             {
                 var sanitizedUrlTemplate = RubyConventionService.SanitizeRubyDoubleQuoteLiteral(urlTemplateProperty.DefaultValue);
-                if (currentMethod.Parameters.OfKind(CodeParameterKind.PathParameters) is CodeParameter pathParametersParameter)
+                if (currentMethod.Parameters.OfKind(CodeParameterKind.PathParameters) is CodeParameter pathParametersParameter) {
                     writer.WriteLine($"super({pathParametersParameter.Name.ToSnakeCase()}, {requestAdapterParameter.Name.ToSnakeCase()}, {sanitizedUrlTemplate})");
-                else
+                } else {
                     writer.WriteLine($"super(Hash.new, {requestAdapterParameter.Name.ToSnakeCase()}, {sanitizedUrlTemplate})");
+                }
             }
-            else
+            else {
                 writer.WriteLine("super");
+            }
+        }
+
         foreach (var propWithDefault in parentClass.GetPropertiesOfKind(CodePropertyKind.BackingStore,
                                                                         CodePropertyKind.RequestBuilder)
                                         .Where(static x => !string.IsNullOrEmpty(x.DefaultValue))
@@ -210,11 +228,13 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
                 if (propWithDefault.Type is CodeType propertyType2 &&
                     TryNormalizePrimitiveDefaultValue(defaultValue, propertyType2, out var normalizedDefaultValue))
                 {
-                    if (normalizedDefaultValue is null)
+                    if (normalizedDefaultValue is null) {
                         continue;
+                    }
+
                     defaultValue = normalizedDefaultValue;
                 }
-                else
+                else {
                     defaultValue = propWithDefault.Type.Name.ToLowerInvariant() switch
                     {
                         "datetime" => $"DateTime.parse({defaultValue})",
@@ -223,6 +243,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
                         "guid" => $"UUIDTools::UUID.parse({defaultValue})",
                         _ => defaultValue
                     };
+                }
             }
             writer.WriteLine($"@{propWithDefault.NamePrefix}{propWithDefault.Name.ToSnakeCase()} = {defaultValue}");
         }
@@ -251,31 +272,37 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
         var parameterName = codeElement.Parameters.FirstOrDefault(static x => x.IsOfKind(CodeParameterKind.SetterValue))?.Name.ToSnakeCase();
-        if (codeElement.AccessedProperty is not null)
+        if (codeElement.AccessedProperty is not null) {
             writer.WriteLine($"@{codeElement.AccessedProperty.NamePrefix}{codeElement.AccessedProperty.Name.ToSnakeCase()} = {parameterName}");
+        }
     }
     private static void WriteGetterBody(CodeMethod codeElement, LanguageWriter writer)
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.AccessedProperty is not null)
+        if (codeElement.AccessedProperty is not null) {
             writer.WriteLine($"return @{codeElement.AccessedProperty.NamePrefix}{codeElement.AccessedProperty.Name.ToSnakeCase()}");
+        }
     }
     private void WriteIndexerBody(CodeMethod codeElement, CodeClass parentClass, LanguageWriter writer, string returnType)
     {
         var prefix = conventions.GetNormalizedNamespacePrefixForType(codeElement.ReturnType);
         if (parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty &&
-            codeElement.OriginalIndexer != null)
+            codeElement.OriginalIndexer != null) {
             writer.WriteLines($"{conventions.TempDictionaryVarName} = @{pathParametersProperty.NamePrefix}{pathParametersProperty.Name.ToSnakeCase()}.clone",
                             $"{conventions.TempDictionaryVarName}[\"{RubyConventionService.SanitizeRubyDoubleQuoteLiteral(codeElement.OriginalIndexer.IndexParameter.SerializationName)}\"] = {codeElement.OriginalIndexer.IndexParameter.Name.ToSnakeCase()}");
+        }
+
         conventions.AddRequestBuilderBody(parentClass, returnType, writer, conventions.TempDictionaryVarName, $"return {prefix}");
     }
     private void WriteDeserializerBody(CodeClass parentClass, LanguageWriter writer)
     {
-        if (parentClass.StartBlock.Inherits != null)
+        if (parentClass.StartBlock.Inherits != null) {
             writer.WriteLine("return super.merge({");
-        else
+        } else {
             writer.WriteLine("return {");
+        }
+
         writer.IncreaseIndent();
         foreach (var otherProp in parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .Where(static x => !x.ExistsInBaseType)
@@ -284,19 +311,23 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
             writer.WriteLine($"\"{RubyConventionService.SanitizeRubyDoubleQuoteLiteral(otherProp.WireName)}\" => lambda {{|n| @{otherProp.NamePrefix}{otherProp.Name.ToSnakeCase()} = n.{GetDeserializationMethodName(otherProp.Type)} }},");
         }
         writer.DecreaseIndent();
-        if (parentClass.StartBlock.Inherits != null)
+        if (parentClass.StartBlock.Inherits != null) {
             writer.WriteLine("})");
-        else
+        } else {
             writer.WriteLine("}");
+        }
     }
     private void WriteRequestExecutorBody(CodeMethod codeElement, RequestParams requestParams, CodeClass parentClass, string returnType, LanguageWriter writer)
     {
-        if (returnType.Equals("void", StringComparison.OrdinalIgnoreCase))
+        if (returnType.Equals("void", StringComparison.OrdinalIgnoreCase)) {
             returnType = "nil"; //generic type for the future
-        else if (codeElement.ReturnType is CodeType returnT && returnT.TypeDefinition is not null)
+        } else if (codeElement.ReturnType is CodeType returnT && returnT.TypeDefinition is not null) {
             returnType = getDeserializationLambda(returnT);
-        if (codeElement.HttpMethod == null) throw new InvalidOperationException("http method cannot be null");
+        }
 
+        if (codeElement.HttpMethod == null) {
+            throw new InvalidOperationException("http method cannot be null");
+        }
 
         var generatorMethodName = parentClass
                                             .Methods
@@ -332,7 +363,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
 
     private void WriteRequestGeneratorBody(CodeMethod codeElement, RequestParams requestParams, CodeClass parentClass, LanguageWriter writer)
     {
-        if (codeElement.HttpMethod == null) throw new InvalidOperationException("http method cannot be null");
+        if (codeElement.HttpMethod == null) {
+            throw new InvalidOperationException("http method cannot be null");
+        }
 
         writer.WriteLine("request_info = MicrosoftKiotaAbstractions::RequestInformation.new()");
         if (requestParams.requestConfiguration != null)
@@ -344,12 +377,18 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
             {
                 writer.WriteLine($"unless {requestParams.requestConfiguration.Name.ToSnakeCase()}.nil?");
                 writer.IncreaseIndent();
-                if (headers != null)
+                if (headers != null) {
                     writer.WriteLine($"request_info.add_headers_from_raw_object({requestParams.requestConfiguration.Name.ToSnakeCase()}.{headers.Name.ToSnakeCase()})");
-                if (queryString != null)
+                }
+
+                if (queryString != null) {
                     writer.WriteLine($"request_info.set_query_string_parameters_from_raw_object({requestParams.requestConfiguration.Name.ToSnakeCase()}.{queryString.Name.ToSnakeCase()})");
-                if (options != null)
+                }
+
+                if (options != null) {
                     writer.WriteLine($"request_info.add_request_options({requestParams.requestConfiguration.Name.ToSnakeCase()}.{options.Name.ToSnakeCase()})");
+                }
+
                 writer.CloseBlock("end");
             }
             if (requestParams.requestBody != null)
@@ -357,13 +396,15 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
                 var sanitizedRequestBodyContentType = codeElement.RequestBodyContentType.SanitizeSingleQuote();
                 if (requestParams.requestBody.Type.Name.Equals(conventions.StreamTypeName, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (requestParams.requestContentType is not null)
+                    if (requestParams.requestContentType is not null) {
                         writer.WriteLine($"request_info.set_stream_content({requestParams.requestBody.Name}, {requestParams.requestContentType.Name})");
-                    else if (!string.IsNullOrEmpty(sanitizedRequestBodyContentType))
+                    } else if (!string.IsNullOrEmpty(sanitizedRequestBodyContentType)) {
                         writer.WriteLine($"request_info.set_stream_content({requestParams.requestBody.Name}, '{sanitizedRequestBodyContentType}')");
+                    }
                 }
-                else if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty)
+                else if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty) {
                     writer.WriteLine($"request_info.set_content_from_parsable(@{requestAdapterProperty.Name.ToSnakeCase()}, '{sanitizedRequestBodyContentType}', {requestParams.requestBody.Name})");
+                }
             }
         }
         if (parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty urlTemplateParamsProperty &&
@@ -374,24 +415,29 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
                             $"request_info.path_parameters = {GetPropertyCall(urlTemplateParamsProperty, "''")}");
         }
         writer.WriteLine($"request_info.http_method = :{codeElement.HttpMethod.Value.ToString().ToUpperInvariant()}");
-        if (codeElement.ShouldAddAcceptHeader)
+        if (codeElement.ShouldAddAcceptHeader) {
             writer.WriteLine($"request_info.headers.try_add('Accept', '{codeElement.AcceptHeaderValue.SanitizeSingleQuote()}')");
+        }
+
         writer.WriteLine("return request_info");
     }
     private static string GetPropertyCall(CodeProperty property, string defaultValue) => property == null ? defaultValue : $"@{property.NamePrefix}{property.Name.ToSnakeCase()}";
     private void WriteSerializerBody(CodeClass parentClass, LanguageWriter writer)
     {
         var additionalDataProperty = parentClass.GetPropertyOfKind(CodePropertyKind.AdditionalData);
-        if (parentClass.StartBlock.Inherits != null)
+        if (parentClass.StartBlock.Inherits != null) {
             writer.WriteLine("super");
+        }
+
         foreach (var otherProp in parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .Where(static x => !x.ExistsInBaseType && !x.ReadOnly)
                                             .OrderBy(static x => x.Name))
         {
             writer.WriteLine($"writer.{GetSerializationMethodName(otherProp.Type)}(\"{RubyConventionService.SanitizeRubyDoubleQuoteLiteral(otherProp.WireName)}\", @{otherProp.Name.ToSnakeCase()})");
         }
-        if (additionalDataProperty != null)
+        if (additionalDataProperty != null) {
             writer.WriteLine($"writer.write_additional_data(@{additionalDataProperty.NamePrefix}{additionalDataProperty.Name.ToSnakeCase()})");
+        }
     }
     private static readonly BaseCodeParameterOrderComparer parameterOrderComparer = new();
     private void WriteMethodPrototype(CodeMethod code, LanguageWriter writer)
@@ -430,10 +476,12 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
                 writer.WriteLine($"{conventions.DocCommentPrefix}@param {paramWithDescription.Name.ToSnakeCase()} {description}");
             }
 
-            if (code.IsAsync)
+            if (code.IsAsync) {
                 writer.WriteLine($"{conventions.DocCommentPrefix}@return a Fiber of {code.ReturnType.Name.ToSnakeCase()}");
-            else
+            } else {
                 writer.WriteLine($"{conventions.DocCommentPrefix}@return a {code.ReturnType.Name.ToSnakeCase()}");
+            }
+
             writer.WriteLine(conventions.DocCommentEnd);
         }
     }
@@ -443,13 +491,17 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
         var propertyType = conventions.TranslateType(propType);
         if (propType is CodeType currentType)
         {
-            if (isCollection)
-                if (currentType.TypeDefinition == null)
+            if (isCollection) {
+                if (currentType.TypeDefinition == null) {
                     return $"get_collection_of_primitive_values({TranslateObjectType(propertyType.ToFirstCharacterUpperCase())})";
-                else
+                } else {
                     return $"get_collection_of_object_values({getDeserializationLambda(currentType)})";
-            if (currentType.TypeDefinition is CodeEnum currentEnum)
+                }
+            }
+
+            if (currentType.TypeDefinition is CodeEnum currentEnum) {
                 return $"get_enum_value{(currentEnum.Flags ? "s" : string.Empty)}({currentType.TypeDefinition.Parent?.Name.NormalizeNameSpaceName("::").ToFirstCharacterUpperCase()}::{propertyType.ToFirstCharacterUpperCase()})";
+            }
         }
         return propertyType switch
         {
@@ -464,11 +516,15 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
     }
     private static string getDeserializationLambda(CodeTypeBase targetTypeBase)
     {
-        if (targetTypeBase is not CodeType targetType)
+        if (targetTypeBase is not CodeType targetType) {
             return "lambda {|pn| nil }";
+        }
+
         var nsPrefix = targetType.TypeDefinition?.Parent?.Name.NormalizeNameSpaceName("::").ToFirstCharacterUpperCase();
-        if (!string.IsNullOrEmpty(nsPrefix))
+        if (!string.IsNullOrEmpty(nsPrefix)) {
             nsPrefix += "::";
+        }
+
         return $"lambda {{|pn| {nsPrefix}{targetType.Name.ToFirstCharacterUpperCase()}.create_from_discriminator_value(pn) }}";
     }
     private static string TranslateObjectType(string typeName)
@@ -490,13 +546,17 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
         var propertyType = conventions.TranslateType(propType);
         if (propType is CodeType currentType)
         {
-            if (isCollection)
-                if (currentType.TypeDefinition == null)
+            if (isCollection) {
+                if (currentType.TypeDefinition == null) {
                     return "write_collection_of_primitive_values";
-                else
+                } else {
                     return "write_collection_of_object_values";
-            if (currentType.TypeDefinition is CodeEnum)
+                }
+            }
+
+            if (currentType.TypeDefinition is CodeEnum) {
                 return "write_enum_value";
+            }
         }
         return propertyType switch
         {
@@ -511,7 +571,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, RubyConventionServ
     }
     private static string GetSendRequestMethodName(bool isStream)
     {
-        if (isStream) return "send_primitive_async";
+        if (isStream) {
+            return "send_primitive_async";
+        }
+
         return "send_async";
     }
 }

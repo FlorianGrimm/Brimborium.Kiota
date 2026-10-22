@@ -21,7 +21,10 @@ public abstract class BaseApiConsumerConfigurationComparer<T> : IEqualityCompare
     /// <inheritdoc/>
     public virtual bool Equals(T? x, T? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
         return _stringComparer.Equals(x.DescriptionLocation, y.DescriptionLocation)
                && _stringComparer.Equals(x.OutputPath, y.OutputPath)
                && _stringIEnumerableDeepComparer.Equals(x.IncludePatterns, y.IncludePatterns)
@@ -32,7 +35,10 @@ public abstract class BaseApiConsumerConfigurationComparer<T> : IEqualityCompare
     public virtual int GetHashCode([DisallowNull] T obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.DescriptionLocation, _stringComparer);
         hash.Add(obj.OutputPath, _stringComparer);
         hash.Add(obj.IncludePatterns, _stringIEnumerableDeepComparer);

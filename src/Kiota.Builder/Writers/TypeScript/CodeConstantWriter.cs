@@ -38,9 +38,14 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
 
     private void WriteNavigationMetadataConstant(CodeConstant codeElement, LanguageWriter writer)
     {
-        if (codeElement.OriginalCodeElement is not CodeClass codeClass) throw new InvalidOperationException("Original CodeElement cannot be null");
-        if (codeElement.Parent is not CodeFile parentCodeFile || parentCodeFile.FindChildByName<CodeInterface>(codeElement.Name.Replace(CodeConstant.NavigationMetadataSuffix, string.Empty, StringComparison.Ordinal), false) is not CodeInterface currentInterface)
+        if (codeElement.OriginalCodeElement is not CodeClass codeClass) {
+            throw new InvalidOperationException("Original CodeElement cannot be null");
+        }
+
+        if (codeElement.Parent is not CodeFile parentCodeFile || parentCodeFile.FindChildByName<CodeInterface>(codeElement.Name.Replace(CodeConstant.NavigationMetadataSuffix, string.Empty, StringComparison.Ordinal), false) is not CodeInterface currentInterface) {
             throw new InvalidOperationException("Couldn't find the associated interface for the navigation metadata constant");
+        }
+
         var navigationMethods = codeClass.Methods
                                     .Where(static x => x.Kind is CodeMethodKind.IndexerBackwardCompatibility or CodeMethodKind.RequestBuilderWithParameters)
                                     .OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase)
@@ -49,8 +54,9 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
                     .Where(static x => x.Kind is CodePropertyKind.RequestBuilder)
                     .OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-        if (navigationProperties.Length == 0 && navigationMethods.Length == 0)
+        if (navigationProperties.Length == 0 && navigationMethods.Length == 0) {
             return;
+        }
 
         var parentNamespace = codeElement.GetImmediateParentOfType<CodeNamespace>();
         writer.StartBlock($"export const {codeElement.Name.ToFirstCharacterUpperCase()}: Record<Exclude<keyof {currentInterface.Name.ToFirstCharacterUpperCase()}, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {{");
@@ -73,12 +79,17 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
 
     private static void WriteNavigationMetadataEntry(CodeNamespace parentNamespace, LanguageWriter writer, string requestBuilderName, string[]? pathParameters = null)
     {
-        if (parentNamespace.FindChildByName<CodeConstant>($"{requestBuilderName}{CodeConstant.RequestsMetadataSuffix}", 3) is CodeConstant requestsMetadataConstant && requestsMetadataConstant.Kind is CodeConstantKind.RequestsMetadata)
+        if (parentNamespace.FindChildByName<CodeConstant>($"{requestBuilderName}{CodeConstant.RequestsMetadataSuffix}", 3) is CodeConstant requestsMetadataConstant && requestsMetadataConstant.Kind is CodeConstantKind.RequestsMetadata) {
             writer.WriteLine($"requestsMetadata: {requestsMetadataConstant.Name.ToFirstCharacterUpperCase()},");
-        if (parentNamespace.FindChildByName<CodeConstant>($"{requestBuilderName}{CodeConstant.NavigationMetadataSuffix}", 3) is CodeConstant navigationMetadataConstant && navigationMetadataConstant.Kind is CodeConstantKind.NavigationMetadata)
+        }
+
+        if (parentNamespace.FindChildByName<CodeConstant>($"{requestBuilderName}{CodeConstant.NavigationMetadataSuffix}", 3) is CodeConstant navigationMetadataConstant && navigationMetadataConstant.Kind is CodeConstantKind.NavigationMetadata) {
             writer.WriteLine($"navigationMetadata: {navigationMetadataConstant.Name.ToFirstCharacterUpperCase()},");
-        if (pathParameters is { Length: > 0 })
+        }
+
+        if (pathParameters is { Length: > 0 }) {
             writer.WriteLine($"pathParametersMappings: [{string.Join(", ", pathParameters)}],");
+        }
     }
     private static string GetErrorMappingKey(string original) =>
     original.Equals(CodeMethod.ErrorMappingClientRange, StringComparison.OrdinalIgnoreCase) || original.Equals(CodeMethod.ErrorMappingServerRange, StringComparison.OrdinalIgnoreCase) ?
@@ -87,12 +98,17 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
 
     private void WriteRequestsMetadataConstant(CodeConstant codeElement, LanguageWriter writer)
     {
-        if (codeElement.OriginalCodeElement is not CodeClass codeClass) throw new InvalidOperationException("Original CodeElement cannot be null");
+        if (codeElement.OriginalCodeElement is not CodeClass codeClass) {
+            throw new InvalidOperationException("Original CodeElement cannot be null");
+        }
+
         if (codeClass.Methods
                     .Where(static x => x.Kind is CodeMethodKind.RequestExecutor)
                     .OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase)
-                    .ToArray() is not { Length: > 0 } executorMethods)
+                    .ToArray() is not { Length: > 0 } executorMethods) {
             return;
+        }
+
         var uriTemplateConstant = codeElement.Parent is CodeFile parentFile && parentFile.Constants.FirstOrDefault(static x => x.Kind is CodeConstantKind.UriTemplate) is CodeConstant tplct ?
             tplct : throw new InvalidOperationException("Couldn't find the associated uri template constant for the requests metadata constant");
         writer.StartBlock($"export const {codeElement.Name.ToFirstCharacterUpperCase()}: RequestsMetadata = {{");
@@ -109,8 +125,10 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
             var urlTemplateValue = executorMethod.HasUrlTemplateOverride ? $"\"{executorMethod.UrlTemplateOverride.SanitizeDoubleQuote()}\"" : uriTemplateConstant.Name.ToFirstCharacterUpperCase();
             writer.WriteLine($"uriTemplate: {urlTemplateValue},");
             if (codeClass.Methods.FirstOrDefault(x => x.Kind is CodeMethodKind.RequestGenerator && x.HttpMethod == executorMethod.HttpMethod) is { } generatorMethod &&
-                 generatorMethod.AcceptHeaderValue is string acceptHeader && !string.IsNullOrEmpty(acceptHeader))
+                 generatorMethod.AcceptHeaderValue is string acceptHeader && !string.IsNullOrEmpty(acceptHeader)) {
                 writer.WriteLine($"responseBodyContentType: \"{acceptHeader.SanitizeDoubleQuote()}\",");
+            }
+
             if (executorMethod.ErrorMappings.Any())
             {
                 writer.StartBlock("errorMappings: {");
@@ -130,32 +148,43 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
                 }
                 writer.WriteLine($"enumObject: {enumObjectName!.ToFirstCharacterUpperCase()},");
             }
-            else if (!isVoid)
+            else if (!isVoid) {
                 writer.WriteLine($"responseBodyFactory: {GetTypeFactory(isVoid, isStream, executorMethod, writer)},");
+            }
+
             var sanitizedRequestBodyContentType = executorMethod.RequestBodyContentType.SanitizeDoubleQuote();
 
-            if (!string.IsNullOrEmpty(sanitizedRequestBodyContentType))
+            if (!string.IsNullOrEmpty(sanitizedRequestBodyContentType)) {
                 writer.WriteLine($"requestBodyContentType: \"{sanitizedRequestBodyContentType}\",");
+            }
+
             if (executorMethod.Parameters.FirstOrDefault(static x => x.Kind is CodeParameterKind.RequestBody) is CodeParameter requestBody)
             {
-                if (GetBodySerializer(requestBody) is string bodySerializer)
+                if (GetBodySerializer(requestBody) is string bodySerializer) {
                     writer.WriteLine($"requestBodySerializer: {bodySerializer},");
+                }
+
                 writer.WriteLine($"requestInformationContentSetMethod: {GetRequestContentSetterMethodName(requestBody)},");
             }
             if (codeElement.Parent is CodeFile parentCodeFile &&
-                parentCodeFile.FindChildByName<CodeConstant>(codeElement.Name.Replace(CodeConstant.RequestsMetadataSuffix, $"{executorMethod.Name.ToFirstCharacterUpperCase()}QueryParametersMapper", StringComparison.Ordinal), false) is CodeConstant mapperConstant)
+                parentCodeFile.FindChildByName<CodeConstant>(codeElement.Name.Replace(CodeConstant.RequestsMetadataSuffix, $"{executorMethod.Name.ToFirstCharacterUpperCase()}QueryParametersMapper", StringComparison.Ordinal), false) is CodeConstant mapperConstant) {
                 writer.WriteLine($"queryParametersMapper: {mapperConstant.Name.ToFirstCharacterUpperCase()},");
+            }
+
             writer.CloseBlock("},");
         }
         writer.CloseBlock("};");
     }
     private string GetRequestContentSetterMethodName(CodeParameter requestBody)
     {
-        if (requestBody.Type.Name.Equals(conventions.StreamTypeName, StringComparison.OrdinalIgnoreCase))
+        if (requestBody.Type.Name.Equals(conventions.StreamTypeName, StringComparison.OrdinalIgnoreCase)) {
             return "\"setStreamContent\"";
+        }
 
-        if (requestBody.Type is CodeType currentType && (currentType.TypeDefinition is CodeInterface || currentType.Name.Equals("MultipartBody", StringComparison.OrdinalIgnoreCase)))
+        if (requestBody.Type is CodeType currentType && (currentType.TypeDefinition is CodeInterface || currentType.Name.Equals("MultipartBody", StringComparison.OrdinalIgnoreCase))) {
             return "\"setContentFromParsable\"";
+        }
+
         return "\"setContentFromScalar\"";
     }
     private string? GetBodySerializer(CodeParameter requestBody)
@@ -168,16 +197,27 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
     }
     private string GetTypeFactory(bool isVoid, bool isStream, CodeMethod codeElement, LanguageWriter writer)
     {
-        if (isVoid) return string.Empty;
+        if (isVoid) {
+            return string.Empty;
+        }
+
         var typeName = conventions.TranslateType(codeElement.ReturnType);
-        if (isStream || IsPrimitiveType(typeName) || IsKiotaPrimitive(typeName)) return $" \"{typeName}\"";
-        if (GetPrimitiveAlias(typeName) is { } alias && !string.IsNullOrEmpty(alias))
+        if (isStream || IsPrimitiveType(typeName) || IsKiotaPrimitive(typeName)) {
+            return $" \"{typeName}\"";
+        }
+
+        if (GetPrimitiveAlias(typeName) is { } alias && !string.IsNullOrEmpty(alias)) {
             return $" \"{alias}\"";
+        }
+
         return $" {GetFactoryMethodName(codeElement.ReturnType, codeElement, writer)}";
     }
     private string GetReturnTypeWithoutCollectionSymbol(CodeMethod codeElement, string fullTypeName)
     {
-        if (!codeElement.ReturnType.IsCollection) return fullTypeName;
+        if (!codeElement.ReturnType.IsCollection) {
+            return fullTypeName;
+        }
+
         var clone = (CodeTypeBase)codeElement.ReturnType.Clone();
         clone.CollectionKind = CodeTypeBase.CodeTypeCollectionKind.None;
         return conventions.GetTypeString(clone, codeElement);
@@ -205,13 +245,18 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
 
     private static void WriteQueryParametersMapperConstant(CodeConstant codeElement, LanguageWriter writer)
     {
-        if (codeElement.OriginalCodeElement is not CodeInterface codeInterface) throw new InvalidOperationException("Original CodeElement cannot be null");
+        if (codeElement.OriginalCodeElement is not CodeInterface codeInterface) {
+            throw new InvalidOperationException("Original CodeElement cannot be null");
+        }
+
         if (codeInterface.Properties
                         .OfKind(CodePropertyKind.QueryParameter)
                         .Where(static x => !string.IsNullOrEmpty(x.SerializationName))
                         .OrderBy(static x => x.SerializationName, StringComparer.OrdinalIgnoreCase)
-                        .ToArray() is not { Length: > 0 } properties)
+                        .ToArray() is not { Length: > 0 } properties) {
             return;
+        }
+
         writer.StartBlock($"const {codeElement.Name.ToFirstCharacterUpperCase()}: Record<string, string> = {{");
         foreach (var property in properties)
         {
@@ -221,9 +266,14 @@ public class CodeConstantWriter : BaseElementWriter<CodeConstant, TypeScriptConv
     }
     private void WriteEnumObjectConstant(CodeConstant codeElement, LanguageWriter writer)
     {
-        if (codeElement.OriginalCodeElement is not CodeEnum codeEnum) throw new InvalidOperationException("Original CodeElement cannot be null");
-        if (!codeEnum.Options.Any())
+        if (codeElement.OriginalCodeElement is not CodeEnum codeEnum) {
+            throw new InvalidOperationException("Original CodeElement cannot be null");
+        }
+
+        if (!codeEnum.Options.Any()) {
             return;
+        }
+
         conventions.WriteLongDescription(codeEnum, writer);
         writer.StartBlock($"export const {codeElement.Name.ToFirstCharacterUpperCase()} = {{");
         codeEnum.Options.ToList().ForEach(x =>

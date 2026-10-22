@@ -17,9 +17,14 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     public override void WriteCodeElement(CodeMethod codeElement, LanguageWriter writer)
     {
         ArgumentNullException.ThrowIfNull(codeElement);
-        if (codeElement.ReturnType == null) throw new InvalidOperationException($"{nameof(codeElement.ReturnType)} should not be null");
+        if (codeElement.ReturnType == null) {
+            throw new InvalidOperationException($"{nameof(codeElement.ReturnType)} should not be null");
+        }
+
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException("the parent of a method should be a class");
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException("the parent of a method should be a class");
+        }
 
         var returnType = conventions.GetTypeString(codeElement.ReturnType, codeElement);
         var inherits = parentClass.StartBlock.Inherits != null && !parentClass.IsErrorDefinition;
@@ -173,7 +178,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
                                             .OrderBy(static x => x, CodePropertyTypeForwardComparer)
                                             .ThenBy(static x => x.Name, StringComparer.Ordinal))
         {
-            if (property.Type is CodeType propertyType)
+            if (property.Type is CodeType propertyType) {
                 if (propertyType.TypeDefinition is CodeClass && !propertyType.IsCollection)
                 {
                     var mappedType = parentClass.DiscriminatorInformation.DiscriminatorMappings.FirstOrDefault(x => x.Value.Name.Equals(propertyType.Name, StringComparison.OrdinalIgnoreCase));
@@ -194,6 +199,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
                     writer.CloseBlock();
                     includeElse = true;
                 }
+            }
         }
         writer.WriteLine($"return {ResultVarName};");
     }
@@ -213,8 +219,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
                 writer.WriteLine($"{ResultVarName}.{property.Name} = {parseNodeParameter.Name}.{GetDeserializationMethodName(propertyType, codeElement)};");
                 writer.CloseBlock();
             }
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
         var complexProperties = parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .Where(static x => x.Type is CodeType xType && xType.TypeDefinition is CodeClass && !xType.IsCollection)
@@ -226,8 +233,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             {
                 writer.StartBlock("else {");
             }
-            foreach (var property in complexProperties)
+            foreach (var property in complexProperties) {
                 writer.WriteLine($"{ResultVarName}.{property.Item1.Name} = {conventions.GetTypeString(property.Item2, codeElement)}();");
+            }
+
             if (includeElse)
             {
                 writer.CloseBlock();
@@ -247,16 +256,17 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             writer.WriteLine($"var {DiscriminatorMappingVarName} = {parseNodeParameter.Name}.getChildNode('{discriminatorPropertyName}')?.getStringValue();");
             WriteFactoryMethodBodyForInheritedModel(codeElement, parentClass, writer);
         }
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType)
+        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType) {
             WriteFactoryMethodBodyForUnionModel(codeElement, parentClass, parseNodeParameter, writer);
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        } else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             WriteFactoryMethodBodyForIntersectionModel(codeElement, parentClass, parseNodeParameter, writer);
-        else if (parentClass.IsErrorDefinition && parentClass.Properties.Where(static x => x.IsOfKind(CodePropertyKind.AdditionalData)).Any() && !parentClass.Properties.Where(static x => x.IsOfKind(CodePropertyKind.BackingStore)).Any())
+        } else if (parentClass.IsErrorDefinition && parentClass.Properties.Where(static x => x.IsOfKind(CodePropertyKind.AdditionalData)).Any() && !parentClass.Properties.Where(static x => x.IsOfKind(CodePropertyKind.BackingStore)).Any())
         {
             writer.WriteLine($"return {parentClass.Name}(additionalData: {{}});");
         }
-        else
+        else {
             writer.WriteLine($"return {parentClass.Name}();");
+        }
     }
 
     private void WriteRequestBuilderBody(CodeClass parentClass, CodeMethod codeElement, LanguageWriter writer)
@@ -266,7 +276,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     }
     private static void WriteApiConstructorBody(CodeClass parentClass, CodeMethod method, LanguageWriter writer)
     {
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is not CodeProperty requestAdapterProperty) return;
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is not CodeProperty requestAdapterProperty) {
+            return;
+        }
+
         var pathParametersProperty = parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters);
         var backingStoreParameter = method.Parameters.OfKind(CodeParameterKind.BackingStore);
         var requestAdapterPropertyName = requestAdapterProperty.Name;
@@ -278,8 +291,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             writer.StartBlock($"if ({requestAdapterPropertyName}.baseUrl == null || {requestAdapterPropertyName}.baseUrl!.isEmpty) {{");
             writer.WriteLine($"{requestAdapterPropertyName}.baseUrl = '{sanitizedBaseUrl}';");
             writer.CloseBlock();
-            if (pathParametersProperty != null)
+            if (pathParametersProperty != null) {
                 writer.WriteLine($"{pathParametersProperty.Name}['baseurl'] = {requestAdapterPropertyName}.baseUrl;");
+            }
         }
         if (backingStoreParameter != null)
         {
@@ -290,9 +304,11 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     }
     private static void WriteSerializationRegistration(HashSet<string> serializationClassNames, LanguageWriter writer, string methodName)
     {
-        if (serializationClassNames != null)
-            foreach (var serializationClassName in serializationClassNames)
+        if (serializationClassNames != null) {
+            foreach (var serializationClassName in serializationClassNames) {
                 writer.WriteLine($"ApiClientBuilder.{methodName}({serializationClassName}.new);");
+            }
+        }
     }
     private static string? GetDefaultValue(string defaultValue, CodeType propertyType)
     {
@@ -333,8 +349,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             defaultValue = $"{conventions.GetTypeString(property.Type, currentMethod).TrimEnd('?')}.{defaultValue}";
             return true;
         }
-        if (property.Type is not CodeType propertyType)
+        if (property.Type is not CodeType propertyType) {
             return true;
+        }
+
         if (propertyType.IsNullable && defaultValue.TrimQuotes().Equals("null", StringComparison.OrdinalIgnoreCase))
         {
             defaultValue = "null";
@@ -346,11 +364,15 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             return normalizedDefaultValue is not null;
         }
         defaultValue = defaultValue.Trim('"');
-        if (defaultValue.StartsWith('\'') && defaultValue.EndsWith('\'') && defaultValue.Length > 1)
+        if (defaultValue.StartsWith('\'') && defaultValue.EndsWith('\'') && defaultValue.Length > 1) {
             defaultValue = defaultValue[1..^1];
+        }
+
         defaultValue = SanitizeDartSingleQuoteLiteral(defaultValue);
-        if (GetDefaultValue(defaultValue, propertyType) is string convertedDefaultValue)
+        if (GetDefaultValue(defaultValue, propertyType) is string convertedDefaultValue) {
             defaultValue = convertedDefaultValue;
+        }
+
         return true;
     }
     private void WriteConstructorBody(CodeClass parentClass, CodeMethod currentMethod, LanguageWriter writer)
@@ -388,7 +410,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
                 currentMethod.Parameters.OfKind(CodeParameterKind.PathParameters) is CodeParameter pathParametersParam)
             {
                 var pathParameters = currentMethod.Parameters.Where(static x => x.IsOfKind(CodeParameterKind.Path));
-                if (pathParameters.Any())
+                if (pathParameters.Any()) {
                     conventions.AddParametersAssignment(writer,
                                                         pathParametersParam.Type,
                                                         pathParametersParam.Name,
@@ -397,6 +419,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
                                                                     .Where(static x => x.IsOfKind(CodeParameterKind.Path))
                                                                     .Select(static x => (x.Type, string.IsNullOrEmpty(x.SerializationName) ? x.Name : x.SerializationName, x.Name))
                                                                     .ToArray());
+                }
             }
         }
     }
@@ -424,12 +447,13 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     private string DefaultDeserializerReturnInstance => $"<String, void Function({conventions.ParseNodeInterfaceName})>";
     private void WriteDeserializerBody(bool shouldHide, CodeMethod codeElement, CodeClass parentClass, LanguageWriter writer)
     {
-        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType)
+        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType) {
             WriteDeserializerBodyForUnionModel(codeElement, parentClass, writer);
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        } else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             WriteDeserializerBodyForIntersectionModel(parentClass, writer);
-        else
+        } else {
             WriteDeserializerBodyForInheritedModel(shouldHide, codeElement, parentClass, writer);
+        }
     }
     private void WriteDeserializerBodyForUnionModel(CodeMethod method, CodeClass parentClass, LanguageWriter writer)
     {
@@ -445,8 +469,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             writer.StartBlock($"{(includeElse ? "else " : string.Empty)}if({otherPropName} != null) {{");
             writer.WriteLine($"return {otherPropName}!.{method.Name}();");
             writer.CloseBlock();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
         writer.WriteLine($"return {DefaultDeserializerReturnInstance}{{}};");
     }
@@ -499,15 +524,16 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             if (isCollection)
             {
                 var collectionMethod = "";
-                if (currentType.TypeDefinition == null)
+                if (currentType.TypeDefinition == null) {
                     return $"getCollectionOfPrimitiveValues<{propertyType.TrimEnd(DartConventionService.NullableMarker)}>(){collectionMethod}";
-                else if (currentType.TypeDefinition is CodeEnum enumType)
+                } else if (currentType.TypeDefinition is CodeEnum enumType)
                 {
                     var typeName = enumType.Name;
                     return $"getCollectionOfEnumValues<{typeName}>((stringValue) => {typeName}.values.where((enumVal) => enumVal.value == stringValue).firstOrNull)";
                 }
-                else
+                else {
                     return $"getCollectionOfObjectValues<{propertyType}>({propertyType}.createFromDiscriminatorValue){collectionMethod}";
+                }
             }
             else if (currentType.TypeDefinition is CodeEnum enumType)
             {
@@ -530,7 +556,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
         ArgumentNullException.ThrowIfNull(requestParams);
         ArgumentNullException.ThrowIfNull(parentClass);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.HttpMethod == null) throw new InvalidOperationException("http method cannot be null");
+        if (codeElement.HttpMethod == null) {
+            throw new InvalidOperationException("http method cannot be null");
+        }
 
         var generatorMethodName = parentClass
                                             .Methods
@@ -559,9 +587,17 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     private const string RequestInfoVarName = "requestInfo";
     private void WriteRequestGeneratorBody(CodeMethod codeElement, RequestParams requestParams, CodeClass currentClass, LanguageWriter writer)
     {
-        if (codeElement.HttpMethod == null) throw new InvalidOperationException("http method cannot be null");
-        if (currentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is not CodeProperty urlTemplateParamsProperty) throw new InvalidOperationException("path parameters property cannot be null");
-        if (currentClass.GetPropertyOfKind(CodePropertyKind.UrlTemplate) is not CodeProperty urlTemplateProperty) throw new InvalidOperationException("url template property cannot be null");
+        if (codeElement.HttpMethod == null) {
+            throw new InvalidOperationException("http method cannot be null");
+        }
+
+        if (currentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is not CodeProperty urlTemplateParamsProperty) {
+            throw new InvalidOperationException("path parameters property cannot be null");
+        }
+
+        if (currentClass.GetPropertyOfKind(CodePropertyKind.UrlTemplate) is not CodeProperty urlTemplateProperty) {
+            throw new InvalidOperationException("url template property cannot be null");
+        }
 
         var operationName = codeElement.HttpMethod.ToString();
         var urlTemplateValue = codeElement.HasUrlTemplateOverride ? $"'{SanitizeDartSingleQuoteLiteral(codeElement.UrlTemplateOverride)}'" : GetPropertyCall(urlTemplateProperty, "''");
@@ -573,24 +609,29 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             writer.WriteLine($"{RequestInfoVarName}.configure<{parameterClassName}>({requestParams.requestConfiguration.Name}, () => {parameterClassName}());");
         }
 
-        if (codeElement.ShouldAddAcceptHeader)
+        if (codeElement.ShouldAddAcceptHeader) {
             writer.WriteLine($"{RequestInfoVarName}.headers.put('Accept', '{SanitizeDartSingleQuoteLiteral(codeElement.AcceptHeaderValue)}');");
+        }
+
         if (requestParams.requestBody != null)
         {
             var suffix = requestParams.requestBody.Type.IsCollection ? "Collection" : string.Empty;
             var requestBodyContentType = SanitizeDartSingleQuoteLiteral(codeElement.RequestBodyContentType);
             if (requestParams.requestBody.Type.Name.Equals(conventions.StreamTypeName, StringComparison.OrdinalIgnoreCase))
             {
-                if (requestParams.requestContentType is not null)
+                if (requestParams.requestContentType is not null) {
                     writer.WriteLine($"{RequestInfoVarName}.setStreamContent({requestParams.requestBody.Name}, {requestParams.requestContentType.Name});");
-                else if (!string.IsNullOrEmpty(codeElement.RequestBodyContentType))
+                } else if (!string.IsNullOrEmpty(codeElement.RequestBodyContentType)) {
                     writer.WriteLine($"{RequestInfoVarName}.setStreamContent({requestParams.requestBody.Name}, '{requestBodyContentType}');");
+                }
             }
-            else if (currentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty)
-                if (requestParams.requestBody.Type is CodeType bodyType && (bodyType.TypeDefinition is CodeClass || bodyType.Name.Equals("MultipartBody", StringComparison.OrdinalIgnoreCase)))
+            else if (currentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProperty) {
+                if (requestParams.requestBody.Type is CodeType bodyType && (bodyType.TypeDefinition is CodeClass || bodyType.Name.Equals("MultipartBody", StringComparison.OrdinalIgnoreCase))) {
                     writer.WriteLine($"{RequestInfoVarName}.setContentFromParsable{suffix}({requestAdapterProperty.Name}, '{requestBodyContentType}', {requestParams.requestBody.Name});");
-                else
+                } else {
                     writer.WriteLine($"{RequestInfoVarName}.setContentFromScalar{suffix}({requestAdapterProperty.Name}, '{requestBodyContentType}', {requestParams.requestBody.Name});");
+                }
+            }
         }
 
         writer.WriteLine($"return {RequestInfoVarName};");
@@ -598,20 +639,24 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     private static string GetPropertyCall(CodeProperty property, string defaultValue) => property == null ? defaultValue : $"{property.Name}";
     private void WriteSerializerBody(bool shouldHide, CodeMethod method, CodeClass parentClass, LanguageWriter writer)
     {
-        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType)
+        if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForUnionType) {
             WriteSerializerBodyForUnionModel(method, parentClass, writer);
-        else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
+        } else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType) {
             WriteSerializerBodyForIntersectionModel(method, parentClass, writer);
-        else
+        } else {
             WriteSerializerBodyForInheritedModel(shouldHide, method, parentClass, writer);
+        }
 
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.AdditionalData) is CodeProperty additionalDataProperty)
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.AdditionalData) is CodeProperty additionalDataProperty) {
             writer.WriteLine($"writer.writeAdditionalData({additionalDataProperty.Name});");
+        }
     }
     private void WriteSerializerBodyForInheritedModel(bool shouldHide, CodeMethod method, CodeClass parentClass, LanguageWriter writer)
     {
-        if (shouldHide)
+        if (shouldHide) {
             writer.WriteLine("super.serialize(writer);");
+        }
+
         foreach (var otherProp in parentClass
                                         .GetPropertiesOfKind(CodePropertyKind.Custom, CodePropertyKind.ErrorMessageOverride)
                                         .Where(x => !x.ExistsInBaseType && !x.ReadOnly && !conventions.ErrorClassPropertyExistsInSuperClass(x))
@@ -646,8 +691,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             writer.StartBlock($"{(includeElse ? "else " : string.Empty)}if({otherProp.Name} != null) {{");
             writer.WriteLine($"writer.{serializationMethodName}(null, {booleanValue}{otherProp.Name}{secondArgument});");
             writer.CloseBlock();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
     }
     private void WriteSerializerBodyForIntersectionModel(CodeMethod method, CodeClass parentClass, LanguageWriter writer)
@@ -670,8 +716,9 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
             writer.StartBlock($"{(includeElse ? "else " : string.Empty)}if({otherProp.Name} != null) {{");
             writer.WriteLine($"writer.{serializationMethodName}(null, {booleanValue}{otherProp.Name}{secondArgument});");
             writer.CloseBlock();
-            if (!includeElse)
+            if (!includeElse) {
                 includeElse = true;
+            }
         }
         var complexProperties = parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .Where(static x => x.Type is CodeType propType && propType.TypeDefinition is CodeClass && !x.Type.IsCollection)
@@ -702,23 +749,31 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
         var returnTypeName = conventions.GetTypeString(returnType, currentElement, false);
         var isStream = conventions.StreamTypeName.Equals(returnTypeName, StringComparison.OrdinalIgnoreCase);
         var isEnum = returnType is CodeType codeType && codeType.TypeDefinition is CodeEnum;
-        if (isVoid) return "sendNoContent";
-        else if (isStream || conventions.IsPrimitiveType(returnTypeName) || isEnum)
-            if (returnType.IsCollection)
+        if (isVoid) {
+            return "sendNoContent";
+        } else if (isStream || conventions.IsPrimitiveType(returnTypeName) || isEnum) {
+            if (returnType.IsCollection) {
                 return $"sendPrimitiveCollection<{returnTypeName.TrimEnd('?')}>";
-            else
+            } else {
                 return $"sendPrimitive<{returnTypeName}>";
-        else if (returnType.IsCollection) return $"sendCollection<{returnTypeName}>";
-        else if (returnType.Name.EqualsIgnoreCase("binary")) return "sendPrimitiveCollection<int>";
-        else return $"send<{returnTypeName}>";
+            }
+        } else if (returnType.IsCollection) {
+            return $"sendCollection<{returnTypeName}>";
+        } else if (returnType.Name.EqualsIgnoreCase("binary")) {
+            return "sendPrimitiveCollection<int>";
+        } else {
+            return $"send<{returnTypeName}>";
+        }
     }
     private void WriteMethodDocumentation(CodeMethod code, LanguageWriter writer)
     {
         conventions.WriteLongDescription(code, writer);
         foreach (var paramWithDescription in code.Parameters
                                                 .Where(static x => x.Documentation.DescriptionAvailable)
-                                                .OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase))
+                                                .OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase)) {
             conventions.WriteParameterDescription(paramWithDescription, writer);
+        }
+
         conventions.WriteDeprecationAttribute(code, writer);
     }
     private static readonly BaseCodeParameterOrderComparer parameterOrderComparer = new();
@@ -730,12 +785,14 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
                 !string.IsNullOrEmpty(urlTemplateProperty.DefaultValue))
             {
                 var thirdParameterName = string.Empty;
-                if (currentMethod.Parameters.OfKind(CodeParameterKind.PathParameters) is CodeParameter pathParametersParameter)
+                if (currentMethod.Parameters.OfKind(CodeParameterKind.PathParameters) is CodeParameter pathParametersParameter) {
                     thirdParameterName = $", {pathParametersParameter.Name}";
-                else if (currentMethod.Parameters.OfKind(CodeParameterKind.RawUrl) is CodeParameter rawUrlParameter)
+                } else if (currentMethod.Parameters.OfKind(CodeParameterKind.RawUrl) is CodeParameter rawUrlParameter) {
                     thirdParameterName = $", {{RequestInformation.rawUrlKey : {rawUrlParameter.Name}}}";
-                else if (parentClass.Properties.FirstOrDefaultOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty && !string.IsNullOrEmpty(pathParametersProperty.DefaultValue))
+                } else if (parentClass.Properties.FirstOrDefaultOfKind(CodePropertyKind.PathParameters) is CodeProperty pathParametersProperty && !string.IsNullOrEmpty(pathParametersProperty.DefaultValue)) {
                     thirdParameterName = $", {pathParametersProperty.DefaultValue.SanitizeQuotedStringLiteral()}";
+                }
+
                 if (currentMethod.Parameters.OfKind(CodeParameterKind.RequestAdapter) is CodeParameter requestAdapterParameter)
                 {
                     return $" : super({requestAdapterParameter.Name}, {urlTemplateProperty.DefaultValue.SanitizeQuotedStringLiteral()}{thirdParameterName})";
@@ -772,10 +829,11 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
         var isConstructor = code.IsOfKind(CodeMethodKind.Constructor, CodeMethodKind.ClientConstructor, CodeMethodKind.RawUrlConstructor);
         var voidCorrectedTaskReturnType = code.IsAsync && isVoid ? "void" : returnType;
         var async = code.IsAsync ? " async" : string.Empty;
-        if (code.ReturnType.IsArray && code.IsOfKind(CodeMethodKind.RequestExecutor))
+        if (code.ReturnType.IsArray && code.IsOfKind(CodeMethodKind.RequestExecutor)) {
             voidCorrectedTaskReturnType = $"IEnumerable<{voidCorrectedTaskReturnType.StripArraySuffix()}>";
-        else if (code.IsOfKind(CodeMethodKind.RequestExecutor) && code.IsAsync)
+        } else if (code.IsOfKind(CodeMethodKind.RequestExecutor) && code.IsAsync) {
             voidCorrectedTaskReturnType = $"Future<{voidCorrectedTaskReturnType.StripArraySuffix()}>";
+        }
         // TODO: Task type should be moved into the refiner
         var completeReturnType = isConstructor ?
             string.Empty : voidCorrectedTaskReturnType + " ";
@@ -837,8 +895,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
     private string GetParameterSignatureWithNullableRefType(CodeParameter parameter, CodeElement targetElement)
     {
         var signatureSegments = conventions.GetParameterSignature(parameter, targetElement).Split(" ", StringSplitOptions.RemoveEmptyEntries);
-        if (signatureSegments.Length > 1 && signatureSegments[1].StartsWith("Function", StringComparison.Ordinal))
+        if (signatureSegments.Length > 1 && signatureSegments[1].StartsWith("Function", StringComparison.Ordinal)) {
             signatureSegments[1] += "?";
+        }
+
         return $"{string.Join(" ", signatureSegments)}";
     }
 
@@ -860,16 +920,17 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, DartConventionServ
         var propertyType = conventions.GetTypeString(propType, method, false);
         if (propType is CodeType currentType)
         {
-            if (isCollection)
-                if (currentType.TypeDefinition == null)
+            if (isCollection) {
+                if (currentType.TypeDefinition == null) {
                     return $"writeCollectionOfPrimitiveValues<{propertyType}>";
-                else if (currentType.TypeDefinition is CodeEnum)
+                } else if (currentType.TypeDefinition is CodeEnum) {
                     return $"writeCollectionOfEnumValues<{propertyType.TrimEnd('?')}>";
-                else
+                } else {
                     return $"writeCollectionOfObjectValues<{propertyType}>";
-            else if (currentType.TypeDefinition is CodeEnum enumType)
+                }
+            } else if (currentType.TypeDefinition is CodeEnum enumType) {
                 return $"writeEnumValue<{enumType.Name}>";
-
+            }
         }
 
         return propertyType switch

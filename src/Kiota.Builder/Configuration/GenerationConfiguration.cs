@@ -194,26 +194,34 @@ public partial class GenerationConfiguration : ICloneable
     private static readonly StringIEnumerableDeepComparer comparer = new();
     internal void UpdateConfigurationFromLanguagesInformation(LanguagesInformation languagesInfo)
     {
-        if (!languagesInfo.TryGetValue(Language.ToString(), out var languageInfo)) return;
+        if (!languagesInfo.TryGetValue(Language.ToString(), out var languageInfo)) {
+            return;
+        }
 
         var defaultConfiguration = new GenerationConfiguration();
         if (!string.IsNullOrEmpty(languageInfo.ClientClassName) &&
             ClientClassName.Equals(defaultConfiguration.ClientClassName, StringComparison.Ordinal) &&
-            !ClientClassName.Equals(languageInfo.ClientClassName, StringComparison.Ordinal))
+            !ClientClassName.Equals(languageInfo.ClientClassName, StringComparison.Ordinal)) {
             ClientClassName = SanitizeClientClassName(languageInfo.ClientClassName);
+        }
+
         if (!string.IsNullOrEmpty(languageInfo.ClientNamespaceName) &&
             ClientNamespaceName.Equals(defaultConfiguration.ClientNamespaceName, StringComparison.Ordinal) &&
-            !ClientNamespaceName.Equals(languageInfo.ClientNamespaceName, StringComparison.Ordinal))
+            !ClientNamespaceName.Equals(languageInfo.ClientNamespaceName, StringComparison.Ordinal)) {
             ClientNamespaceName = SanitizeClientNamespaceName(languageInfo.ClientNamespaceName);
+        }
+
         if (languageInfo.StructuredMimeTypes.Count != 0 &&
             comparer.Equals(StructuredMimeTypes, defaultConfiguration.StructuredMimeTypes) &&
-            !comparer.Equals(languageInfo.StructuredMimeTypes, StructuredMimeTypes))
+            !comparer.Equals(languageInfo.StructuredMimeTypes, StructuredMimeTypes)) {
             StructuredMimeTypes = new(languageInfo.StructuredMimeTypes);
+        }
     }
     public static string SanitizeClientClassName(string? clientClassName, string fallbackValue = DefaultClientClassName)
     {
-        if (string.IsNullOrEmpty(clientClassName))
+        if (string.IsNullOrEmpty(clientClassName)) {
             return fallbackValue;
+        }
 
         var sanitizedName = ClientClassNameInvalidCharactersRegex().Replace(clientClassName, string.Empty);
         sanitizedName = ClientClassNameInvalidStartRegex().Replace(sanitizedName, string.Empty);
@@ -221,8 +229,9 @@ public partial class GenerationConfiguration : ICloneable
     }
     public static string SanitizeClientNamespaceName(string? clientNamespaceName, string fallbackValue = DefaultClientNamespaceName)
     {
-        if (string.IsNullOrEmpty(clientNamespaceName))
+        if (string.IsNullOrEmpty(clientNamespaceName)) {
             return fallbackValue;
+        }
 
         var sanitizedName = ClientNamespaceNameInvalidCharactersRegex().Replace(clientNamespaceName, string.Empty);
         sanitizedName = ClientNamespaceNameConsecutiveDotsRegex().Replace(sanitizedName, ".");
@@ -268,8 +277,10 @@ public partial class GenerationConfiguration : ICloneable
             !string.IsNullOrEmpty(targetDirectory) &&
             !OpenAPIFilePath.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
             Path.IsPathRooted(OpenAPIFilePath) &&
-            Path.GetFullPath(OpenAPIFilePath).StartsWith(Path.GetFullPath(targetDirectory), StringComparison.Ordinal))
+            Path.GetFullPath(OpenAPIFilePath).StartsWith(Path.GetFullPath(targetDirectory), StringComparison.Ordinal)) {
             return "./" + Path.GetRelativePath(targetDirectory, OpenAPIFilePath).NormalizePathSeparators();
+        }
+
         return OpenAPIFilePath;
     }
     public bool IsPluginConfiguration => PluginTypes.Count != 0;

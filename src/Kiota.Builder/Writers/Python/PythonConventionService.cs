@@ -28,17 +28,22 @@ public class PythonConventionService : CommonLanguageConventionService
             $"self.{pathParametersProperty.Name}" :
             urlTemplateVarName;
         var pathParametersSuffix = !(pathParameters?.Any() ?? false) ? string.Empty : $", {string.Join(", ", pathParameters.Select(x => $"{x.Name}"))}";
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProp)
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is CodeProperty requestAdapterProp) {
             writer.WriteLine($"return {returnType}(self.{requestAdapterProp.Name}, {urlTemplateParams}{pathParametersSuffix})");
+        }
     }
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase? pathParametersType, string pathParametersReference, params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         writer.WriteLine($"{TempDictionaryVarName} = get_path_parameters({pathParametersReference})");
-        if (parameters.Length != 0)
+        if (parameters.Length != 0) {
             writer.WriteLines(parameters.Select(p =>
                 $"{TempDictionaryVarName}[\"{p.Item2.SanitizeDoubleQuote()}\"] = {p.Item3}"
             ));
+        }
     }
 
     public override string GetAccessModifier(AccessModifier access)
@@ -74,20 +79,28 @@ public class PythonConventionService : CommonLanguageConventionService
     public override string GetTypeString(CodeTypeBase code, CodeElement targetElement, bool includeCollectionInformation = true, LanguageWriter? writer = null)
     {
         ArgumentNullException.ThrowIfNull(targetElement);
-        if (code is null)
+        if (code is null) {
             return string.Empty;
+        }
+
         var collectionPrefix = code.CollectionKind == CodeTypeCollectionKind.None && includeCollectionInformation ? string.Empty : "list[";
         var collectionSuffix = code.CollectionKind == CodeTypeCollectionKind.None && includeCollectionInformation ? string.Empty : "]";
-        if (code is CodeComposedTypeBase currentUnion && currentUnion.Types.Any())
+        if (code is CodeComposedTypeBase currentUnion && currentUnion.Types.Any()) {
             return currentUnion.Types.Select(x => GetTypeString(x, targetElement, true, writer)).Aggregate((x, y) => $"Union[{x}, {TranslateAllTypes(y)}]");
+        }
+
         if (code is CodeType currentType)
         {
             var alias = GetTypeAlias(currentType, targetElement);
             var typeName = string.IsNullOrEmpty(alias) ? TranslateType(currentType) : alias;
-            if (TypeExistInSameClassAsTarget(code, targetElement) && targetElement.Parent != null)
+            if (TypeExistInSameClassAsTarget(code, targetElement) && targetElement.Parent != null) {
                 typeName = targetElement.Parent.Name;
-            if (code.ActionOf && writer != null)
+            }
+
+            if (code.ActionOf && writer != null) {
                 return WriteInlineDeclaration(currentType, targetElement, writer);
+            }
+
             var genericParameters = currentType.GenericTypeParameterValues.Any() ?
               $"[{string.Join(", ", currentType.GenericTypeParameterValues.Select(x => GetTypeString(x, targetElement, includeCollectionInformation)))}]" : string.Empty;
             return $"{collectionPrefix}{typeName}{genericParameters}{collectionSuffix}";
@@ -160,16 +173,23 @@ public class PythonConventionService : CommonLanguageConventionService
                                         writer.GetIndent()
                                     : string.Empty;
         writer.DecreaseIndent();
-        if (string.IsNullOrEmpty(innerDeclaration))
+        if (string.IsNullOrEmpty(innerDeclaration)) {
             return "object";
+        }
+
         return $"{{{innerDeclaration}}}";
     }
     public override bool WriteShortDescription(IDocumentedElement element, LanguageWriter writer, string prefix = "", string suffix = "")
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
         writer.WriteLine(DocCommentStart);
@@ -182,8 +202,14 @@ public class PythonConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (element.Documentation is not { } documentation) return;
-        if (element is not CodeElement codeElement) return;
+        if (element.Documentation is not { } documentation) {
+            return;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return;
+        }
+
         additionalRemarks ??= [];
 
         var additionalRemarksArray = additionalRemarks.ToArray();
@@ -195,8 +221,10 @@ public class PythonConventionService : CommonLanguageConventionService
                 var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
                 writer.WriteLine($"{description}");
             }
-            foreach (var additionalRemark in additionalRemarksArray.Where(static x => !string.IsNullOrEmpty(x)))
+            foreach (var additionalRemark in additionalRemarksArray.Where(static x => !string.IsNullOrEmpty(x))) {
                 writer.WriteLine($"{additionalRemark}");
+            }
+
             if (documentation.ExternalDocumentationAvailable)
             {
                 var documentationLabel = RemoveInvalidDescriptionCharacters(documentation.DocumentationLabel);
@@ -211,15 +239,23 @@ public class PythonConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return;
-        if (element is not CodeElement codeElement) return;
+        if (!element.Documentation.DescriptionAvailable) {
+            return;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return;
+        }
+
         var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
         writer.WriteLine($"{InLineCommentPrefix}{description}");
     }
 
     private string GetDeprecationInformation(IDeprecableElement element)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return string.Empty;
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return string.Empty;
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {element.Deprecation.Version}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
@@ -229,7 +265,8 @@ public class PythonConventionService : CommonLanguageConventionService
     internal void WriteDeprecationWarning(IDeprecableElement element, LanguageWriter writer)
     {
         var deprecationMessage = GetDeprecationInformation(element);
-        if (!string.IsNullOrEmpty(deprecationMessage))
+        if (!string.IsNullOrEmpty(deprecationMessage)) {
             writer.WriteLine($"warn(\"{deprecationMessage.SanitizeDoubleQuote()}\", DeprecationWarning)");
+        }
     }
 }

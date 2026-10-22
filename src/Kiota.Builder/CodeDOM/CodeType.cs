@@ -7,21 +7,22 @@ namespace Kiota.Builder.CodeDOM;
 
 public class CodeType : CodeTypeBase, ICloneable
 {
-    public override string Name
-    {
-        get => IsExternal || TypeDefinition is null ? base.Name : TypeDefinition.Name;
-        set
-        {
-            if (!IsExternal && TypeDefinition is not null)
+    public override string Name {
+        get {
+            return IsExternal || TypeDefinition is null ? base.Name : TypeDefinition.Name;
+        }
+
+        set {
+            if (!IsExternal && TypeDefinition is not null) {
                 TypeDefinition.Name = value;
-            else
+            } else {
                 base.Name = value;
+            }
         }
     }
-    public CodeElement? TypeDefinition
-    {
-        get;
-        set;
+    public CodeElement? TypeDefinition {
+        get => _TypeDefinition;
+        set => _TypeDefinition = value;
     }
     public bool IsExternal
     {
@@ -46,11 +47,17 @@ public class CodeType : CodeTypeBase, ICloneable
         init => AddGenericTypeParameterValue([.. value]);
     }
     private Collection<CodeType> genericTypeParameterValues = [];
+    private CodeElement? _TypeDefinition;
+
     public void AddGenericTypeParameterValue(params CodeType[] types)
     {
-        if (types is null) return;
+        if (types is null) {
+            return;
+        }
+
         EnsureElementsAreChildren(types);
-        foreach (var type in types)
+        foreach (var type in types) {
             genericTypeParameterValues.Add(type);
+        }
     }
 }

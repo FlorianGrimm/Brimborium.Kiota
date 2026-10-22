@@ -26,7 +26,10 @@ public class OpenApiAiCapabilitiesExtension : IOpenApiExtension
 
     public static OpenApiAiCapabilitiesExtension Parse(JsonNode source)
     {
-        if (source is not JsonObject rawObject) throw new ArgumentOutOfRangeException(nameof(source));
+        if (source is not JsonObject rawObject) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         var extension = new OpenApiAiCapabilitiesExtension();
         if (rawObject.TryGetPropertyValue(nameof(Confirmation).ToFirstCharacterLowerCase(), out var confirmation) && confirmation is JsonObject confirmationObject)
         {

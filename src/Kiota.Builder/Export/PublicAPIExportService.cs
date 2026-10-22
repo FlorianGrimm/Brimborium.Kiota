@@ -47,11 +47,15 @@ internal class PublicApiExportService
     }
     private IEnumerable<string> GetEntriesFromDom(CodeElement currentElement)
     {
-        foreach (var currentElementEntry in GetEntry(currentElement).Where(static x => !string.IsNullOrEmpty(x)))
+        foreach (var currentElementEntry in GetEntry(currentElement).Where(static x => !string.IsNullOrEmpty(x))) {
             yield return currentElementEntry;
-        foreach (var childElement in currentElement.GetChildElements())
-            foreach (var childElementEntry in GetEntriesFromDom(childElement))
+        }
+
+        foreach (var childElement in currentElement.GetChildElements()) {
+            foreach (var childElementEntry in GetEntriesFromDom(childElement)) {
                 yield return childElementEntry;
+            }
+        }
     }
 
     private IEnumerable<string> GetEntry(CodeElement codeElement, bool includeDefinitions = false)
@@ -59,8 +63,9 @@ internal class PublicApiExportService
         string accessModifierValue = string.Empty;
         if (codeElement is IAccessibleElement accessibleElement)
         {
-            if (accessibleElement.Access is AccessModifier.Private)
+            if (accessibleElement.Access is AccessModifier.Private) {
                 return []; // we are not interested in private props as they are not used externally
+            }
 
             accessModifierValue = $"|{accessibleElement.Access.ToString().ToLowerInvariant()}|";
         }

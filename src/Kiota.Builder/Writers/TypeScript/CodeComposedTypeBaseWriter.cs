@@ -17,8 +17,9 @@ public abstract class CodeComposedTypeBaseWriter<TCodeComposedTypeBase>(TypeScri
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
 
-        if (!codeElement.Types.Any())
+        if (!codeElement.Types.Any()) {
             throw new InvalidOperationException("CodeComposedTypeBase should be comprised of one or more types.");
+        }
 
         var codeUnionString = string.Join($" {TypesDelimiter} ", codeElement.Types.Select(x => conventions.GetTypeString(x, codeElement)));
 

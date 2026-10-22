@@ -25,7 +25,7 @@ public class BaseAuthenticationProvider<T> : AnonymousAuthenticationProvider whe
         ArgumentException.ThrowIfNullOrEmpty(scope);
 
         AccessTokenProvider = accessTokenProviderFactory(clientId, scope, validHosts);
-        if (enableCache)
+        if (enableCache) {
             AccessTokenProvider = new TempFolderCachingAccessTokenProvider
             {
                 Concrete = AccessTokenProvider,
@@ -33,6 +33,7 @@ public class BaseAuthenticationProvider<T> : AnonymousAuthenticationProvider whe
                 ApiBaseUrl = new Uri($"https://{validHosts.FirstOrDefault(static x => !string.IsNullOrEmpty(x)) ?? "api.github.com"}"),
                 AppId = clientId,
             };
+        }
     }
     public IAccessTokenProvider AccessTokenProvider
     {
@@ -50,14 +51,16 @@ public class BaseAuthenticationProvider<T> : AnonymousAuthenticationProvider whe
         await base.AuthenticateRequestAsync(request, additionalAuthenticationContext, cancellationToken).ConfigureAwait(false);
         if (additionalAuthenticationContext != null &&
             additionalAuthenticationContext.ContainsKey(ClaimsKey) &&
-            request.Headers.ContainsKey(AuthorizationHeaderKey))
+            request.Headers.ContainsKey(AuthorizationHeaderKey)) {
             request.Headers.Remove(AuthorizationHeaderKey);
+        }
 
         if (!request.Headers.ContainsKey(AuthorizationHeaderKey))
         {
             var token = await AccessTokenProvider.GetAuthorizationTokenAsync(request.URI, additionalAuthenticationContext, cancellationToken).ConfigureAwait(false);
-            if (!string.IsNullOrEmpty(token))
+            if (!string.IsNullOrEmpty(token)) {
                 request.Headers.Add(AuthorizationHeaderKey, $"Bearer {token}");
+            }
         }
     }
 }

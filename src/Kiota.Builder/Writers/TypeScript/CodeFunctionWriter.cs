@@ -19,8 +19,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         ArgumentNullException.ThrowIfNull(types);
 
         var typesList = types.ToList();
-        if (typesList.Count <= 1)
+        if (typesList.Count <= 1) {
             return typesList;
+        }
 
         // Helper function to check if type1 derives from type2
         bool DerivesFrom(CodeType type1, CodeType type2)
@@ -53,8 +54,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
 
             foreach (var type in typesList)
             {
-                if (processed.Contains(type))
+                if (processed.Contains(type)) {
                     continue;
+                }
 
                 // Check if there are any unprocessed types that derive from this type
                 var hasUnprocessedDerivedTypes = typesList.Any(t =>
@@ -89,10 +91,15 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     public override void WriteCodeElement(CodeFunction codeElement, LanguageWriter writer)
     {
         ArgumentNullException.ThrowIfNull(codeElement);
-        if (codeElement.OriginalLocalMethod == null) throw new InvalidOperationException($"{nameof(codeElement.OriginalLocalMethod)} should not be null");
+        if (codeElement.OriginalLocalMethod == null) {
+            throw new InvalidOperationException($"{nameof(codeElement.OriginalLocalMethod)} should not be null");
+        }
+
         ArgumentNullException.ThrowIfNull(writer);
 
-        if (codeElement.Parent is not CodeFile parentFile) throw new InvalidOperationException("the parent of a function should be a file");
+        if (codeElement.Parent is not CodeFile parentFile) {
+            throw new InvalidOperationException("the parent of a function should be a file");
+        }
 
         var codeMethod = codeElement.OriginalLocalMethod;
         var composedType = GetOriginalComposedType(codeMethod.ReturnType);
@@ -141,7 +148,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     private void WriteComposedTypeDeserializer(CodeFunction codeElement, LanguageWriter writer, CodeParameter composedParam, CodeFile codeFile)
     {
 
-        if (GetOriginalComposedType(composedParam) is not { } composedType) return;
+        if (GetOriginalComposedType(composedParam) is not { } composedType) {
+            return;
+        }
 
         writer.StartBlock("return {");
         if (composedType.Types.Any(x => IsPrimitiveType(x, composedType, false)))
@@ -163,7 +172,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
 
     private void WriteComposedTypeSerializer(CodeFunction codeElement, LanguageWriter writer, CodeParameter composedParam)
     {
-        if (GetOriginalComposedType(composedParam) is not { } composedType) return;
+        if (GetOriginalComposedType(composedParam) is not { } composedType) {
+            return;
+        }
 
         if (composedType.IsComposedOfPrimitives((x, y) => IsPrimitiveType(x, y, false)))
         {
@@ -174,7 +185,10 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
             foreach (var type in composedType.Types.Where(x => IsPrimitiveType(x, composedType, false)))
             {
                 var nodeType = conventions.GetTypeString(type, codeElement, false);
-                if (!string.IsNullOrEmpty(nodeType) && !writtenTypeChecks.Add($"{nodeType}|{type.IsCollection}")) continue;
+                if (!string.IsNullOrEmpty(nodeType) && !writtenTypeChecks.Add($"{nodeType}|{type.IsCollection}")) {
+                    continue;
+                }
+
                 var ifElse = isFirst ? "" : "else ";
                 WriteCaseStatementForPrimitiveTypeSerialization(type, "undefined", paramName, codeElement, writer, ifElse);
                 isFirst = false;
@@ -259,7 +273,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     {
         var nodeType = conventions.GetTypeString(type, method, false);
         var serializationName = GetSerializationMethodName(type, method.OriginalLocalMethod);
-        if (string.IsNullOrEmpty(serializationName) || string.IsNullOrEmpty(nodeType)) return;
+        if (string.IsNullOrEmpty(serializationName) || string.IsNullOrEmpty(nodeType)) {
+            return;
+        }
 
         writer.StartBlock(GetPrimitiveTypeCheck(type, modelParamName, nodeType, prefix));
 
@@ -270,7 +286,10 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     private static void WriteApiConstructorBody(CodeFile parentFile, CodeMethod method, LanguageWriter writer)
     {
         if (method.Parameters.OfKind(CodeParameterKind.RequestAdapter)?.Name.ToFirstCharacterLowerCase() is not string
-            requestAdapterArgumentName) return;
+            requestAdapterArgumentName) {
+            return;
+        }
+
         writer.StartBlock($"if ({requestAdapterArgumentName} === undefined) {{");
         writer.WriteLine($"throw new Error(\"{requestAdapterArgumentName} cannot be undefined\");");
         writer.CloseBlock();
@@ -304,9 +323,11 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         writer.StartBlock($"const pathParameters: Record<string, unknown> = {{");
         writer.WriteLine($"\"baseurl\": {requestAdapterArgumentName}.baseUrl,");
         writer.CloseBlock("};");
-        if (method.Parameters.OfKind(CodeParameterKind.BackingStore)?.Name is string backingStoreParameterName)
+        if (method.Parameters.OfKind(CodeParameterKind.BackingStore)?.Name is string backingStoreParameterName) {
             writer.WriteLine(
                 $"{requestAdapterArgumentName}.enableBackingStore({backingStoreParameterName.ToFirstCharacterLowerCase()});");
+        }
+
         if (parentFile.Interfaces.FirstOrDefault(static x => x.Kind is CodeInterfaceKind.RequestBuilder) is
             CodeInterface codeInterface)
         {
@@ -329,17 +350,21 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     }
     private static void WriteSerializationRegistration(HashSet<string> serializationModules, LanguageWriter writer, string objectName, string methodName, params string[] additionalParam)
     {
-        if (serializationModules != null)
-            foreach (var module in serializationModules)
+        if (serializationModules != null) {
+            foreach (var module in serializationModules) {
                 writer.WriteLine($"{objectName}.{methodName}({module}{(additionalParam != null && additionalParam.Length > 0 ? ", " + string.Join(", ", additionalParam) : string.Empty)});");
+            }
+        }
     }
 
     private void WriteFactoryMethod(CodeFunction codeElement, CodeFile codeFile, LanguageWriter writer)
     {
         var returnType = conventions.GetTypeString(codeElement.OriginalLocalMethod.ReturnType, codeElement);
 
-        if (codeElement.OriginalMethodParentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForInheritedType)
+        if (codeElement.OriginalMethodParentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForInheritedType) {
             WriteDefensiveStatements(codeElement.OriginalLocalMethod, writer);
+        }
+
         WriteFactoryMethodBody(codeElement, returnType, codeFile, writer);
     }
 
@@ -363,8 +388,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
                 WriteDefaultDiscriminator(codeElement, returnType, writer);
                 break;
             default:
-                if (codeElement.OriginalMethodParentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForInheritedType && parseNodeParameter != null)
+                if (codeElement.OriginalMethodParentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForInheritedType && parseNodeParameter != null) {
                     WriteDiscriminatorInformation(codeElement, parseNodeParameter, writer);
+                }
 
                 WriteDefaultDiscriminator(codeElement, returnType, writer);
                 break;
@@ -470,8 +496,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
                 {
                     TypeDefinition: CodeInterface codeInterface
                 }
-            } param)
+            } param) {
             throw new InvalidOperationException("Interface parameter not found for code interface");
+        }
 
         var serializingDerivedTypeParam = codeElement.OriginalLocalMethod.Parameters.FirstOrDefault(static x => x.Kind is CodeParameterKind.SerializingDerivedType) ?? throw new InvalidOperationException("Serializing derived type parameter not found");
         writer.WriteLine($"if (!{param.Name.ToFirstCharacterLowerCase()} || {serializingDerivedTypeParam.Name}) {{ return; }}");
@@ -485,8 +512,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
             WritePropertySerializer(codeInterface.Name.ToFirstCharacterLowerCase(), otherProp, writer, codeElement);
         }
 
-        if (codeInterface.GetPropertyOfKind(CodePropertyKind.AdditionalData) is CodeProperty additionalDataProperty)
+        if (codeInterface.GetPropertyOfKind(CodePropertyKind.AdditionalData) is CodeProperty additionalDataProperty) {
             writer.WriteLine($"writer.writeAdditionalData({codeInterface.Name.ToFirstCharacterLowerCase()}.{additionalDataProperty.Name.ToFirstCharacterLowerCase()});");
+        }
 
         if (codeElement.OriginalMethodParentClass.DiscriminatorInformation.HasBasicDiscriminatorInformation &&
             FindDiscriminatorPropertyBySerializationName(codeInterface, codeElement.OriginalMethodParentClass.DiscriminatorInformation.DiscriminatorPropertyName) is { } discriminatorProperty)
@@ -504,15 +532,22 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     }
     private static CodeProperty? FindDiscriminatorPropertyBySerializationName(CodeInterface codeInterface, string serializationName)
     {
-        if (string.IsNullOrEmpty(serializationName)) return null;
-        if (codeInterface.Properties.FirstOrDefault(prop => prop.WireName.EqualsIgnoreCase(serializationName)) is { } discriminatorProperty)
+        if (string.IsNullOrEmpty(serializationName)) {
+            return null;
+        }
+
+        if (codeInterface.Properties.FirstOrDefault(prop => prop.WireName.EqualsIgnoreCase(serializationName)) is { } discriminatorProperty) {
             return discriminatorProperty;
-        if (codeInterface.StartBlock.Implements.Any())
+        }
+
+        if (codeInterface.StartBlock.Implements.Any()) {
             return codeInterface.StartBlock.Implements
                 .Select(x => x.TypeDefinition)
                 .OfType<CodeInterface>()
                 .Select(x => FindDiscriminatorPropertyBySerializationName(x, serializationName))
                 .FirstOrDefault(x => x is not null);
+        }
+
         return null;
     }
 
@@ -532,10 +567,11 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         if (customSerializationWriters.Contains(serializationName) && codeProperty.Type is CodeType propType && propType.TypeDefinition is not null)
         {
             var serializeName = GetSerializerAlias(propType, codeFunction, $"serialize{propType.TypeDefinition.Name}");
-            if (GetOriginalComposedType(propType.TypeDefinition) is { } ct && (ct.IsComposedOfPrimitives(IsPrimitiveType) || ct.IsComposedOfObjectsAndPrimitives(IsPrimitiveType)))
+            if (GetOriginalComposedType(propType.TypeDefinition) is { } ct && (ct.IsComposedOfPrimitives(IsPrimitiveType) || ct.IsComposedOfObjectsAndPrimitives(IsPrimitiveType))) {
                 WriteSerializationStatementForComposedTypeProperty(ct, modelParamName, codeFunction, writer, codeProperty, serializeName);
-            else
+            } else {
                 writer.WriteLine($"writer.{serializationName}<{propTypeName}>(\"{codeProperty.WireName.SanitizeDoubleQuote()}\", {modelParamName}.{codePropertyName}{defaultValueSuffix}, {serializeName});");
+            }
         }
         else
         {
@@ -549,12 +585,15 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         var codePropertyName = codeProperty.Name.ToFirstCharacterLowerCase();
         var composedType = GetOriginalComposedType(codeProperty.Type);
 
-        if (isCollectionOfEnum)
+        if (isCollectionOfEnum) {
             writer.WriteLine($"if({modelParamName}.{codePropertyName})");
-        if (composedType is not null && (composedType.IsComposedOfPrimitives(IsPrimitiveType) || composedType.IsComposedOfObjectsAndPrimitives(IsPrimitiveType)))
+        }
+
+        if (composedType is not null && (composedType.IsComposedOfPrimitives(IsPrimitiveType) || composedType.IsComposedOfObjectsAndPrimitives(IsPrimitiveType))) {
             WriteSerializationStatementForComposedTypeProperty(composedType, modelParamName, codeFunction, writer, codeProperty, string.Empty);
-        else
+        } else {
             writer.WriteLine($"writer.{serializationName}(\"{codeProperty.WireName.SanitizeDoubleQuote()}\", {modelParamName}.{codePropertyName}{defaultValueSuffix});");
+        }
     }
 
     private void WriteSerializationStatementForComposedTypeProperty(CodeComposedTypeBase composedType, string modelParamName, CodeFunction method, LanguageWriter writer, CodeProperty codeProperty, string? serializeName)
@@ -574,8 +613,13 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         {
             var nodeType = conventions.GetTypeString(type, method, false);
             var serializationName = GetSerializationMethodName(type, method.OriginalLocalMethod);
-            if (string.IsNullOrEmpty(serializationName) || string.IsNullOrEmpty(nodeType)) return;
-            if (!writtenTypeChecks.Add($"{nodeType}|{type.IsCollection}")) continue;
+            if (string.IsNullOrEmpty(serializationName) || string.IsNullOrEmpty(nodeType)) {
+                return;
+            }
+
+            if (!writtenTypeChecks.Add($"{nodeType}|{type.IsCollection}")) {
+                continue;
+            }
 
             var isElse = isFirst ? "" : "else ";
             writer.StartBlock(GetPrimitiveTypeCheck(type, $"{modelParamName}.{codePropertyName}", nodeType, isElse));
@@ -588,10 +632,11 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
 
     private static string GetPrimitiveTypeCheck(CodeTypeBase type, string valueReference, string nodeType, string prefix)
     {
-        if (type.IsCollection)
+        if (type.IsCollection) {
             return TYPE_ARRAYBUFFER.Equals(nodeType, StringComparison.OrdinalIgnoreCase)
                 ? $"{prefix}if (Array.isArray({valueReference}) && ({valueReference}).every(item => item instanceof ArrayBuffer)) {{"
                 : $"{prefix}if (Array.isArray({valueReference}) && ({valueReference}).every(item => typeof item === '{nodeType}')) {{";
+        }
 
         return TYPE_ARRAYBUFFER.Equals(nodeType, StringComparison.OrdinalIgnoreCase)
             ? $"{prefix}if ({valueReference} instanceof ArrayBuffer) {{"
@@ -628,8 +673,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         ArgumentNullException.ThrowIfNull(method);
 
         var composedType = GetOriginalComposedType(propertyType);
-        if (composedType is not null && composedType.IsComposedOfPrimitives(IsPrimitiveType))
+        if (composedType is not null && composedType.IsComposedOfPrimitives(IsPrimitiveType)) {
             return $"serialize{composedType.Name.ToFirstCharacterUpperCase()}";
+        }
 
         var propertyTypeName = TranslateTypescriptType(propertyType);
         CodeType? currentType = composedType is not null ? GetCodeTypeForComposedType(composedType) : propertyType as CodeType;
@@ -643,8 +689,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
             }
         }
 
-        if (propertyTypeName is TYPE_LOWERCASE_STRING or TYPE_LOWERCASE_BOOLEAN or TYPE_NUMBER or TYPE_GUID or TYPE_DATE or TYPE_DATE_ONLY or TYPE_TIME_ONLY or TYPE_DURATION)
+        if (propertyTypeName is TYPE_LOWERCASE_STRING or TYPE_LOWERCASE_BOOLEAN or TYPE_NUMBER or TYPE_GUID or TYPE_DATE or TYPE_DATE_ONLY or TYPE_TIME_ONLY or TYPE_DURATION) {
             return $"write{propertyTypeName.ToFirstCharacterUpperCase()}Value";
+        }
 
         return "writeObjectValue";
     }
@@ -757,7 +804,10 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
 
     private static string GetDefaultValueLiteralForProperty(CodeProperty codeProperty)
     {
-        if (string.IsNullOrEmpty(codeProperty.DefaultValue)) return string.Empty;
+        if (string.IsNullOrEmpty(codeProperty.DefaultValue)) {
+            return string.Empty;
+        }
+
         if (codeProperty.Type is CodeType propertyType && propertyType.TypeDefinition is CodeEnum enumDefinition &&
             enumDefinition.CodeEnumObject is not null)
         {
@@ -775,14 +825,18 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
         string defaultValue = codeProperty.DefaultValue;
         defaultValue = defaultValue.SanitizeQuotedStringLiteral();
         var typeName = codeProperty.Type.Name;
-        if (typeName.Equals("boolean", StringComparison.OrdinalIgnoreCase))
+        if (typeName.Equals("boolean", StringComparison.OrdinalIgnoreCase)) {
             return PrimitiveDefaultValueUtils.TryNormalizeBooleanLiteral(defaultValue, out var booleanDefaultValue) ?
                 booleanDefaultValue :
                 string.Empty;
-        if (PrimitiveDefaultValueUtils.IsNumericType(typeName))
+        }
+
+        if (PrimitiveDefaultValueUtils.IsNumericType(typeName)) {
             return PrimitiveDefaultValueUtils.TryNormalizeNumericLiteral(defaultValue.TrimQuotes(), typeName, out var numericDefaultValue) ?
                 numericDefaultValue :
                 string.Empty;
+        }
+
         return typeName.ToLowerInvariant() switch
         {
             "string" => defaultValue, // string primitive should keep quotes
@@ -795,7 +849,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
     }
     private void WriteDefensiveStatements(CodeMethod codeElement, LanguageWriter writer)
     {
-        if (codeElement.IsOfKind(CodeMethodKind.Setter)) return;
+        if (codeElement.IsOfKind(CodeMethodKind.Setter)) {
+            return;
+        }
 
         var isRequestExecutor = codeElement.IsOfKind(CodeMethodKind.RequestExecutor);
 
@@ -805,8 +861,9 @@ public class CodeFunctionWriter(TypeScriptConventionService conventionService) :
                                         .OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             var parameterName = parameter.Name.ToFirstCharacterLowerCase();
-            if (!"boolean".Equals(conventions.TranslateType(parameter.Type), StringComparison.OrdinalIgnoreCase))
+            if (!"boolean".Equals(conventions.TranslateType(parameter.Type), StringComparison.OrdinalIgnoreCase)) {
                 writer.WriteLine($"if(!{parameterName}) throw new Error(\"{parameterName} cannot be undefined\");");
+            }
         }
     }
 

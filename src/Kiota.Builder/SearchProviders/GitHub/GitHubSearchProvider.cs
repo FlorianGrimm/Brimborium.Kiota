@@ -83,10 +83,11 @@ public partial class GitHubSearchProvider : ISearchProvider
             if (!BlockListContainsRepo(blockLists, owner, repo))
             {
                 var keyResults = GetDictionaryResultFromMultipleSources(await Task.WhenAll(_indexFileInfos.Select(x => GetSearchResultsFromRepoAsync(gitHubClient, owner, repo, x.Key, x.Value, cancellationToken))).ConfigureAwait(false));
-                if (parts.Length > 2 && keyResults.TryGetValue(term, out var result))
+                if (parts.Length > 2 && keyResults.TryGetValue(term, out var result)) {
                     return new Dictionary<string, SearchResult>(StringComparer.OrdinalIgnoreCase) { { term, result } };
-                else if (keyResults.Count != 0)
+                } else if (keyResults.Count != 0) {
                     return keyResults;
+                }
             }
         }
 
@@ -145,13 +146,17 @@ public partial class GitHubSearchProvider : ISearchProvider
     }
     private async Task<IEnumerable<Tuple<string, SearchResult>>> GetSearchResultsFromRepoAsync(GitHubClient.GitHubClient gitHubClient, string? org, string? repo, string fileName, string accept, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(org) || string.IsNullOrEmpty(repo))
+        if (string.IsNullOrEmpty(org) || string.IsNullOrEmpty(repo)) {
             return [];
+        }
+
         try
         {
             if (await gitHubClient.Repos[org][repo].Contents[fileName].GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false)
-                 is not { ContentFile.DownloadUrl: string downloadUrl } || string.IsNullOrEmpty(downloadUrl))
+                 is not { ContentFile.DownloadUrl: string downloadUrl } || string.IsNullOrEmpty(downloadUrl)) {
                 return [];
+            }
+
             var targetUrl = new Uri(downloadUrl);
 #pragma warning disable CA2007
             await using var document = await documentCachingProvider.GetDocumentAsync(targetUrl, "search", targetUrl.GetFileName(), accept, cancellationToken).ConfigureAwait(false);
@@ -162,8 +167,10 @@ public partial class GitHubSearchProvider : ISearchProvider
                 "text/yaml" => deserializeDocumentFromYaml(document, indexRootContext.IndexRoot),
                 _ => throw new InvalidOperationException($"Unsupported accept type {accept}"),
             };
-            if (indexFile is null || indexFile.Apis is null)
+            if (indexFile is null || indexFile.Apis is null) {
                 return [];
+            }
+
             await GetUrlForRelativeDescriptionsAsync(indexFile.Apis, gitHubClient, org, repo, cancellationToken).ConfigureAwait(false);
             var results = indexFile.Apis.Where(static x => x.Properties.Any(static y => y.Type.Equals(OpenApiPropertyKey, StringComparison.OrdinalIgnoreCase)))
                                 .Select(x =>
@@ -210,8 +217,10 @@ public partial class GitHubSearchProvider : ISearchProvider
     private async Task GetUrlForRelativeDescriptionsAsync(List<IndexApiEntry> originalResults, GitHubClient.GitHubClient gitHubClient, string org, string repo, CancellationToken cancellationToken)
     {
         var relativeUrlsResults = originalResults.Where(static x => x.Properties.Any(static y => y.Type.Equals(OpenApiPropertyKey, StringComparison.OrdinalIgnoreCase) && !y.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase)));
-        if (!relativeUrlsResults.Any())
+        if (!relativeUrlsResults.Any()) {
             return;
+        }
+
         var resultsToUpdate = await Task.WhenAll(relativeUrlsResults.Select(x => GetUrlForRelativeDescriptionAsync(x, gitHubClient, org, repo, cancellationToken))).ConfigureAwait(false);
         var keysToRemove = resultsToUpdate.Where(static x => x.Item2 is null).Select(static x => x.Item1).ToHashSet(StringComparer.OrdinalIgnoreCase);
         originalResults.RemoveAll(x => x.Properties.Any(y => y.Type.Equals(OpenApiPropertyKey, StringComparison.OrdinalIgnoreCase) && keysToRemove.Contains(y.Url)));
@@ -219,8 +228,9 @@ public partial class GitHubSearchProvider : ISearchProvider
         {
             var resultToUpdate = originalResults.FirstOrDefault(z => z.Properties.Any(y => y.Type.Equals(OpenApiPropertyKey, StringComparison.OrdinalIgnoreCase) && x.Item1.Equals(y.Url, StringComparison.OrdinalIgnoreCase)));
             if (resultToUpdate?.Properties.FirstOrDefault(static y => y.Type.Equals(OpenApiPropertyKey, StringComparison.OrdinalIgnoreCase)) is IndexApiProperty propertyToUpdate &&
-                !string.IsNullOrEmpty(x.Item2))
+                !string.IsNullOrEmpty(x.Item2)) {
                 propertyToUpdate.Url = x.Item2;
+            }
         });
     }
     private async Task<Tuple<string, string?>> GetUrlForRelativeDescriptionAsync(IndexApiEntry searchResult, GitHubClient.GitHubClient gitHubClient, string org, string repo, CancellationToken cancellationToken)
@@ -230,8 +240,9 @@ public partial class GitHubSearchProvider : ISearchProvider
         {
             var fileName = originalUrl.TrimStart('/');
             if (await gitHubClient.Repos[org][repo].Contents[fileName].GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false) is
-                { ContentFile.DownloadUrl: string downloadUrl } && !string.IsNullOrEmpty(downloadUrl))
+                { ContentFile.DownloadUrl: string downloadUrl } && !string.IsNullOrEmpty(downloadUrl)) {
                 return new Tuple<string, string?>(originalUrl, downloadUrl);
+            }
         }
         catch (BasicError)
         {
@@ -253,10 +264,14 @@ public partial class GitHubSearchProvider : ISearchProvider
                 LogPageNumberTrace(x.QueryParameters.Page); // using the property is intentional to avoid trimming
                 LogQueryTrace(x.QueryParameters.Q);
             }, cancellationToken).ConfigureAwait(false);
-            if (reposPage == null)
+            if (reposPage == null) {
                 break;
-            if (reposPage.Items != null)
+            }
+
+            if (reposPage.Items != null) {
                 results.AddRange(reposPage.Items);
+            }
+
             shouldContinue = results.Count < reposPage.TotalCount;
             pageNumber++;
         } while (shouldContinue);

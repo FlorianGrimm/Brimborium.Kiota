@@ -16,8 +16,9 @@ public class OpenApiPluginWalker : OpenApiVisitorBase
     public override void Visit(IOpenApiExtensible openApiExtensible)
     {
         ArgumentNullException.ThrowIfNull(openApiExtensible);
-        if (openApiExtensible.Extensions is not { Count: > 0 })
+        if (openApiExtensible.Extensions is not { Count: > 0 }) {
             return;
+        }
 
         // remove any extensions we do not support
         foreach (var extension in openApiExtensible.Extensions.Where(static extension => !SupportedExtensions.Contains(extension.Key)))
@@ -32,8 +33,9 @@ public class OpenApiPluginWalker : OpenApiVisitorBase
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        if (response.Count < 1)
+        if (response.Count < 1) {
             return;
+        }
 
         // Ensure description strings are not empty strings.
         foreach (var responseItem in response.Where(static res => string.IsNullOrEmpty(res.Value.Description)))

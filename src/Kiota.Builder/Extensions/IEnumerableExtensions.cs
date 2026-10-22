@@ -12,8 +12,10 @@ public static class IEnumerableExtensions
     /// <returns>The sum of the values.</returns>
     internal static int SumUnchecked(this IEnumerable<int> values)
     {
-        if (values == null)
+        if (values == null) {
             return 0;
+        }
+
         unchecked
         {
             return values.Aggregate(0, static (acc, x) => acc + x);

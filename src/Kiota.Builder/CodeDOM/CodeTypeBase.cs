@@ -44,8 +44,10 @@ public abstract class CodeTypeBase : CodeTerminal, ICloneable
         ActionOf = source.ActionOf;
         IsNullable = source.IsNullable;
         CollectionKind = source.CollectionKind;
-        if (cloneName)
+        if (cloneName) {
             Name = source.Name;
+        }
+
         Parent = source.Parent;
         return this is TChildType cast ? cast : throw new InvalidOperationException($"the type {GetType()} is not compatible with the type {typeof(TChildType)}");
     }
@@ -56,10 +58,14 @@ public abstract class CodeTypeBase : CodeTerminal, ICloneable
     {
         get
         {
-            if (this is CodeType currentType)
+            if (this is CodeType currentType) {
                 return new[] { currentType };
-            if (this is CodeComposedTypeBase currentUnion)
+            }
+
+            if (this is CodeComposedTypeBase currentUnion) {
                 return currentUnion.Types;
+            }
+
             return Enumerable.Empty<CodeType>();
         }
     }

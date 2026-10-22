@@ -23,7 +23,10 @@ public class CodeUsingComparer : IEqualityComparer<CodeUsing>
     public int GetHashCode([DisallowNull] CodeUsing obj)
     {
         var hash = new HashCode();
-        if (_compareOnDeclaration) hash.Add(obj?.Declaration);
+        if (_compareOnDeclaration) {
+            hash.Add(obj?.Declaration);
+        }
+
         hash.Add(obj?.Name, _stringComparer);
         return hash.ToHashCode();
     }

@@ -17,15 +17,19 @@ public class FileLogLogger : ILogger, IDisposable
     {
         _logLevel = logLevel;
         _categoryName = categoryName?.Split(categoryNameSeparators, StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
-        if (_logLevel == LogLevel.None || string.IsNullOrEmpty(logFileDirectoryAbsolutePath))
+        if (_logLevel == LogLevel.None || string.IsNullOrEmpty(logFileDirectoryAbsolutePath)) {
             _logStream = new StreamWriter(Stream.Null);
-        else
+        } else
         {
             var logFileAbsolutePath = Path.Combine(logFileDirectoryAbsolutePath, LogFileName);
-            if (File.Exists(logFileAbsolutePath))
+            if (File.Exists(logFileAbsolutePath)) {
                 File.Delete(logFileAbsolutePath);
-            if (!Directory.Exists(logFileDirectoryAbsolutePath))
+            }
+
+            if (!Directory.Exists(logFileDirectoryAbsolutePath)) {
                 Directory.CreateDirectory(logFileDirectoryAbsolutePath);
+            }
+
             _logStream = new StreamWriter(logFileAbsolutePath);
             _logFileAbsolutePath = logFileAbsolutePath;
         }
@@ -41,14 +45,17 @@ public class FileLogLogger : ILogger, IDisposable
     }
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposing)
+        if (!disposing) {
             return;
+        }
+
         _logStream.Flush();
         _logStream.Dispose();
         lock (writeLock)
         {
-            if (!wroteAnything && !string.IsNullOrEmpty(_logFileAbsolutePath) && File.Exists(_logFileAbsolutePath))
+            if (!wroteAnything && !string.IsNullOrEmpty(_logFileAbsolutePath) && File.Exists(_logFileAbsolutePath)) {
                 File.Delete(_logFileAbsolutePath);
+            }
         }
     }
     public bool IsEnabled(LogLevel logLevel)
@@ -59,14 +66,20 @@ public class FileLogLogger : ILogger, IDisposable
     private static readonly char[] categoryNameSeparators = ['.', ' '];
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (formatter is null) return;
-        if (!IsEnabled(logLevel))
+        if (formatter is null) {
             return;
+        }
+
+        if (!IsEnabled(logLevel)) {
+            return;
+        }
 
         lock (writeLock)
         {
-            if (!wroteAnything)
+            if (!wroteAnything) {
                 wroteAnything = true;
+            }
+
             _logStream.WriteLine($"{logLevel}: {_categoryName} {formatter(state, exception)}");
         }
     }

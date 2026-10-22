@@ -21,7 +21,8 @@ public class AggregateLogger<T> : ILogger<T>
     }
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        foreach (var logger in Loggers)
+        foreach (var logger in Loggers) {
             logger.Log(logLevel, eventId, state, exception, formatter);
+        }
     }
 }

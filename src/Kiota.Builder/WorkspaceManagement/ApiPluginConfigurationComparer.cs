@@ -22,7 +22,10 @@ public class ApiPluginConfigurationComparer : BaseApiConsumerConfigurationCompar
 
     public override bool Equals(ApiPluginConfiguration? x, ApiPluginConfiguration? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
         return _stringIEnumerableDeepComparer.Equals(x.Types, y.Types) && base.Equals(x, y);
     }
 
@@ -30,7 +33,10 @@ public class ApiPluginConfigurationComparer : BaseApiConsumerConfigurationCompar
     public override int GetHashCode([DisallowNull] ApiPluginConfiguration obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.AuthType, _stringComparer);
         hash.Add(obj.AuthReferenceId, _stringComparer);
         hash.Add(obj.Types, _stringIEnumerableDeepComparer);

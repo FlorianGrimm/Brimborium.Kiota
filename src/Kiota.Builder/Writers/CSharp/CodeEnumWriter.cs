@@ -18,8 +18,9 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, CSharpConventionServic
     public override void WriteCodeElement(CodeEnum codeElement, LanguageWriter writer) {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (!codeElement.Options.Any())
+        if (!codeElement.Options.Any()) {
             return;
+        }
 
         var codeNamespace = codeElement.Parent as CodeNamespace;
         if (codeNamespace != null) {
@@ -28,19 +29,29 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, CSharpConventionServic
                     .Where(static x => x.Declaration?.IsExternal ?? true)
                     .Select(static x => $"using {(x.Declaration?.Name ?? x.Name).NormalizeNameSpaceName(".")};")
                     .Distinct(StringComparer.Ordinal)
-                    .OrderBy(static x => x, StringComparer.Ordinal))
+                    .OrderBy(static x => x, StringComparer.Ordinal)) {
                 writer.WriteLine(x);
+            }
+
             writer.WriteLine($"namespace {codeNamespace.Name}");
             writer.StartBlock();
         }
         bool hasDescription = conventions.WriteShortDescription(codeElement, writer);
         writer.WriteLine(GeneratedCodeAttribute);
-        if (codeElement.Flags)
+        if (codeElement.Flags) {
             writer.WriteLine("[Flags]");
+        }
+
         conventions.WriteDeprecationAttribute(codeElement, writer);
-        if (!hasDescription) writer.WriteLine("#pragma warning disable CS1591");
+        if (!hasDescription) {
+            writer.WriteLine("#pragma warning disable CS1591");
+        }
+
         writer.WriteLine($"{conventions.GetAccessModifier(codeElement.Access)} enum {codeElement.Name.ToFirstCharacterUpperCase()}");
-        if (!hasDescription) writer.WriteLine("#pragma warning restore CS1591");
+        if (!hasDescription) {
+            writer.WriteLine("#pragma warning restore CS1591");
+        }
+
         writer.StartBlock();
         var idx = 0;
         foreach (var option in codeElement.Options) {
@@ -49,13 +60,20 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, CSharpConventionServic
             if (option.IsNameEscaped) {
                 writer.WriteLine($"[EnumMember(Value = \"{option.SerializationName.SanitizeDoubleQuote()}\")]");
             }
-            if (!hasDescription) writer.WriteLine("#pragma warning disable CS1591");
+            if (!hasDescription) {
+                writer.WriteLine("#pragma warning disable CS1591");
+            }
+
             writer.WriteLine($"{option.Name.ToFirstCharacterUpperCase()}{(codeElement.Flags ? " = " + GetEnumFlag(idx) : string.Empty)},");
-            if (!hasDescription) writer.WriteLine("#pragma warning restore CS1591");
+            if (!hasDescription) {
+                writer.WriteLine("#pragma warning restore CS1591");
+            }
+
             idx++;
         }
-        if (codeNamespace != null)
+        if (codeNamespace != null) {
             writer.CloseBlock();
+        }
     }
     private static readonly Func<int, string> GetEnumFlag = static idx =>
         (idx == 0 ? 1 : Math.Pow(2, idx)).ToString(CultureInfo.InvariantCulture);

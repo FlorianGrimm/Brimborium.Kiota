@@ -48,16 +48,21 @@ public class InconsistentTypeFormatPair : ValidationRule<IOpenApiSchema>
     ];
     public InconsistentTypeFormatPair() : base(nameof(InconsistentTypeFormatPair), static (context, schema) =>
     {
-        if (schema is null || !schema.Type.HasValue || string.IsNullOrEmpty(schema.Format) || KnownAndNotSupportedFormats.knownAndUnsupportedFormats.Contains(schema.Format) || escapedTypes.Contains(schema.Type.Value))
+        if (schema is null || !schema.Type.HasValue || string.IsNullOrEmpty(schema.Format) || KnownAndNotSupportedFormats.knownAndUnsupportedFormats.Contains(schema.Format) || escapedTypes.Contains(schema.Type.Value)) {
             return;
+        }
+
         var sanitizedType = schema.Type.Value & ~JsonSchemaType.Null;
         // mirrors KiotaBuilder.GetPrimitiveType: numeric|string unions with a numeric format map to the numeric type
         if ((sanitizedType & JsonSchemaType.String) is JsonSchemaType.String &&
             (sanitizedType & (JsonSchemaType.Integer | JsonSchemaType.Number)) != 0 &&
-            KiotaBuilder.numericFormats.Contains(schema.Format))
+            KiotaBuilder.numericFormats.Contains(schema.Format)) {
             sanitizedType &= ~JsonSchemaType.String;
-        if (!validPairs.TryGetValue(sanitizedType, out var validFormats) || !validFormats.Contains(schema.Format))
+        }
+
+        if (!validPairs.TryGetValue(sanitizedType, out var validFormats) || !validFormats.Contains(schema.Format)) {
             context.CreateWarning(nameof(InconsistentTypeFormatPair), $"The format {schema.Format} is not supported by Kiota for the type {sanitizedType} and will be ignored.");
+        }
     })
     {
     }

@@ -11,7 +11,10 @@ internal class GlobComparer(StringComparer? stringComparer = null) : IEqualityCo
 
     public bool Equals(Glob? x, Glob? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
         return _stringComparer.Equals(x.ToString(), y.ToString());
     }
 

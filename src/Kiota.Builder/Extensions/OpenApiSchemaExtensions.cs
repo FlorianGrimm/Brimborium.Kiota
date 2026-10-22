@@ -14,18 +14,30 @@ public static class OpenApiSchemaExtensions
     (x.AnyOf ?? Enumerable.Empty<IOpenApiSchema>()).Union(x.AllOf ?? []).Union(x.OneOf ?? []).ToList();
     public static IEnumerable<string> GetSchemaNames(this IOpenApiSchema schema, bool directOnly = false)
     {
-        if (schema == null)
+        if (schema == null) {
             return [];
-        if (!directOnly && schema.Items != null)
+        }
+
+        if (!directOnly && schema.Items != null) {
             return schema.Items.GetSchemaNames();
-        if (schema.GetReferenceId() is string refId && !string.IsNullOrEmpty(refId))
+        }
+
+        if (schema.GetReferenceId() is string refId && !string.IsNullOrEmpty(refId)) {
             return [refId.Split('/')[^1].Split('.')[^1]];
-        if (!directOnly && schema.AnyOf is { Count: > 0 })
+        }
+
+        if (!directOnly && schema.AnyOf is { Count: > 0 }) {
             return schema.AnyOf.FlattenIfRequired(classNamesFlattener);
-        if (!directOnly && schema.AllOf is { Count: > 0 })
+        }
+
+        if (!directOnly && schema.AllOf is { Count: > 0 }) {
             return schema.AllOf.FlattenIfRequired(classNamesFlattener);
-        if (!directOnly && schema.OneOf is { Count: > 0 })
+        }
+
+        if (!directOnly && schema.OneOf is { Count: > 0 }) {
             return schema.OneOf.FlattenIfRequired(classNamesFlattener);
+        }
+
         return [];
     }
     internal static string? GetReferenceId(this IOpenApiSchema schema)
@@ -39,7 +51,10 @@ public static class OpenApiSchemaExtensions
     }
     internal static IEnumerable<IOpenApiSchema> FlattenSchemaIfRequired(this IList<IOpenApiSchema>? schemas, Func<IOpenApiSchema, IList<IOpenApiSchema>?> subsequentGetter)
     {
-        if (schemas is null) return [];
+        if (schemas is null) {
+            return [];
+        }
+
         return schemas.Count == 1 && !schemas[0].HasAnyProperty() && string.IsNullOrEmpty(schemas[0].GetReferenceId()) ?
                     schemas.FlattenEmptyEntries(subsequentGetter, 1) :
                     schemas;
@@ -88,7 +103,10 @@ public static class OpenApiSchemaExtensions
 
     public static bool IsInherited(this IOpenApiSchema? schema)
     {
-        if (schema is null) return false;
+        if (schema is null) {
+            return false;
+        }
+
         var meaningfulMemberSchemas = schema.AllOf.FlattenSchemaIfRequired(static x => x.AllOf)
                                                                 .Where(static x => x.IsSemanticallyMeaningful(ignoreEnums: true, ignoreArrays: true, ignoreType: true))
                                                                 // the next line ensures the meaningful schema are objects as it won't make sense inheriting from a primitive despite it being meaningful.
@@ -107,9 +125,15 @@ public static class OpenApiSchemaExtensions
 
     internal static IOpenApiSchema? MergeInclusiveUnionSchemaEntries(this IOpenApiSchema? schema)
     {
-        if (schema is null || !schema.IsInclusiveUnion(0)) return null;
+        if (schema is null || !schema.IsInclusiveUnion(0)) {
+            return null;
+        }
+
         var result = schema.GetSchemaOrTargetShallowCopy();
-        if (result.AnyOf is null || schema.AnyOf is null) return result;
+        if (result.AnyOf is null || schema.AnyOf is null) {
+            return result;
+        }
+
         result.AnyOf.Clear();
         result.TryAddProperties(schema.AnyOf.Where(static x => x.Properties is not null).SelectMany(static x => x.Properties!));
         schema.AddOriginalReferenceIdExtension(result);
@@ -118,9 +142,15 @@ public static class OpenApiSchemaExtensions
 
     internal static IOpenApiSchema? MergeExclusiveUnionSchemaEntries(this IOpenApiSchema? schema)
     {
-        if (schema is null || !schema.IsExclusiveUnion(0)) return null;
+        if (schema is null || !schema.IsExclusiveUnion(0)) {
+            return null;
+        }
+
         var result = schema.GetSchemaOrTargetShallowCopy();
-        if (result.OneOf is null || schema.OneOf is null) return result;
+        if (result.OneOf is null || schema.OneOf is null) {
+            return result;
+        }
+
         result.OneOf.Clear();
         result.TryAddProperties(schema.OneOf.Where(static x => x.Properties is not null).SelectMany(static x => x.Properties!));
         schema.AddOriginalReferenceIdExtension(result);
@@ -178,8 +208,13 @@ public static class OpenApiSchemaExtensions
 
     internal static IOpenApiSchema? MergeIntersectionSchemaEntries(this IOpenApiSchema? schema, HashSet<IOpenApiSchema>? schemasToExclude = default, bool overrideIntersection = false, Func<IOpenApiSchema, bool>? filter = default)
     {
-        if (schema is null) return null;
-        if (schema.AllOf is null || !schema.IsIntersection() && !overrideIntersection) return schema;
+        if (schema is null) {
+            return null;
+        }
+
+        if (schema.AllOf is null || !schema.IsIntersection() && !overrideIntersection) {
+            return schema;
+        }
 
         var result = schema.GetSchemaOrTargetShallowCopy();
         result.AllOf?.Clear();
@@ -190,16 +225,20 @@ public static class OpenApiSchemaExtensions
                                     .OfType<IOpenApiSchema>()
                                     .ToArray();
         var entriesToMerge = meaningfulSchemas.FlattenEmptyEntries(static x => x.AllOf).Union(meaningfulSchemas).ToArray();
-        if (entriesToMerge.Select(static x => x.Discriminator).OfType<OpenApiDiscriminator>().FirstOrDefault() is OpenApiDiscriminator discriminator)
-            if (result.Discriminator is null)
+        if (entriesToMerge.Select(static x => x.Discriminator).OfType<OpenApiDiscriminator>().FirstOrDefault() is OpenApiDiscriminator discriminator) {
+            if (result.Discriminator is null) {
                 result.Discriminator = discriminator;
-            else
+            } else
             {
-                if (string.IsNullOrEmpty(result.Discriminator.PropertyName) && !string.IsNullOrEmpty(discriminator.PropertyName))
+                if (string.IsNullOrEmpty(result.Discriminator.PropertyName) && !string.IsNullOrEmpty(discriminator.PropertyName)) {
                     result.Discriminator.PropertyName = discriminator.PropertyName;
-                if (discriminator.Mapping is { Count: > 0 })
+                }
+
+                if (discriminator.Mapping is { Count: > 0 }) {
                     result.Discriminator.Mapping = discriminator.Mapping.ToDictionary(static x => x.Key, static x => x.Value);
+                }
             }
+        }
 
         schema.AddOriginalReferenceIdExtension(result);
 
@@ -217,7 +256,10 @@ public static class OpenApiSchemaExtensions
     /// <param name="result">Resulting merged schema.</param>
     private static void AddOriginalReferenceIdExtension(this IOpenApiSchema schema, OpenApiSchema result)
     {
-        if (schema is not OpenApiSchemaReference schemaReference || string.IsNullOrEmpty(schemaReference.Reference.Id)) return;
+        if (schema is not OpenApiSchemaReference schemaReference || string.IsNullOrEmpty(schemaReference.Reference.Id)) {
+            return;
+        }
+
         result.Extensions ??= new Dictionary<string, IOpenApiExtension>(StringComparer.Ordinal);
         result.Extensions.TryAdd(OpenApiKiotaMergedExtension.Name, new OpenApiKiotaMergedExtension(schemaReference.Reference.Id));
     }
@@ -246,14 +288,20 @@ public static class OpenApiSchemaExtensions
 
     public static bool IsExclusiveUnion(this IOpenApiSchema? schema, uint exclusiveMinimumNumberOfEntries = 1)
     {
-        if (schema is null) return false;
+        if (schema is null) {
+            return false;
+        }
+
         return schema.OneOf?.Count(static x => IsSemanticallyMeaningful(x, true)) > exclusiveMinimumNumberOfEntries ||
             schema.IsArrayOfTypes();
         // so we don't consider one of object/nullable as a union type
     }
     public static bool IsArrayOfTypes(this IOpenApiSchema? schema)
     {
-        if (schema is null) return false;
+        if (schema is null) {
+            return false;
+        }
+
         return schema.Type.HasValue && !IsPowerOfTwo((uint)(schema.Type.Value & ~JsonSchemaType.Null));
     }
     private static bool IsPowerOfTwo(uint x)
@@ -284,7 +332,10 @@ public static class OpenApiSchemaExtensions
     }
     public static bool IsODataPrimitiveType(this IOpenApiSchema schema)
     {
-        if (schema is null) return false;
+        if (schema is null) {
+            return false;
+        }
+
         return schema.IsExclusiveUnion() &&
                schema.OneOf is { Count: 3 } &&
                schema.OneOf.Count(static x => isStringType(x) && (x.Enum is { Count: > 0 })) == 1 &&
@@ -301,20 +352,29 @@ public static class OpenApiSchemaExtensions
     }
     public static bool IsEnum(this IOpenApiSchema? schema)
     {
-        if (schema is null || schema.Enum is null) return false;
+        if (schema is null || schema.Enum is null) {
+            return false;
+        }
+
         return schema.Enum.Any(static x => x.GetValueKind() is JsonValueKind.String &&
                                     x.GetValue<string>() is string value &&
                                     !string.IsNullOrEmpty(value)); // number and boolean enums are not supported
     }
     public static bool IsComposedEnum(this IOpenApiSchema? schema)
     {
-        if (schema is null) return false;
+        if (schema is null) {
+            return false;
+        }
+
         return schema.AnyOf?.Count(static x => !x.IsSemanticallyMeaningful(true)) == 1 && schema.AnyOf.Count(static x => x.IsEnum()) == 1 ||
                 schema.OneOf?.Count(static x => !x.IsSemanticallyMeaningful(true)) == 1 && schema.OneOf.Count(static x => x.IsEnum()) == 1;
     }
     public static bool IsSemanticallyMeaningful(this IOpenApiSchema schema, bool ignoreNullableObjects = false, bool ignoreEnums = false, bool ignoreArrays = false, bool ignoreType = false)
     {
-        if (schema is null) return false;
+        if (schema is null) {
+            return false;
+        }
+
         return schema.HasAnyProperty() ||
                 (!ignoreEnums && schema.Enum is { Count: > 0 }) ||
                 (!ignoreArrays && schema.Items != null) ||
@@ -332,12 +392,16 @@ public static class OpenApiSchemaExtensions
         {
             visitedSchemas.Add(schema);
             var result = new List<string>();
-            if (schema.GetReferenceId() is string refId && !string.IsNullOrEmpty(refId))
+            if (schema.GetReferenceId() is string refId && !string.IsNullOrEmpty(refId)) {
                 result.Add(refId);
+            }
+
             if (schema.Items != null)
             {
-                if (schema.Items.GetReferenceId() is string itemsRefId && !string.IsNullOrEmpty(itemsRefId))
+                if (schema.Items.GetReferenceId() is string itemsRefId && !string.IsNullOrEmpty(itemsRefId)) {
                     result.Add(itemsRefId);
+                }
+
                 result.AddRange(schema.Items.GetSchemaReferenceIds(visitedSchemas));
             }
             var subSchemaReferences = (schema.Properties?.Values ?? Enumerable.Empty<IOpenApiSchema>())
@@ -346,8 +410,10 @@ public static class OpenApiSchemaExtensions
                                         .Union(schema.OneOf ?? Enumerable.Empty<IOpenApiSchema>())
                                         .SelectMany(x => x.GetSchemaReferenceIds(visitedSchemas))
                                         .ToList();// this to list is important otherwise the any marks the schemas as visited and add range doesn't find anything
-            if (subSchemaReferences.Count != 0)
+            if (subSchemaReferences.Count != 0) {
                 result.AddRange(subSchemaReferences);
+            }
+
             return result.Distinct();
         }
 
@@ -355,19 +421,24 @@ public static class OpenApiSchemaExtensions
     }
     private static IEnumerable<IOpenApiSchema> FlattenEmptyEntries(this IEnumerable<IOpenApiSchema> schemas, Func<IOpenApiSchema, IList<IOpenApiSchema>?> subsequentGetter, int? maxDepth = default)
     {
-        if (schemas == null) return [];
+        if (schemas == null) {
+            return [];
+        }
+
         ArgumentNullException.ThrowIfNull(subsequentGetter);
 
-        if ((maxDepth ?? 1) <= 0)
+        if ((maxDepth ?? 1) <= 0) {
             return schemas;
+        }
 
         var result = schemas.ToList();
         var permutations = new Dictionary<IOpenApiSchema, IEnumerable<IOpenApiSchema>>();
         foreach (var item in result)
         {
             var subsequentItems = subsequentGetter(item);
-            if (subsequentItems is { Count: > 0 })
+            if (subsequentItems is { Count: > 0 }) {
                 permutations.Add(item, subsequentItems.FlattenEmptyEntries(subsequentGetter, maxDepth.HasValue ? --maxDepth : default));
+            }
         }
         if (permutations.Count > 0)
         {
@@ -388,23 +459,32 @@ public static class OpenApiSchemaExtensions
     internal static string GetDiscriminatorPropertyName(this IOpenApiSchema schema, HashSet<IOpenApiSchema>? visitedSchemas = default)
     {
 
-        if (schema == null)
+        if (schema == null) {
             return string.Empty;
+        }
 
         visitedSchemas ??= [];
-        if (visitedSchemas.Contains(schema))
+        if (visitedSchemas.Contains(schema)) {
             return string.Empty;
+        }
+
         visitedSchemas.Add(schema);
 
-        if (!string.IsNullOrEmpty(schema.Discriminator?.PropertyName))
+        if (!string.IsNullOrEmpty(schema.Discriminator?.PropertyName)) {
             return schema.Discriminator.PropertyName;
+        }
 
-        if (schema.OneOf?.Select(x => x.GetDiscriminatorPropertyName(visitedSchemas)).FirstOrDefault(static x => !string.IsNullOrEmpty(x)) is string oneOfDiscriminatorPropertyName)
+        if (schema.OneOf?.Select(x => x.GetDiscriminatorPropertyName(visitedSchemas)).FirstOrDefault(static x => !string.IsNullOrEmpty(x)) is string oneOfDiscriminatorPropertyName) {
             return oneOfDiscriminatorPropertyName;
-        if (schema.AnyOf?.Select(x => x.GetDiscriminatorPropertyName(visitedSchemas)).FirstOrDefault(static x => !string.IsNullOrEmpty(x)) is string anyOfDiscriminatorPropertyName)
+        }
+
+        if (schema.AnyOf?.Select(x => x.GetDiscriminatorPropertyName(visitedSchemas)).FirstOrDefault(static x => !string.IsNullOrEmpty(x)) is string anyOfDiscriminatorPropertyName) {
             return anyOfDiscriminatorPropertyName;
-        if (schema.AllOf?.Select(x => x.GetDiscriminatorPropertyName(visitedSchemas)).FirstOrDefault(static x => !string.IsNullOrEmpty(x)) is string allOfDiscriminatorPropertyName)
+        }
+
+        if (schema.AllOf?.Select(x => x.GetDiscriminatorPropertyName(visitedSchemas)).FirstOrDefault(static x => !string.IsNullOrEmpty(x)) is string allOfDiscriminatorPropertyName) {
             return allOfDiscriminatorPropertyName;
+        }
 
         return string.Empty;
     }
@@ -412,22 +492,29 @@ public static class OpenApiSchemaExtensions
         => GetDiscriminatorMappings(schema, inheritanceIndex, false);
     private static IEnumerable<KeyValuePair<string, string>> GetDiscriminatorMappings(IOpenApiSchema schema, ConcurrentDictionary<string, ConcurrentDictionary<string, bool>> inheritanceIndex, bool lookupKeyInParentMapping)
     {
-        if (schema == null)
+        if (schema == null) {
             return [];
+        }
+
         if (schema.Discriminator?.Mapping is not { Count: > 0 })
         {
-            if (schema.OneOf is { Count: > 0 })
+            if (schema.OneOf is { Count: > 0 }) {
                 // Pass lookupKeyInParentMapping: true so each member looks up its key in the parent's mapping
                 return schema.OneOf.SelectMany(x => GetDiscriminatorMappings(x, inheritanceIndex, lookupKeyInParentMapping: true));
-            if (schema.AnyOf is { Count: > 0 })
+            }
+
+            if (schema.AnyOf is { Count: > 0 }) {
                 // Pass lookupKeyInParentMapping: true so each member looks up its key in the parent's mapping
                 return schema.AnyOf.SelectMany(x => GetDiscriminatorMappings(x, inheritanceIndex, lookupKeyInParentMapping: true));
+            }
+
             if (schema.IsInherited())
             {
                 // ensure we're in an inheritance context and get the discriminator from the parent when available
                 // First check inline schemas
-                if (schema.AllOf?.OfType<OpenApiSchema>().FirstOrDefault(allOfEvaluatorForMappings) is { } allOfEntry)
+                if (schema.AllOf?.OfType<OpenApiSchema>().FirstOrDefault(allOfEvaluatorForMappings) is { } allOfEntry) {
                     return GetDiscriminatorMappings(allOfEntry, inheritanceIndex, lookupKeyInParentMapping);
+                }
                 // When looking up the key for a specific schema in its parent's mapping (e.g. a oneOf member),
                 // resolve $ref allOf entries and return only the entry that maps to the current schema.
                 // This avoids O(n²) expansion when a base type has a large discriminator mapping.
@@ -444,15 +531,18 @@ public static class OpenApiSchemaExtensions
                         .Where(x => string.Equals(x.Value.Reference.Id, currentRefId, StringComparison.OrdinalIgnoreCase))
                         .Select(static x => KeyValuePair.Create(x.Key, x.Value.Reference.Id!))
                         .ToList();
-                    if (filteredMappings.Count > 0)
+                    if (filteredMappings.Count > 0) {
                         return filteredMappings;
+                    }
                 }
             }
-            if (schema.GetReferenceId() is string refId && !string.IsNullOrEmpty(refId))
+            if (schema.GetReferenceId() is string refId && !string.IsNullOrEmpty(refId)) {
                 return GetAllInheritanceSchemaReferences(refId, inheritanceIndex)
                            .Where(static x => !string.IsNullOrEmpty(x))
                            .Select(x => KeyValuePair.Create(x, x))
                            .Union([KeyValuePair.Create(refId, refId)]);
+            }
+
             return [];
         }
 
@@ -469,15 +559,25 @@ public static class OpenApiSchemaExtensions
     /// </summary>
     private static OpenApiSchema? FindAncestorSchemaWithDiscriminatorMapping(IOpenApiSchema schema, HashSet<IOpenApiSchema>? visited = null)
     {
-        if (schema is null) return null;
+        if (schema is null) {
+            return null;
+        }
+
         visited ??= [];
         foreach (var allOfRef in schema.AllOf?.OfType<OpenApiSchemaReference>() ?? [])
         {
-            if (allOfRef.RecursiveTarget is not OpenApiSchema target || !visited.Add(target)) continue;
-            if (allOfEvaluatorForMappings(target))
+            if (allOfRef.RecursiveTarget is not OpenApiSchema target || !visited.Add(target)) {
+                continue;
+            }
+
+            if (allOfEvaluatorForMappings(target)) {
                 return target;
+            }
+
             var ancestor = FindAncestorSchemaWithDiscriminatorMapping(target, visited);
-            if (ancestor is not null) return ancestor;
+            if (ancestor is not null) {
+                return ancestor;
+            }
         }
         return null;
     }
@@ -485,14 +585,18 @@ public static class OpenApiSchemaExtensions
     {
         ArgumentException.ThrowIfNullOrEmpty(currentReferenceId);
         ArgumentNullException.ThrowIfNull(inheritanceIndex);
-        if (inheritanceIndex.TryGetValue(currentReferenceId, out var dependents))
+        if (inheritanceIndex.TryGetValue(currentReferenceId, out var dependents)) {
             return dependents.Keys.Union(dependents.Keys.SelectMany(x => GetAllInheritanceSchemaReferences(x, inheritanceIndex))).Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+
         return [];
     }
     internal static string GetClassName(this IOpenApiSchema? schema)
     {
-        if (schema?.GetReferenceId() is string referenceId && !string.IsNullOrEmpty(referenceId))
+        if (schema?.GetReferenceId() is string referenceId && !string.IsNullOrEmpty(referenceId)) {
             return referenceId[(referenceId.LastIndexOf('.') + 1)..];
+        }
+
         return string.Empty;
     }
 }

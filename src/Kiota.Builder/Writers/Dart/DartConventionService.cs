@@ -38,8 +38,13 @@ public class DartConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(x => GetTypeReferenceForDocComment(x, codeElement), ReferenceTypePrefix, ReferenceTypeSuffix, RemoveInvalidDescriptionCharacters);
         writer.WriteLine($"{DocCommentPrefix} {description}");
@@ -70,9 +75,14 @@ public class DartConventionService : CommonLanguageConventionService
     public void WriteLongDescription(CodeElement element, LanguageWriter writer, IEnumerable<string>? additionalRemarks = default)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        if (element is not IDocumentedElement documentedElement || documentedElement.Documentation is not CodeDocumentation documentation) return;
-        if (additionalRemarks == default)
+        if (element is not IDocumentedElement documentedElement || documentedElement.Documentation is not CodeDocumentation documentation) {
+            return;
+        }
+
+        if (additionalRemarks == default) {
             additionalRemarks = [];
+        }
+
         var remarks = additionalRemarks.Where(static x => !string.IsNullOrEmpty(x)).ToArray();
         if (documentation.DescriptionAvailable || documentation.ExternalDocumentationAvailable || remarks.Length != 0)
         {
@@ -81,11 +91,15 @@ public class DartConventionService : CommonLanguageConventionService
                 var description = documentedElement.Documentation.GetDescription(x => GetTypeReferenceForDocComment(x, element), ReferenceTypePrefix, ReferenceTypeSuffix, RemoveInvalidDescriptionCharacters);
                 writer.WriteLine($"{DocCommentPrefix}{description}");
             }
-            foreach (var additionalRemark in remarks)
+            foreach (var additionalRemark in remarks) {
                 writer.WriteLine($"{DocCommentPrefix}{additionalRemark}");
-            if (element is IDeprecableElement deprecableElement && deprecableElement.Deprecation is not null && deprecableElement.Deprecation.IsDeprecated)
-                foreach (var additionalComment in GetDeprecationInformationForDocumentationComment(deprecableElement))
+            }
+
+            if (element is IDeprecableElement deprecableElement && deprecableElement.Deprecation is not null && deprecableElement.Deprecation.IsDeprecated) {
+                foreach (var additionalComment in GetDeprecationInformationForDocumentationComment(deprecableElement)) {
                     writer.WriteLine($"{DocCommentPrefix}{additionalComment}");
+                }
+            }
 
             if (documentation.ExternalDocumentationAvailable)
             {
@@ -98,14 +112,18 @@ public class DartConventionService : CommonLanguageConventionService
 
     internal string GetTypeReferenceForDocComment(CodeTypeBase code, CodeElement targetElement)
     {
-        if (code is CodeType codeType && codeType.TypeDefinition is CodeMethod method)
+        if (code is CodeType codeType && codeType.TypeDefinition is CodeMethod method) {
             return $"{GetTypeString(new CodeType { TypeDefinition = method.Parent, IsExternal = false }, targetElement)}#{GetTypeString(code, targetElement)}";
+        }
+
         return $"{GetTypeString(code, targetElement)}";
     }
 
     private string[] GetDeprecationInformationForDocumentationComment(IDeprecableElement element)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return Array.Empty<string>();
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return Array.Empty<string>();
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {RemoveInvalidDescriptionCharacters(element.Deprecation.Version)}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
@@ -144,8 +162,9 @@ public class DartConventionService : CommonLanguageConventionService
             {
                 urlTplRef = TempDictionaryVarName;
                 writer.WriteLine($"var {urlTplRef} = Map.of({pathParametersProp.Name.ToFirstCharacterLowerCase()});");
-                foreach (var param in customParameters)
+                foreach (var param in customParameters) {
                     writer.WriteLine($"{urlTplRef}.putIfAbsent('{SanitizeDartSingleQuoteLiteral(param.SerializationName)}', () => {param.Name.ToFirstCharacterLowerCase()});");
+                }
             }
             writer.WriteLine($"{prefix}{returnType}({urlTplRef}, {requestAdapterProp.Name.ToFirstCharacterLowerCase()}{pathParametersSuffix});");
         }
@@ -153,7 +172,10 @@ public class DartConventionService : CommonLanguageConventionService
     public override string TempDictionaryVarName => "urlTplParams";
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase pathParametersType, string pathParametersReference, string varName = "", params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         if (string.IsNullOrEmpty(varName))
         {
             varName = TempDictionaryVarName;
@@ -167,10 +189,11 @@ public class DartConventionService : CommonLanguageConventionService
                 string nullCheck = string.Empty;
                 if (ct.CollectionKind == CodeTypeCollectionKind.None && ct.IsNullable)
                 {
-                    if (nameof(String).Equals(ct.Name, StringComparison.OrdinalIgnoreCase))
+                    if (nameof(String).Equals(ct.Name, StringComparison.OrdinalIgnoreCase)) {
                         nullCheck = $"if ({identName}!= null && {identName}.isNotEmpty) ";
-                    else
+                    } else {
                         nullCheck = $"if ({identName} != null) ";
+                    }
                 }
                 return $"{nullCheck}{varName}[\"{SanitizeDartDoubleQuoteLiteral(name)}\"]={identName};";
             }).ToArray());
@@ -189,8 +212,10 @@ public class DartConventionService : CommonLanguageConventionService
     public string GetTypeString(CodeTypeBase code, CodeElement targetElement, bool includeCollectionInformation, bool includeNullableInformation, bool includeActionInformation = true)
     {
         ArgumentNullException.ThrowIfNull(targetElement);
-        if (code is CodeComposedTypeBase)
+        if (code is CodeComposedTypeBase) {
             throw new InvalidOperationException($"Dart does not support union types, the union type {code.Name} should have been filtered out by the refiner");
+        }
+
         if (code is CodeType currentType)
         {
             var typeName = TranslateTypeAndAvoidUsingNamespaceSegmentNames(currentType);
@@ -227,8 +252,10 @@ public class DartConventionService : CommonLanguageConventionService
                         .FirstOrDefault(x => !x.IsExternal &&
                                         x.Declaration?.TypeDefinition != null &&
                                         x.Declaration.TypeDefinition == targetType.TypeDefinition &&
-                                        !string.IsNullOrEmpty(x.Alias)) is CodeUsing aliasedUsing)
+                                        !string.IsNullOrEmpty(x.Alias)) is CodeUsing aliasedUsing) {
             return aliasedUsing.Alias;
+        }
+
         return string.Empty;
     }
 
@@ -254,7 +281,10 @@ public class DartConventionService : CommonLanguageConventionService
 
     public bool IsPrimitiveType(string typeName)
     {
-        if (string.IsNullOrEmpty(typeName)) return false;
+        if (string.IsNullOrEmpty(typeName)) {
+            return false;
+        }
+
         typeName = typeName.StripArraySuffix().TrimEnd('?').ToLowerInvariant();
         return typeName switch
         {
@@ -280,7 +310,9 @@ public class DartConventionService : CommonLanguageConventionService
     }
     private string GetDeprecationInformation(IDeprecableElement element)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return string.Empty;
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return string.Empty;
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {RemoveInvalidDescriptionCharacters(element.Deprecation.Version)}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
@@ -291,8 +323,9 @@ public class DartConventionService : CommonLanguageConventionService
     internal void WriteDeprecationAttribute(IDeprecableElement element, LanguageWriter writer)
     {
         var deprecationMessage = GetDeprecationInformation(element);
-        if (!string.IsNullOrEmpty(deprecationMessage))
+        if (!string.IsNullOrEmpty(deprecationMessage)) {
             writer.WriteLine(deprecationMessage);
+        }
     }
 
     public bool ErrorClassPropertyExistsInSuperClass(CodeProperty codeElement)

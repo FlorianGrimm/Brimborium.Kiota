@@ -95,13 +95,16 @@ public abstract class LanguageWriter(string indentationChar = " ", int indentati
     internal void StartBlock(string symbol = "{", bool increaseIndent = true)
     {
         WriteLine(symbol);
-        if (increaseIndent)
+        if (increaseIndent) {
             IncreaseIndent();
+        }
     }
     internal void CloseBlock(string symbol = "}", bool decreaseIndent = true)
     {
-        if (decreaseIndent)
+        if (decreaseIndent) {
             DecreaseIndent();
+        }
+
         WriteLine(symbol);
     }
 
@@ -148,7 +151,7 @@ public abstract class LanguageWriter(string indentationChar = " ", int indentati
     public void Write<T>(T code) where T : CodeElement
     {
         ArgumentNullException.ThrowIfNull(code);
-        if (Writers.TryGetValue(code.GetType(), out var elementWriter))
+        if (Writers.TryGetValue(code.GetType(), out var elementWriter)) {
             switch (code)
             {
                 case CodeProperty p when !p.ExistsInBaseType: // to avoid duplicating props on inheritance structure
@@ -197,18 +200,20 @@ public abstract class LanguageWriter(string indentationChar = " ", int indentati
                     ((ICodeElementWriter<CodeIntersectionType>)elementWriter).WriteCodeElement(codeIntersectionType, this);
                     break;
             }
-        else if (code is not CodeClass &&
+        } else if (code is not CodeClass &&
                 code is not BlockDeclaration &&
                 code is not BlockEnd &&
                 code is not CodeInterface &&
                 code is not CodeFile &&
-                code is not CodeEnumOption)
+                code is not CodeEnumOption) {
             throw new InvalidOperationException($"Dispatcher missing for type {code.GetType()}");
+        }
     }
     protected void AddOrReplaceCodeElementWriter<T>(ICodeElementWriter<T> writer) where T : CodeElement
     {
-        if (!Writers.TryAdd(typeof(T), writer))
+        if (!Writers.TryAdd(typeof(T), writer)) {
             Writers[typeof(T)] = writer;
+        }
     }
     private readonly Dictionary<Type, object> Writers = []; // we have to type as object because dotnet doesn't have type capture i.e eq for `? extends CodeElement`
     public static LanguageWriter GetLanguageWriter(GenerationLanguage language, string outputPath, string clientNamespaceName, bool usesBackingStore = false, bool excludeBackwardCompatible = false)

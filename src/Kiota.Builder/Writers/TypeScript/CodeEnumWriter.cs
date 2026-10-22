@@ -14,8 +14,10 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, TypeScriptConventionSe
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(codeElement.CodeEnumObject);
-        if (!codeElement.Options.Any())
+        if (!codeElement.Options.Any()) {
             return;
+        }
+
         var enumObjectName = codeElement.CodeEnumObject.Name.ToFirstCharacterUpperCase();
         writer.WriteLine($"export type {codeElement.Name.ToFirstCharacterUpperCase()} = (typeof {enumObjectName})[keyof typeof {enumObjectName}];");
     }

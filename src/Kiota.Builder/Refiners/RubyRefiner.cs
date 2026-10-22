@@ -51,14 +51,17 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
                 if (s.Contains('_', StringComparison.OrdinalIgnoreCase) &&
                      s.ToPascalCase(UnderscoreArray) is string refinedName &&
                     !reservedNamesProvider.ReservedNames.Contains(s) &&
-                    !reservedNamesProvider.ReservedNames.Contains(refinedName))
+                    !reservedNamesProvider.ReservedNames.Contains(refinedName)) {
                     return refinedName;
-                else
+                } else {
                     return s;
+                }
             }, false, true);
             cancellationToken.ThrowIfCancellationRequested();
-            if (generatedCode.FindNamespaceByName(_configuration.ModelsNamespaceName) is CodeNamespace modelsNS)
+            if (generatedCode.FindNamespaceByName(_configuration.ModelsNamespaceName) is CodeNamespace modelsNS) {
                 FlattenModelsNamespaces(modelsNS, modelsNS);
+            }
+
             AddPropertiesAndMethodTypesImports(generatedCode, false, false, true);
             RemoveCancellationParameter(generatedCode);
             cancellationToken.ThrowIfCancellationRequested();
@@ -98,8 +101,10 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
                 false,
                 [CodeClassKind.RequestConfiguration]);
             ShortenLongNamespaceNames(generatedCode);
-            if (generatedCode.FindNamespaceByName(_configuration.ClientNamespaceName)?.Parent is CodeNamespace parentOfClientNS)
+            if (generatedCode.FindNamespaceByName(_configuration.ClientNamespaceName)?.Parent is CodeNamespace parentOfClientNS) {
                 AddNamespaceModuleImports(parentOfClientNS, generatedCode);
+            }
+
             var defaultConfiguration = new GenerationConfiguration();
             cancellationToken.ThrowIfCancellationRequested();
             ReplaceDefaultSerializationModules(
@@ -137,9 +142,9 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
             var newName = string.Join(".", nameParts
                                                 .Select(static x => (originalName: x, snakeName: x.ToSnakeCase()))
                                                 .Select(static x => x.snakeName.Length > RubyPathSegmenter.MaxFileNameLength ? x.originalName.GetNamespaceImportSymbol() : x.originalName));
-            if (currentNamespace.Parent is CodeNamespace parentNamespace)
+            if (currentNamespace.Parent is CodeNamespace parentNamespace) {
                 parentNamespace.RenameChildElement(currentNamespace.Name, newName);
-
+            }
         }
         CrawlTree(currentElement, ShortenLongNamespaceNames);
     }
@@ -159,18 +164,23 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
     }
     private static void UpdateReferencesToDisambiguatedClasses(CodeElement currentElement, HashSet<CodeClass> classesToUpdate, string suffix)
     {
-        if (classesToUpdate.Count == 0) return;
+        if (classesToUpdate.Count == 0) {
+            return;
+        }
+
         if (currentElement is CodeProperty currentProperty &&
             currentProperty.Type is CodeType propertyType &&
             propertyType.TypeDefinition is CodeClass propertyTypeClass &&
-            classesToUpdate.Contains(propertyTypeClass))
+            classesToUpdate.Contains(propertyTypeClass)) {
             propertyType.Name = $"{propertyType.Name}{suffix}";
-        else if (currentElement is CodeMethod currentMethod)
+        } else if (currentElement is CodeMethod currentMethod)
         {
             if (currentMethod.ReturnType is CodeType returnType &&
                 returnType.TypeDefinition is CodeClass returnTypeClass &&
-                classesToUpdate.Contains(returnTypeClass))
+                classesToUpdate.Contains(returnTypeClass)) {
                 returnType.Name = $"{returnType.Name}{suffix}";
+            }
+
             currentMethod.Parameters.Where(x => x.Type is CodeType parameterType &&
                                                 parameterType.TypeDefinition is CodeClass parameterTypeClass &&
                                                 classesToUpdate.Contains(parameterTypeClass))
@@ -180,8 +190,10 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
         else if (currentElement is CodeClass currentClass)
         {
             if (currentClass.StartBlock.Inherits?.TypeDefinition is CodeClass parentClass &&
-                    classesToUpdate.Contains(parentClass))
+                    classesToUpdate.Contains(parentClass)) {
                 currentClass.StartBlock.Inherits.Name = $"{currentClass.StartBlock.Inherits.Name}{suffix}";
+            }
+
             currentClass.DiscriminatorInformation
                         .DiscriminatorMappings
                         .Select(static x => x.Value)
@@ -209,17 +221,20 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
             var elementPrefix = CapitalizedFirstLetterAfterDot().Replace(currentElementNamespace.Name[(modelsNS.Name.Length + 1)..], x => x.Groups["letter"].Value.ToUpperInvariant());
             currentElementNamespace.RemoveChildElement(currentElement);
             currentElement.Name = $"{elementPrefix}{currentElement.Name.ToFirstCharacterUpperCase()}";
-            if (currentElement is CodeClass currentClass)
+            if (currentElement is CodeClass currentClass) {
                 modelsNS.AddClass(currentClass);
-            else if (currentElement is CodeEnum currentEnum)
+            } else if (currentElement is CodeEnum currentEnum) {
                 modelsNS.AddEnum(currentEnum);
+            }
         }
         CrawlTree(currentElement, x => FlattenModelsNamespaces(x, modelsNS));
     }
     private static void CorrectMethodType(CodeMethod currentMethod)
     {
-        if (currentMethod.IsOfKind(CodeMethodKind.Factory) && currentMethod.Parameters.OfKind(CodeParameterKind.ParseNode) is CodeParameter parseNodeParam)
+        if (currentMethod.IsOfKind(CodeMethodKind.Factory) && currentMethod.Parameters.OfKind(CodeParameterKind.ParseNode) is CodeParameter parseNodeParam) {
             parseNodeParam.Type.Name = parseNodeParam.Type.Name[1..];
+        }
+
         CorrectCoreTypes(currentMethod.Parent as CodeClass, DateTypesReplacements, types: currentMethod.Parameters
                                     .Select(x => x.Type)
                                     .Union(new[] { currentMethod.ReturnType })
@@ -260,8 +275,9 @@ public partial class RubyRefiner : CommonLanguageRefiner, ILanguageRefiner
         if (currentProperty.IsOfKind(CodePropertyKind.PathParameters, CodePropertyKind.AdditionalData))
         {
             currentProperty.Type.IsNullable = true;
-            if (!string.IsNullOrEmpty(currentProperty.DefaultValue))
+            if (!string.IsNullOrEmpty(currentProperty.DefaultValue)) {
                 currentProperty.DefaultValue = "Hash.new";
+            }
         }
 
         CorrectCoreTypes(currentProperty.Parent as CodeClass, DateTypesReplacements, types: currentProperty.Type);

@@ -17,8 +17,10 @@ public sealed class FileLogLoggerProvider(string logFileDirectoryAbsolutePath, L
     }
     public void Dispose()
     {
-        foreach (var logger in _loggers)
+        foreach (var logger in _loggers) {
             logger.Dispose();
+        }
+
         GC.SuppressFinalize(this);
     }
 }

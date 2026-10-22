@@ -25,7 +25,9 @@ public class StringIEnumerableDeepComparer : IEqualityComparer<IEnumerable<strin
     /// <inheritdoc/>
     public bool Equals(IEnumerable<string>? x, IEnumerable<string>? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
 
         var x0 = _ordered ? x.Order(_stringComparer) : x;
         var y0 = _ordered ? y.Order(_stringComparer) : y;
@@ -35,7 +37,10 @@ public class StringIEnumerableDeepComparer : IEqualityComparer<IEnumerable<strin
     public int GetHashCode(IEnumerable<string> obj)
     {
         var hash = new HashCode();
-        if (obj is null) return hash.ToHashCode();
+        if (obj is null) {
+            return hash.ToHashCode();
+        }
+
         var items = _ordered ? obj.Order(_stringComparer) : obj;
         foreach (var item in items)
         {

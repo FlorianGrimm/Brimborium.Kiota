@@ -62,16 +62,20 @@ public class TypeScriptConventionService : CommonLanguageConventionService
     public override string TempDictionaryVarName => "urlTplParams";
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase pathParametersType, string pathParametersReference, string varName = "", params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         if (string.IsNullOrEmpty(varName))
         {
             varName = TempDictionaryVarName;
             writer.WriteLine($"const {varName} = getPathParameters({pathParametersReference});");
         }
-        if (parameters.Length != 0)
+        if (parameters.Length != 0) {
             writer.WriteLines(parameters.Select(p =>
                 $"{varName}[\"{p.Item2.SanitizeDoubleQuote()}\"] = {p.Item3}"
             ).ToArray());
+        }
     }
     public override string GetAccessModifier(AccessModifier access)
     {
@@ -171,8 +175,9 @@ public class TypeScriptConventionService : CommonLanguageConventionService
     */
     private static string GetComposedTypeTypeString(CodeComposedTypeBase composedType, CodeElement targetElement, string collectionSuffix, bool includeCollectionInformation = true)
     {
-        if (!composedType.Types.Any())
+        if (!composedType.Types.Any()) {
             throw new InvalidOperationException("Composed type should be comprised of at least one type");
+        }
 
         var typesDelimiter = composedType is CodeUnionType or CodeIntersectionType ? " | " :
             throw new InvalidOperationException("Unknown composed type");
@@ -276,7 +281,10 @@ public class TypeScriptConventionService : CommonLanguageConventionService
 
     internal static string RemoveInvalidDescriptionCharacters(string originalDescription)
     {
-        if (string.IsNullOrEmpty(originalDescription)) return string.Empty;
+        if (string.IsNullOrEmpty(originalDescription)) {
+            return string.Empty;
+        }
+
         originalDescription = InvalidCharactersReplacements
             .Aggregate(originalDescription, (current, replacement) => current.Replace(replacement.Key, replacement.Value, StringComparison.OrdinalIgnoreCase));
         return originalDescription.Replace("\r", string.Empty, StringComparison.Ordinal)
@@ -287,8 +295,13 @@ public class TypeScriptConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), ReferenceTypePrefix, ReferenceTypeSuffix, RemoveInvalidDescriptionCharacters);
         writer.WriteLine($"{DocCommentStart} {description}{DocCommentEnd}");
@@ -301,8 +314,14 @@ public class TypeScriptConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(documentedElement);
-        if (documentedElement.Documentation is null) return;
-        if (documentedElement is not CodeElement codeElement) return;
+        if (documentedElement.Documentation is null) {
+            return;
+        }
+
+        if (documentedElement is not CodeElement codeElement) {
+            return;
+        }
+
         additionalRemarks ??= [];
         var remarks = additionalRemarks.Where(static x => !string.IsNullOrEmpty(x)).ToArray();
         if (documentedElement.Documentation.DescriptionAvailable || documentedElement.Documentation.ExternalDocumentationAvailable || remarks.Length != 0)
@@ -313,11 +332,13 @@ public class TypeScriptConventionService : CommonLanguageConventionService
                 var description = documentedElement.Documentation.GetDescription(type => GetTypeString(type, codeElement), ReferenceTypePrefix, ReferenceTypeSuffix, RemoveInvalidDescriptionCharacters);
                 writer.WriteLine($"{DocCommentPrefix}{description}");
             }
-            foreach (var additionalRemark in remarks)
+            foreach (var additionalRemark in remarks) {
                 writer.WriteLine($"{DocCommentPrefix}{additionalRemark}");
+            }
 
-            if (documentedElement is IDeprecableElement deprecableElement && GetDeprecationComment(deprecableElement) is string deprecationComment && !string.IsNullOrEmpty(deprecationComment))
+            if (documentedElement is IDeprecableElement deprecableElement && GetDeprecationComment(deprecableElement) is string deprecationComment && !string.IsNullOrEmpty(deprecationComment)) {
                 writer.WriteLine($"{DocCommentPrefix}{deprecationComment}");
+            }
 
             if (documentedElement.Documentation.ExternalDocumentationAvailable)
             {
@@ -330,7 +351,9 @@ public class TypeScriptConventionService : CommonLanguageConventionService
     }
     private string GetDeprecationComment(IDeprecableElement element)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return string.Empty;
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return string.Empty;
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {RemoveInvalidDescriptionCharacters(element.Deprecation.Version)}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
@@ -343,7 +366,10 @@ public class TypeScriptConventionService : CommonLanguageConventionService
         var composedType = GetOriginalComposedType(targetClassType);
         string targetClassName = TranslateTypescriptType(composedType ?? targetClassType);
         var resultName = $"create{targetClassName.ToFirstCharacterUpperCase()}FromDiscriminatorValue";
-        if (GetTypescriptTypeString(targetClassType, currentElement, false) is string returnType && targetClassName.EqualsIgnoreCase(returnType)) return resultName;
+        if (GetTypescriptTypeString(targetClassType, currentElement, false) is string returnType && targetClassName.EqualsIgnoreCase(returnType)) {
+            return resultName;
+        }
+
         if (targetClassType is CodeType currentType && currentType.TypeDefinition is CodeInterface definitionClass && GetFactoryMethod(definitionClass, resultName) is { } factoryMethod)
         {
             var methodName = GetTypescriptTypeString(new CodeType { Name = resultName, TypeDefinition = factoryMethod }, currentElement, false);

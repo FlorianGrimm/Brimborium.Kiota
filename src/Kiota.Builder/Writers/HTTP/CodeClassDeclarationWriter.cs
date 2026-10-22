@@ -288,7 +288,9 @@ public class CodeClassDeclarationWriter(HttpConventionService conventionService)
     {
         // If there is a request body, write it
         var requestBody = method.Parameters.FirstOrDefault(static param => param.IsOfKind(CodeParameterKind.RequestBody));
-        if (requestBody is null) return;
+        if (requestBody is null) {
+            return;
+        }
 
         writer.WriteLine($"Content-Type: {method.RequestBodyContentType}");
 

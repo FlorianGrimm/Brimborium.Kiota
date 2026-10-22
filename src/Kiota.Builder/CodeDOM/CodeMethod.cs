@@ -105,8 +105,10 @@ public class CodeMethod : CodeTerminalWithKind<CodeMethodKind>, ICloneable, IDoc
             OriginalIndexer = originalIndexer,
             Deprecation = originalIndexer.Deprecation,
         };
-        if (method.ReturnType is not null)
+        if (method.ReturnType is not null) {
             method.ReturnType.IsNullable = false;
+        }
+
         var parameter = new CodeParameter
         {
             Name = parameterNameCallback(originalIndexer.IndexParameter.Name),
@@ -128,9 +130,13 @@ public class CodeMethod : CodeTerminalWithKind<CodeMethodKind>, ICloneable, IDoc
     public IList<string> AcceptedResponseTypes { get; private set; } = new List<string>();
     public void AddAcceptedResponsesTypes(IEnumerable<string> types)
     {
-        if (types == null) return;
-        if (AcceptedResponseTypes is List<string> list)
+        if (types == null) {
+            return;
+        }
+
+        if (AcceptedResponseTypes is List<string> list) {
             list.AddRange(types);
+        }
     }
     public bool ShouldAddAcceptHeader => AcceptedResponseTypes.Any();
     public string AcceptHeaderValue => string.Join(", ", AcceptedResponseTypes);
@@ -234,7 +240,10 @@ public class CodeMethod : CodeTerminalWithKind<CodeMethodKind>, ICloneable, IDoc
     /// </summary>
     public void DeduplicateErrorMappings()
     {
-        if (!errorMappings.TryGetValue(ErrorMappingClientRange, out var clientError) || !errorMappings.TryGetValue(ErrorMappingServerRange, out var serverError)) return;
+        if (!errorMappings.TryGetValue(ErrorMappingClientRange, out var clientError) || !errorMappings.TryGetValue(ErrorMappingServerRange, out var serverError)) {
+            return;
+        }
+
         if ((clientError == serverError || clientError is CodeType clientErrorType && serverError is CodeType serverErrorType && clientErrorType.TypeDefinition == serverErrorType.TypeDefinition && clientErrorType.TypeDefinition is not null) &&
             errorMappings.TryAdd(ErrorMappingAllRange, clientError))
         {
@@ -310,17 +319,23 @@ public class CodeMethod : CodeTerminalWithKind<CodeMethodKind>, ICloneable, IDoc
             Deprecation = Deprecation,
             UrlTemplateOverride = UrlTemplateOverride,
         };
-        if (Parameters?.Any() ?? false)
+        if (Parameters?.Any() ?? false) {
             method.AddParameter(Parameters.Select(x => (CodeParameter)x.Clone()).ToArray());
+        }
+
         return method;
     }
 
     public void AddParameter(params CodeParameter[] methodParameters)
     {
-        if (methodParameters == null || methodParameters.Any(static x => x == null))
+        if (methodParameters == null || methodParameters.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(methodParameters));
-        if (methodParameters.Length == 0)
+        }
+
+        if (methodParameters.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(methodParameters));
+        }
+
         EnsureElementsAreChildren(methodParameters);
         methodParameters.ToList().ForEach(x => parameters.TryAdd(x.Name, x));
     }

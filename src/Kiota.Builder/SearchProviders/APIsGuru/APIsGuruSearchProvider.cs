@@ -35,14 +35,17 @@ public class APIsGuruSearchProvider : ISearchProvider
     };
     public async Task<IDictionary<string, SearchResult>> SearchAsync(string term, string? version, CancellationToken cancellationToken)
     {
-        if (SearchUri == null)
+        if (SearchUri == null) {
             return new Dictionary<string, SearchResult>();
+        }
 #pragma warning disable CA2007
         await using var rawDocument = await cachingProvider.GetDocumentAsync(SearchUri, "search", "apisguru.json", "application/json", cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
         var apiEntries = await JsonSerializer.DeserializeAsync(rawDocument, ApiEntriesJsonContext.Default.ApiEntries, cancellationToken).ConfigureAwait(false);
-        if (apiEntries == null)
+        if (apiEntries == null) {
             return new Dictionary<string, SearchResult>();
+        }
+
         var candidates = apiEntries
                             .Where(x => !KeysToExclude.Contains(x.Key))
                             .Where(x => x.Key.Contains(term, StringComparison.OrdinalIgnoreCase))

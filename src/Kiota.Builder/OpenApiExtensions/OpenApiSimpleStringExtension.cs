@@ -22,7 +22,10 @@ public abstract class OpenApiSimpleStringExtension : IOpenApiExtension
     public static string ParseString(JsonNode source)
     {
         if (source is not JsonValue rawString ||
-            rawString.GetValueKind() is not JsonValueKind.String) throw new ArgumentOutOfRangeException(nameof(source));
+            rawString.GetValueKind() is not JsonValueKind.String) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         return rawString.GetValue<string>();
     }
 }

@@ -31,29 +31,37 @@ public class DescriptionStorageService
         var documentsFullPath = Path.GetFullPath(documentsDirectory);
         var documentsFullPathWithSeparator = Path.EndsInDirectorySeparator(documentsFullPath) ? documentsFullPath : documentsFullPath + Path.DirectorySeparatorChar;
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        if (!descriptionFilePath.StartsWith(documentsFullPathWithSeparator, comparison))
+        if (!descriptionFilePath.StartsWith(documentsFullPathWithSeparator, comparison)) {
             throw new InvalidOperationException($"The consumer name '{clientName}' resolves to a path outside of the documents directory.");
+        }
+
         return descriptionFilePath;
     }
     internal static void ValidateConsumerName(string clientName)
     {
-        if (string.IsNullOrWhiteSpace(clientName))
+        if (string.IsNullOrWhiteSpace(clientName)) {
             throw new InvalidOperationException("The consumer name must not be empty or whitespace.");
+        }
+
         if (Path.IsPathRooted(clientName) ||
             clientName.Contains('/', StringComparison.Ordinal) ||
             clientName.Contains('\\', StringComparison.Ordinal) ||
             clientName.Split('/', '\\').Contains("..", StringComparer.Ordinal) ||
-            clientName is "." or "..")
+            clientName is "." or "..") {
             throw new InvalidOperationException($"The consumer name '{clientName}' is not a valid single path segment and cannot navigate the file system.");
+        }
     }
     private static void ValidateExtension(string extension)
     {
-        if (string.IsNullOrWhiteSpace(extension))
+        if (string.IsNullOrWhiteSpace(extension)) {
             throw new InvalidOperationException("The description file extension must not be empty or whitespace.");
+        }
+
         if (Path.IsPathRooted(extension) ||
             extension.Contains('/', StringComparison.Ordinal) ||
-            extension.Contains('\\', StringComparison.Ordinal))
+            extension.Contains('\\', StringComparison.Ordinal)) {
             throw new InvalidOperationException($"The description file extension '{extension}' must not contain path separators or be rooted.");
+        }
     }
     public async Task UpdateDescriptionAsync(string clientName, Stream description, string extension = "yml", CancellationToken cancellationToken = default)
     {
@@ -74,8 +82,10 @@ public class DescriptionStorageService
         ArgumentNullException.ThrowIfNull(clientName);
         ArgumentNullException.ThrowIfNull(extension);
         var descriptionFilePath = GetDescriptionFilePath(clientName, extension);
-        if (!File.Exists(descriptionFilePath))
+        if (!File.Exists(descriptionFilePath)) {
             return null;
+        }
+
         using (await localFilesLock.LockAsync(descriptionFilePath, cancellationToken).ConfigureAwait(false))
         {
             using var fs = new FileStream(descriptionFilePath, FileMode.Open);
@@ -90,13 +100,15 @@ public class DescriptionStorageService
         ArgumentNullException.ThrowIfNull(clientName);
         ArgumentNullException.ThrowIfNull(extension);
         var descriptionFilePath = GetDescriptionFilePath(clientName, extension);
-        if (File.Exists(descriptionFilePath))
+        if (File.Exists(descriptionFilePath)) {
             File.Delete(descriptionFilePath);
+        }
     }
     public void Clean()
     {
         var kiotaDirectoryPath = Path.Join(TargetDirectory, DescriptionsSubDirectoryRelativePath);
-        if (Path.Exists(kiotaDirectoryPath))
+        if (Path.Exists(kiotaDirectoryPath)) {
             Directory.Delete(kiotaDirectoryPath, true);
+        }
     }
 }

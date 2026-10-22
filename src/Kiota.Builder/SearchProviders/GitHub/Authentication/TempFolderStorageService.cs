@@ -22,8 +22,10 @@ public class TempFolderTokenStorageService : ITokenStorageService
         try
         {
             var target = GetTokenCacheFilePath();
-            if (!await IsTokenPresentAsync(cancellationToken).ConfigureAwait(false))
+            if (!await IsTokenPresentAsync(cancellationToken).ConfigureAwait(false)) {
                 return null;
+            }
+
             var result = await File.ReadAllTextAsync(target, cancellationToken).ConfigureAwait(false);
             return result;
         }
@@ -42,8 +44,10 @@ public class TempFolderTokenStorageService : ITokenStorageService
         {
             var target = GetTokenCacheFilePath();
             var directory = Path.GetDirectoryName(target);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) {
                 Directory.CreateDirectory(directory);
+            }
+
             await File.WriteAllTextAsync(target, value, cancellationToken).ConfigureAwait(false);
         }
 #pragma warning disable CA1031
@@ -59,8 +63,10 @@ public class TempFolderTokenStorageService : ITokenStorageService
         try
         {
             var target = GetTokenCacheFilePath();
-            if (!File.Exists(target))
+            if (!File.Exists(target)) {
                 return false;
+            }
+
             var fileDate = File.GetLastWriteTime(target);
             if (fileDate.AddMonths(6) < DateTime.Now)
             {
@@ -82,8 +88,10 @@ public class TempFolderTokenStorageService : ITokenStorageService
     {
         //no try-catch as we want the exception to bubble up to the command
         var target = GetTokenCacheFilePath();
-        if (!await IsTokenPresentAsync(cancellationToken).ConfigureAwait(false))
+        if (!await IsTokenPresentAsync(cancellationToken).ConfigureAwait(false)) {
             return false;
+        }
+
         File.Delete(target);
         return true;
     }

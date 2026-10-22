@@ -32,6 +32,7 @@ public sealed partial class OpenApiFeature : IConfigureServices, IConfigureWebAp
 
         // if (app.Environment.IsDevelopment()) { }
 
+        // 
         this._Logger.LogConfigureWebApplicationFeature("OpenApiFeature");
 
         _ = app.MapOpenApi();

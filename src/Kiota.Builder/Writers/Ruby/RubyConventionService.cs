@@ -19,15 +19,19 @@ public class RubyConventionService : CommonLanguageConventionService
     public override string TempDictionaryVarName => "url_tpl_params";
     internal static string SanitizeRubyDoubleQuoteLiteral(string? value)
     {
-        if (string.IsNullOrEmpty(value)) return string.Empty;
+        if (string.IsNullOrEmpty(value)) {
+            return string.Empty;
+        }
 
         if (value.Length > 1)
         {
-            if (value[0] == '"' && value[^1] == '"')
+            if (value[0] == '"' && value[^1] == '"') {
                 return $"\"{value[1..^1].SanitizeDoubleQuote().Replace("#", "\\#", StringComparison.Ordinal)}\"";
+            }
 
-            if (value[0] == '\'' && value[^1] == '\'')
+            if (value[0] == '\'' && value[^1] == '\'') {
                 return $"'{value[1..^1].SanitizeSingleQuote().Replace("#", "\\#", StringComparison.Ordinal)}'";
+            }
         }
 
         return value.SanitizeDoubleQuote().Replace("#", "\\#", StringComparison.Ordinal);
@@ -72,8 +76,13 @@ public class RubyConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(type => GetTypeString(type, codeElement), normalizationFunc: RemoveInvalidDescriptionCharacters);
         writer.WriteLine($"{DocCommentPrefix}");
@@ -84,12 +93,15 @@ public class RubyConventionService : CommonLanguageConventionService
 #pragma warning disable CA1822 // Method should be static
     public string GetNormalizedNamespacePrefixForType(CodeTypeBase type)
     {
-        if (type is CodeType xType)
+        if (type is CodeType xType) {
             if ((xType.TypeDefinition is CodeClass || xType.TypeDefinition is CodeEnum) &&
-                xType.TypeDefinition.Parent is CodeNamespace ns)
+                xType.TypeDefinition.Parent is CodeNamespace ns) {
                 return $"{ns.Name.NormalizeNameSpaceName("::")}::";
-            else if (xType.TypeDefinition is CodeType definition && definition.IsExternal && !string.IsNullOrEmpty(definition.Name))
+            } else if (xType.TypeDefinition is CodeType definition && definition.IsExternal && !string.IsNullOrEmpty(definition.Name)) {
                 return $"{definition.Name}::";
+            }
+        }
+
         return string.Empty;
     }
 #pragma warning restore CA1822 // Method should be static

@@ -27,8 +27,14 @@ public class CodeConstant : CodeTerminalWithKind<CodeConstantKind>, IDocumentedE
     public static CodeConstant? FromQueryParametersMapping(CodeInterface source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        if (source.Kind is not CodeInterfaceKind.QueryParameters) throw new InvalidOperationException("Cannot create a query parameters constant from a non query parameters interface");
-        if (!source.Properties.Any(static x => !string.IsNullOrEmpty(x.SerializationName))) return default;
+        if (source.Kind is not CodeInterfaceKind.QueryParameters) {
+            throw new InvalidOperationException("Cannot create a query parameters constant from a non query parameters interface");
+        }
+
+        if (!source.Properties.Any(static x => !string.IsNullOrEmpty(x.SerializationName))) {
+            return default;
+        }
+
         var result = new CodeConstant
         {
             Name = $"{source.Name.ToFirstCharacterLowerCase()}Mapper",
@@ -54,8 +60,14 @@ public class CodeConstant : CodeTerminalWithKind<CodeConstantKind>, IDocumentedE
     public static CodeConstant? FromRequestBuilderClassToUriTemplate(CodeClass codeClass)
     {
         ArgumentNullException.ThrowIfNull(codeClass);
-        if (codeClass.Kind != CodeClassKind.RequestBuilder) return default;
-        if (codeClass.Properties.FirstOrDefaultOfKind(CodePropertyKind.UrlTemplate) is not CodeProperty urlTemplateProperty) throw new InvalidOperationException($"Couldn't find the url template property for class {codeClass.Name}");
+        if (codeClass.Kind != CodeClassKind.RequestBuilder) {
+            return default;
+        }
+
+        if (codeClass.Properties.FirstOrDefaultOfKind(CodePropertyKind.UrlTemplate) is not CodeProperty urlTemplateProperty) {
+            throw new InvalidOperationException($"Couldn't find the url template property for class {codeClass.Name}");
+        }
+
         var result = new CodeConstant
         {
             Name = $"{codeClass.Name.ToFirstCharacterLowerCase()}{UriTemplateSuffix}",
@@ -69,10 +81,15 @@ public class CodeConstant : CodeTerminalWithKind<CodeConstantKind>, IDocumentedE
     public static CodeConstant? FromRequestBuilderToNavigationMetadata(CodeClass codeClass, CodeUsing[]? usingsToAdd = default)
     {
         ArgumentNullException.ThrowIfNull(codeClass);
-        if (codeClass.Kind != CodeClassKind.RequestBuilder) return default;
-        if (!(codeClass.Properties.Any(static x => x.Kind is CodePropertyKind.RequestBuilder) ||
-            codeClass.Methods.Any(static x => x.Kind is CodeMethodKind.IndexerBackwardCompatibility or CodeMethodKind.RequestBuilderWithParameters)))
+        if (codeClass.Kind != CodeClassKind.RequestBuilder) {
             return default;
+        }
+
+        if (!(codeClass.Properties.Any(static x => x.Kind is CodePropertyKind.RequestBuilder) ||
+            codeClass.Methods.Any(static x => x.Kind is CodeMethodKind.IndexerBackwardCompatibility or CodeMethodKind.RequestBuilderWithParameters))) {
+            return default;
+        }
+
         var result = new CodeConstant
         {
             Name = $"{codeClass.Name.ToFirstCharacterLowerCase()}{NavigationMetadataSuffix}",
@@ -80,16 +97,23 @@ public class CodeConstant : CodeTerminalWithKind<CodeConstantKind>, IDocumentedE
             OriginalCodeElement = codeClass,
         };
         result.Documentation.DescriptionTemplate = "Metadata for all the navigation properties in the request builder.";
-        if (usingsToAdd is { Length: > 0 } usingsToAddList)
+        if (usingsToAdd is { Length: > 0 } usingsToAddList) {
             result.AddUsing(usingsToAddList);
+        }
+
         return result;
     }
     public static CodeConstant? FromRequestBuilderToRequestsMetadata(CodeClass codeClass, CodeUsing[]? usingsToAdd = default)
     {
         ArgumentNullException.ThrowIfNull(codeClass);
-        if (codeClass.Kind != CodeClassKind.RequestBuilder) return default;
-        if (!codeClass.Methods.Any(static x => x.Kind is CodeMethodKind.RequestExecutor or CodeMethodKind.RequestGenerator))
+        if (codeClass.Kind != CodeClassKind.RequestBuilder) {
             return default;
+        }
+
+        if (!codeClass.Methods.Any(static x => x.Kind is CodeMethodKind.RequestExecutor or CodeMethodKind.RequestGenerator)) {
+            return default;
+        }
+
         var result = new CodeConstant
         {
             Name = $"{codeClass.Name.ToFirstCharacterLowerCase()}{RequestsMetadataSuffix}",
@@ -97,8 +121,10 @@ public class CodeConstant : CodeTerminalWithKind<CodeConstantKind>, IDocumentedE
             OriginalCodeElement = codeClass,
         };
         result.Documentation.DescriptionTemplate = "Metadata for all the requests in the request builder.";
-        if (usingsToAdd is { Length: > 0 } usingsToAddList)
+        if (usingsToAdd is { Length: > 0 } usingsToAddList) {
             result.AddUsing(usingsToAddList);
+        }
+
         return result;
     }
 }

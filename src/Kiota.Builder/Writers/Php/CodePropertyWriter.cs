@@ -12,7 +12,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, PhpConventionS
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.ExistsInExternalBaseType) return;
+        if (codeElement.ExistsInExternalBaseType) {
+            return;
+        }
+
         var propertyType = conventions.GetTypeString(codeElement.Type, codeElement);
         var propertyName = codeElement.Name.ToFirstCharacterLowerCase();
         var propertyAccess = conventions.GetAccessModifier(codeElement.Access);

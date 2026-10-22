@@ -60,8 +60,14 @@ public class CSharpConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (element is not CodeElement codeElement) return false;
-        if (!element.Documentation.DescriptionAvailable) return false;
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
+
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
         var description = element.Documentation.GetDescription(type => GetTypeStringForDocumentation(type, codeElement), normalizationFunc: static x => RemoveInvalidDescriptionCharacters(x.CleanupXMLString()));
         writer.WriteLine($"{DocCommentPrefix}{prefix}{description}{suffix}");
         return true;
@@ -76,8 +82,14 @@ public class CSharpConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (element.Documentation is not { } documentation) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (element.Documentation is not { } documentation) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
+
         if (documentation.DescriptionAvailable || documentation.ExternalDocumentationAvailable)
         {
             writer.WriteLine($"{DocCommentPrefix}<summary>");
@@ -121,7 +133,10 @@ public class CSharpConventionService : CommonLanguageConventionService
     public override string TempDictionaryVarName => "urlTplParams";
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase pathParametersType, string pathParametersReference, string varName = "", params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         if (string.IsNullOrEmpty(varName))
         {
             varName = TempDictionaryVarName;
@@ -135,10 +150,11 @@ public class CSharpConventionService : CommonLanguageConventionService
                 string nullCheck = string.Empty;
                 if (ct.CollectionKind == CodeTypeCollectionKind.None && ct.IsNullable)
                 {
-                    if (nameof(String).Equals(ct.Name, StringComparison.OrdinalIgnoreCase))
+                    if (nameof(String).Equals(ct.Name, StringComparison.OrdinalIgnoreCase)) {
                         nullCheck = $"if (!string.IsNullOrWhiteSpace({identName})) ";
-                    else
+                    } else {
                         nullCheck = $"if ({identName} != null) ";
+                    }
                 }
                 return $"{nullCheck}{varName}.Add(\"{name.SanitizeDoubleQuote()}\", {identName});";
             }).ToArray());
@@ -173,8 +189,9 @@ public class CSharpConventionService : CommonLanguageConventionService
         foreach (var childNs in ns.Namespaces)
         {
             yield return childNs;
-            foreach (var childNsSegment in GetAllNamespaces(childNs))
+            foreach (var childNsSegment in GetAllNamespaces(childNs)) {
                 yield return childNsSegment;
+            }
         }
     }
     internal static string RemoveInvalidDescriptionCharacters(string originalDescription) =>
@@ -188,8 +205,9 @@ public class CSharpConventionService : CommonLanguageConventionService
     public string GetTypeStringForDocumentation(CodeTypeBase code, CodeElement targetElement)
     {
         var typeString = GetTypeString(code, targetElement, true, false);// dont include nullable markers
-        if (typeString.EndsWith('>'))
+        if (typeString.EndsWith('>')) {
             return typeString.CleanupXMLString(); // don't generate cref links for generic types as concrete types generate invalid links
+        }
 
         return $"{ReferenceTypePrefix}{typeString.CleanupXMLString()}{ReferenceTypeSuffix}";
     }
@@ -200,8 +218,10 @@ public class CSharpConventionService : CommonLanguageConventionService
     public string GetTypeString(CodeTypeBase code, CodeElement targetElement, bool includeCollectionInformation, bool includeNullableInformation, bool includeActionInformation = true)
     {
         ArgumentNullException.ThrowIfNull(targetElement);
-        if (code is CodeComposedTypeBase)
+        if (code is CodeComposedTypeBase) {
             throw new InvalidOperationException($"CSharp does not support union types, the union type {code.Name} should have been filtered out by the refiner");
+        }
+
         if (code is CodeType currentType)
         {
             var typeName = TranslateType(currentType);
@@ -216,8 +236,10 @@ public class CSharpConventionService : CommonLanguageConventionService
             var genericParameters = currentType.GenericTypeParameterValues.Any() ?
                 $"<{string.Join(", ", currentType.GenericTypeParameterValues.Select(x => GetTypeString(x, targetElement, includeCollectionInformation)))}>" :
                 string.Empty;
-            if (currentType.ActionOf && includeActionInformation)
+            if (currentType.ActionOf && includeActionInformation) {
                 return $"Action<{collectionPrefix}{typeName}{genericParameters}{nullableSuffix}{collectionSuffix}>";
+            }
+
             return $"{collectionPrefix}{typeName}{genericParameters}{nullableSuffix}{collectionSuffix}";
         }
 
@@ -228,8 +250,9 @@ public class CSharpConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        if (type.TypeDefinition is ITypeDefinition typeDefinition)
+        if (type.TypeDefinition is ITypeDefinition typeDefinition) {
             return typeDefinition.GetFullName();
+        }
 
         return type.Name switch
         {
@@ -243,7 +266,10 @@ public class CSharpConventionService : CommonLanguageConventionService
     }
     public bool IsPrimitiveType(string typeName)
     {
-        if (string.IsNullOrEmpty(typeName)) return false;
+        if (string.IsNullOrEmpty(typeName)) {
+            return false;
+        }
+
         typeName = typeName.StripArraySuffix().TrimEnd('?').ToLowerInvariant();
         return typeName switch
         {
@@ -268,7 +294,9 @@ public class CSharpConventionService : CommonLanguageConventionService
     }
     private string GetDeprecationInformation(IDeprecableElement element)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return string.Empty;
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return string.Empty;
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {element.Deprecation.Version}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
@@ -279,7 +307,8 @@ public class CSharpConventionService : CommonLanguageConventionService
     internal void WriteDeprecationAttribute(IDeprecableElement element, LanguageWriter writer)
     {
         var deprecationMessage = GetDeprecationInformation(element);
-        if (!string.IsNullOrEmpty(deprecationMessage))
+        if (!string.IsNullOrEmpty(deprecationMessage)) {
             writer.WriteLine(deprecationMessage);
+        }
     }
 }

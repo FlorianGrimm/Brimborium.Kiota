@@ -57,8 +57,10 @@ public class HttpRefiner(GenerationConfiguration configuration) : CommonLanguage
 
     private static void CapitalizeNamespacesFirstLetters(CodeElement current)
     {
-        if (current is CodeNamespace currentNamespace)
+        if (current is CodeNamespace currentNamespace) {
             currentNamespace.Name = currentNamespace.Name.Split('.').Select(static x => x.ToFirstCharacterUpperCase()).Aggregate(static (x, y) => $"{x}.{y}");
+        }
+
         CrawlTree(current, CapitalizeNamespacesFirstLetters);
     }
 

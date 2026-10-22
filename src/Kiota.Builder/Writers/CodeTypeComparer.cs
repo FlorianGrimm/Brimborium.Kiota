@@ -14,7 +14,7 @@ internal sealed class CodeTypeComparer : IComparer<CodeTypeBase>
     }
     public int GetHashCode([DisallowNull] CodeTypeBase obj)
     {
-        if (obj is CodeType type && !OrderByDesc)
+        if (obj is CodeType type && !OrderByDesc) {
             return (type.TypeDefinition, type.IsCollection) switch
             {
                 (CodeClass or CodeInterface or CodeEnum, false) => 7,
@@ -22,7 +22,9 @@ internal sealed class CodeTypeComparer : IComparer<CodeTypeBase>
                 (CodeClass or CodeInterface or CodeEnum, true) => 13,
                 (_, _) => 17,
             };
-        if (obj is CodeType type2 && OrderByDesc)
+        }
+
+        if (obj is CodeType type2 && OrderByDesc) {
             return (type2.TypeDefinition, type2.IsCollection) switch
             {
                 (null, false) => 7,
@@ -30,6 +32,8 @@ internal sealed class CodeTypeComparer : IComparer<CodeTypeBase>
                 (CodeClass or CodeInterface or CodeEnum, false) => 11,
                 (_, _) => 17,
             };
+        }
+
         return 23;
     }
     public int Compare(CodeTypeBase? x, CodeTypeBase? y)

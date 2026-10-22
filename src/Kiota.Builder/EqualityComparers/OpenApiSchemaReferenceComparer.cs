@@ -10,12 +10,18 @@ internal class OpenApiSchemaReferenceComparer(StringComparer? stringComparer = n
     private readonly StringComparer _stringComparer = stringComparer ?? StringComparer.OrdinalIgnoreCase;
     public bool Equals(IOpenApiSchema? x, IOpenApiSchema? y)
     {
-        if (x is not OpenApiSchemaReference xRef || y is not OpenApiSchemaReference yRef) return object.Equals(x, y);
+        if (x is not OpenApiSchemaReference xRef || y is not OpenApiSchemaReference yRef) {
+            return object.Equals(x, y);
+        }
+
         return _stringComparer.Equals(xRef.Reference.Id, yRef.Reference.Id);
     }
     public int GetHashCode([DisallowNull] IOpenApiSchema obj)
     {
-        if (obj is not OpenApiSchemaReference objRef) return obj.GetHashCode();
+        if (obj is not OpenApiSchemaReference objRef) {
+            return obj.GetHashCode();
+        }
+
         var hash = new HashCode();
         if (!string.IsNullOrEmpty(objRef.Reference?.Id))
         {

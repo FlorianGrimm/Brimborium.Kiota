@@ -55,10 +55,11 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
                 if (s.Contains('_', StringComparison.OrdinalIgnoreCase) &&
                      s.ToPascalCase(UnderscoreArray) is string refinedName &&
                     !reservedNamesProvider.ReservedNames.Contains(s) &&
-                    !reservedNamesProvider.ReservedNames.Contains(refinedName))
+                    !reservedNamesProvider.ReservedNames.Contains(refinedName)) {
                     return refinedName;
-                else
+                } else {
                     return s;
+                }
             });
             RemoveClassNamePrefixFromNestedClasses(generatedCode);
             InsertOverrideMethodForRequestExecutorsAndBuildersAndConstructors(generatedCode);
@@ -203,9 +204,12 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
     private static void SetSetterParametersToNullable(CodeElement currentElement, params Tuple<CodeMethodKind, CodePropertyKind>[] accessorPairs)
     {
         if (currentElement is CodeMethod method &&
-            accessorPairs.Any(x => method.IsOfKind(x.Item1) && (method.AccessedProperty?.IsOfKind(x.Item2) ?? false)))
-            foreach (var param in method.Parameters)
+            accessorPairs.Any(x => method.IsOfKind(x.Item1) && (method.AccessedProperty?.IsOfKind(x.Item2) ?? false))) {
+            foreach (var param in method.Parameters) {
                 param.Type.IsNullable = true;
+            }
+        }
+
         CrawlTree(currentElement, element => SetSetterParametersToNullable(element, accessorPairs));
     }
     private static void AddEnumSetImport(CodeElement currentElement)
@@ -332,8 +336,9 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
         {
             currentProperty.Type.IsNullable = true;
             currentProperty.Type.Name = "HashMap<String, Object>";
-            if (!string.IsNullOrEmpty(currentProperty.DefaultValue))
+            if (!string.IsNullOrEmpty(currentProperty.DefaultValue)) {
                 currentProperty.DefaultValue = "new HashMap<>()";
+            }
         }
         currentProperty.Type.Name = currentProperty.Type.Name.ToFirstCharacterUpperCase();
         CorrectCoreTypes(currentProperty.Parent as CodeClass, DateTypesReplacements, true, currentProperty.Type);
@@ -344,15 +349,16 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
     }
     private static void CorrectMethodType(CodeMethod currentMethod)
     {
-        if (currentMethod.IsOfKind(CodeMethodKind.Serializer))
+        if (currentMethod.IsOfKind(CodeMethodKind.Serializer)) {
             currentMethod.Parameters.Where(x => x.IsOfKind(CodeParameterKind.Serializer)).ToList().ForEach(x =>
             {
                 x.Optional = false;
                 x.Type.IsNullable = true;
-                if (x.Type.Name.StartsWith('I'))
+                if (x.Type.Name.StartsWith('I')) {
                     x.Type.Name = x.Type.Name[1..];
+                }
             });
-        else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer))
+        } else if (currentMethod.IsOfKind(CodeMethodKind.Deserializer))
         {
             currentMethod.ReturnType.Name = "Map<String, java.util.function.Consumer<ParseNode>>";
             currentMethod.Name = "getFieldDeserializers";
@@ -367,11 +373,14 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
                 .ToList()
                 .ForEach(x => x.Type.IsNullable = true);
             var urlTplParams = currentMethod.Parameters.FirstOrDefault(x => x.IsOfKind(CodeParameterKind.PathParameters));
-            if (urlTplParams != null)
+            if (urlTplParams != null) {
                 urlTplParams.Type.Name = "HashMap<String, Object>";
+            }
         }
-        else if (currentMethod.IsOfKind(CodeMethodKind.Factory) && currentMethod.Parameters.OfKind(CodeParameterKind.ParseNode) is CodeParameter parseNodeParam)
+        else if (currentMethod.IsOfKind(CodeMethodKind.Factory) && currentMethod.Parameters.OfKind(CodeParameterKind.ParseNode) is CodeParameter parseNodeParam) {
             parseNodeParam.Type.Name = parseNodeParam.Type.Name[1..];
+        }
+
         CorrectCoreTypes(currentMethod.Parent as CodeClass, DateTypesReplacements, true, currentMethod.Parameters
                                                 .Select(static x => x.Type)
                                                 .Union(new[] { currentMethod.ReturnType })
@@ -435,10 +444,11 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
                                     .Select(static x => GetMethodClone(x, CodeParameterKind.RequestConfiguration))
                                     .OfType<CodeMethod>()
                                     .ToArray();
-                if (executorMethodsToAdd.Length != 0 || generatorMethodsToAdd.Length != 0)
+                if (executorMethodsToAdd.Length != 0 || generatorMethodsToAdd.Length != 0) {
                     currentClass.AddMethod(executorMethodsToAdd
                                             .Union(generatorMethodsToAdd)
                                             .ToArray());
+                }
             }
         }
 
@@ -470,8 +480,9 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
             {
                 innerClass.Name = innerClass.Name[prefix.Length..];
 
-                if (innerClass.IsOfKind(CodeClassKind.RequestConfiguration))
+                if (innerClass.IsOfKind(CodeClassKind.RequestConfiguration)) {
                     RemovePrefixFromQueryProperties(innerClass, prefix);
+                }
             }
             RemovePrefixFromRequestConfigParameters(currentClass, prefix);
         }
@@ -516,8 +527,9 @@ public class JavaRefiner : CommonLanguageRefiner, ILanguageRefiner
     {
         if (currentElement is CodeNamespace codeNamespace)
         {
-            if (!string.IsNullOrEmpty(codeNamespace.Name))
+            if (!string.IsNullOrEmpty(codeNamespace.Name)) {
                 codeNamespace.Name = codeNamespace.Name.ToLowerInvariant();
+            }
 
             CrawlTree(currentElement, LowerCaseNamespaceNames);
         }

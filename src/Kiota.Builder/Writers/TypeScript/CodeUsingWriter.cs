@@ -43,16 +43,25 @@ public class CodeUsingWriter
     private static bool GetShouldUseTypeImport(CodeUsing codeUsing)
     {
         // Check if codeUsing is Erassable
-        if (codeUsing.IsErasable) return true;
+        if (codeUsing.IsErasable) {
+            return true;
+        }
+
         if (codeUsing.Declaration is CodeType codeType)
         {
-            if (codeType.TypeDefinition is CodeInterface) return true;
+            if (codeType.TypeDefinition is CodeInterface) {
+                return true;
+            }
             // Enums are generated as TypeScript type aliases (e.g., `export type MyEnum = ...`),
             // so they must use `import type` for compatibility with verbatimModuleSyntax.
             // See: https://github.com/microsoft/kiota/issues/2959
-            if (codeType.TypeDefinition is CodeEnum) return true;
+            if (codeType.TypeDefinition is CodeEnum) {
+                return true;
+            }
             // this will handle edge cases for typescript Declarations that are already known to be interfaces: RequestConfiguration, QueryParameters, and Model classes
-            if (codeType.TypeDefinition is CodeClass codeClass && codeClass.IsOfKind(CodeClassKind.RequestConfiguration, CodeClassKind.QueryParameters, CodeClassKind.Model)) return true;
+            if (codeType.TypeDefinition is CodeClass codeClass && codeClass.IsOfKind(CodeClassKind.RequestConfiguration, CodeClassKind.QueryParameters, CodeClassKind.Model)) {
+                return true;
+            }
         }
         return false;
     }

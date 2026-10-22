@@ -11,7 +11,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, DartConvention
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.ExistsInExternalBaseType || conventions.ErrorClassPropertyExistsInSuperClass(codeElement)) return;
+        if (codeElement.ExistsInExternalBaseType || conventions.ErrorClassPropertyExistsInSuperClass(codeElement)) {
+            return;
+        }
+
         var propertyType = conventions.GetTypeString(codeElement.Type, codeElement);
         var isNullableReferenceType = !propertyType.EndsWith('?')
                                       && codeElement.IsOfKind(
@@ -31,8 +34,9 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, DartConvention
 
     private void WritePropertyInternal(CodeProperty codeElement, LanguageWriter writer, string propertyType)
     {
-        if (codeElement.Parent is not CodeClass parentClass)
+        if (codeElement.Parent is not CodeClass parentClass) {
             throw new InvalidOperationException("The parent of a property should be a class");
+        }
 
         var backingStoreProperty = parentClass.GetBackingStoreProperty();
         var defaultValue = string.Empty;
@@ -68,8 +72,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, DartConvention
                 defaultValue = $" = {propertyType}()";
                 goto default;
             case CodePropertyKind.AdditionalData:
-                if (parentClass.StartBlock.Implements.Where(static x => x.Name.Equals("AdditionalDataHolder", StringComparison.Ordinal)).Any())
+                if (parentClass.StartBlock.Implements.Where(static x => x.Name.Equals("AdditionalDataHolder", StringComparison.Ordinal)).Any()) {
                     writer.WriteLine("@override");
+                }
+
                 goto default;
             case CodePropertyKind.BackingStore:
                 defaultValue = " = BackingStoreFactorySingleton.instance.createBackingStore()";

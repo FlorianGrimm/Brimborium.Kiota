@@ -38,20 +38,25 @@ public partial class JavaConventionService : CommonLanguageConventionService
         var nullKeyword = parameter.Optional ? "Nullable" : "Nonnull";
         var nullAnnotation = parameter.Type.IsNullable ? $"@jakarta.annotation.{nullKeyword} " : string.Empty;
         var parameterType = GetTypeString(parameter.Type, targetElement);
-        if (parameter.Type is CodeType { TypeDefinition: CodeEnum { Flags: true }, IsCollection: false })
+        if (parameter.Type is CodeType { TypeDefinition: CodeEnum { Flags: true }, IsCollection: false }) {
             parameterType = $"EnumSet<{parameterType}>";
+        }
+
         return $"{nullAnnotation}final {parameterType} {parameter.Name}";
     }
 
     public override string GetTypeString(CodeTypeBase code, CodeElement targetElement, bool includeCollectionInformation = true, LanguageWriter? writer = null)
     {
-        if (code is CodeComposedTypeBase)
+        if (code is CodeComposedTypeBase) {
             throw new InvalidOperationException($"Java does not support union types, the union type {code.Name} should have been filtered out by the refiner");
+        }
+
         if (code is CodeType currentType)
         {
             var typeName = TranslateType(currentType);
-            if (!currentType.IsExternal && IsSymbolDuplicated(typeName, targetElement) && currentType.TypeDefinition is not null)
+            if (!currentType.IsExternal && IsSymbolDuplicated(typeName, targetElement) && currentType.TypeDefinition is not null) {
                 typeName = $"{currentType.TypeDefinition.GetImmediateParentOfType<CodeNamespace>().Name}.{typeName}";
+            }
 
             var collectionPrefix = currentType.CollectionKind == CodeTypeBase.CodeTypeCollectionKind.Complex && includeCollectionInformation ? "java.util.List<" : string.Empty;
             var collectionSuffix = currentType.CollectionKind switch
@@ -60,8 +65,10 @@ public partial class JavaConventionService : CommonLanguageConventionService
                 CodeTypeBase.CodeTypeCollectionKind.Array when includeCollectionInformation => "[]",
                 _ => string.Empty,
             };
-            if (currentType.ActionOf)
+            if (currentType.ActionOf) {
                 return $"java.util.function.Consumer<{collectionPrefix}{typeName}{collectionSuffix}>";
+            }
+
             return $"{collectionPrefix}{typeName}{collectionSuffix}";
         }
 
@@ -71,8 +78,10 @@ public partial class JavaConventionService : CommonLanguageConventionService
     private static bool IsSymbolDuplicated(string symbol, CodeElement targetElement)
     {
         var targetClass = targetElement as CodeClass ?? targetElement.GetImmediateParentOfType<CodeClass>();
-        if (targetClass.Parent is CodeClass parentClass)
+        if (targetClass.Parent is CodeClass parentClass) {
             targetClass = parentClass;
+        }
+
         return targetClass.StartBlock
                         ?.Usings
                         ?.Where(x => !x.IsExternal && symbol.Equals(x.Declaration?.TypeDefinition?.Name, StringComparison.OrdinalIgnoreCase))
@@ -104,8 +113,13 @@ public partial class JavaConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(x => GetTypeReferenceForDocComment(x, codeElement), ReferenceTypePrefix, ReferenceTypeSuffix, RemoveInvalidDescriptionCharacters);
 
@@ -115,16 +129,23 @@ public partial class JavaConventionService : CommonLanguageConventionService
     }
     internal string GetTypeReferenceForDocComment(CodeTypeBase code, CodeElement targetElement)
     {
-        if (code is CodeType codeType && codeType.TypeDefinition is CodeMethod method)
+        if (code is CodeType codeType && codeType.TypeDefinition is CodeMethod method) {
             return $"{GetTypeString(new CodeType { TypeDefinition = method.Parent, IsExternal = false }, targetElement)}#{GetTypeString(code, targetElement)}";
+        }
+
         return $"{GetTypeString(code, targetElement)}";
     }
     public void WriteLongDescription(CodeElement element, LanguageWriter writer, IEnumerable<string>? additionalRemarks = default)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        if (element is not IDocumentedElement documentedElement || documentedElement.Documentation is not CodeDocumentation documentation) return;
-        if (additionalRemarks == default)
+        if (element is not IDocumentedElement documentedElement || documentedElement.Documentation is not CodeDocumentation documentation) {
+            return;
+        }
+
+        if (additionalRemarks == default) {
             additionalRemarks = [];
+        }
+
         var remarks = additionalRemarks.Where(static x => !string.IsNullOrEmpty(x)).ToArray();
         if (documentation.DescriptionAvailable || documentation.ExternalDocumentationAvailable || remarks.Length != 0)
         {
@@ -134,11 +155,15 @@ public partial class JavaConventionService : CommonLanguageConventionService
                 var description = documentedElement.Documentation.GetDescription(x => GetTypeReferenceForDocComment(x, element), ReferenceTypePrefix, ReferenceTypeSuffix, RemoveInvalidDescriptionCharacters);
                 writer.WriteLine($"{DocCommentPrefix}{description}");
             }
-            foreach (var additionalRemark in remarks)
+            foreach (var additionalRemark in remarks) {
                 writer.WriteLine($"{DocCommentPrefix}{additionalRemark}");
-            if (element is IDeprecableElement deprecableElement && deprecableElement.Deprecation is not null && deprecableElement.Deprecation.IsDeprecated)
-                foreach (var additionalComment in GetDeprecationInformationForDocumentationComment(deprecableElement))
+            }
+
+            if (element is IDeprecableElement deprecableElement && deprecableElement.Deprecation is not null && deprecableElement.Deprecation.IsDeprecated) {
+                foreach (var additionalComment in GetDeprecationInformationForDocumentationComment(deprecableElement)) {
                     writer.WriteLine($"{DocCommentPrefix}{additionalComment}");
+                }
+            }
 
             if (documentation.ExternalDocumentationAvailable)
             {
@@ -167,22 +192,28 @@ public partial class JavaConventionService : CommonLanguageConventionService
     public override string TempDictionaryVarName => "urlTplParams";
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase pathParametersType, string pathParametersReference, string varName = "", params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         var mapTypeName = pathParametersType.Name;
         if (string.IsNullOrEmpty(varName))
         {
             varName = TempDictionaryVarName;
             writer.WriteLine($"final {mapTypeName} {varName} = new {mapTypeName}({pathParametersReference});");
         }
-        if (parameters.Length != 0)
+        if (parameters.Length != 0) {
             writer.WriteLines(parameters.Select(p =>
                 $"{varName}.put(\"{(p.Item2 ?? string.Empty).SanitizeDoubleQuote()}\", {p.Item3});"
             ).ToArray());
+        }
     }
 #pragma warning restore CA1822 // Method should be static
     private string[] GetDeprecationInformationForDocumentationComment(IDeprecableElement element)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return Array.Empty<string>();
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return Array.Empty<string>();
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {RemoveInvalidDescriptionCharacters(element.Deprecation.Version.CleanupDescription())}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
@@ -194,7 +225,9 @@ public partial class JavaConventionService : CommonLanguageConventionService
     }
     internal void WriteDeprecatedAnnotation(CodeElement element, LanguageWriter writer)
     {
-        if (element is not IDeprecableElement deprecableElement || deprecableElement.Deprecation is null || !deprecableElement.Deprecation.IsDeprecated) return;
+        if (element is not IDeprecableElement deprecableElement || deprecableElement.Deprecation is null || !deprecableElement.Deprecation.IsDeprecated) {
+            return;
+        }
 
         writer.WriteLine("@Deprecated");
     }

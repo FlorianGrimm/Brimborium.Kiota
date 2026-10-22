@@ -30,7 +30,10 @@ public class OpenApiKiotaExtension : IOpenApiExtension
     }
     public static OpenApiKiotaExtension Parse(JsonNode source)
     {
-        if (source is not JsonObject jsonNode) throw new ArgumentOutOfRangeException(nameof(source));
+        if (source is not JsonObject jsonNode) {
+            throw new ArgumentOutOfRangeException(nameof(source));
+        }
+
         var extension = new OpenApiKiotaExtension();
         if (jsonNode.TryGetPropertyValue(nameof(LanguagesInformation).ToFirstCharacterLowerCase(), out var languagesInfo) && languagesInfo is JsonObject objectValue)
         {

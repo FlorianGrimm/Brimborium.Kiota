@@ -14,12 +14,16 @@ public abstract class CodeComposedTypeBase : CodeTypeBase, IDiscriminatorInforma
     public void AddType(params CodeType[] codeTypes)
     {
         ArgumentNullException.ThrowIfNull(codeTypes);
-        if (Array.Exists(codeTypes, static x => x == null))
+        if (Array.Exists(codeTypes, static x => x == null)) {
             throw new ArgumentNullException(nameof(codeTypes), "One of the provided types was null");
+        }
+
         EnsureElementsAreChildren(codeTypes);
-        foreach (var codeType in codeTypes)
-            if (!types.TryAdd(NormalizeKey(codeType), codeType))
+        foreach (var codeType in codeTypes) {
+            if (!types.TryAdd(NormalizeKey(codeType), codeType)) {
                 throw new InvalidOperationException($"The type {codeType.Name} was already added");
+            }
+        }
     }
     public bool ContainsType(CodeType codeType)
     {
@@ -30,8 +34,9 @@ public abstract class CodeComposedTypeBase : CodeTypeBase, IDiscriminatorInforma
     {
         ArgumentNullException.ThrowIfNull(codeTypes);
         types.Clear();
-        foreach (var codeType in codeTypes)
+        foreach (var codeType in codeTypes) {
             AddType(codeType);
+        }
     }
     private readonly ConcurrentDictionary<string, CodeType> types = new(StringComparer.OrdinalIgnoreCase);
     public IEnumerable<CodeType> Types
@@ -44,8 +49,10 @@ public abstract class CodeComposedTypeBase : CodeTypeBase, IDiscriminatorInforma
     {
         get
         {
-            if (_discriminatorInformation == null)
+            if (_discriminatorInformation == null) {
                 DiscriminatorInformation = new DiscriminatorInformation();
+            }
+
             return _discriminatorInformation!;
         }
         set
@@ -58,11 +65,15 @@ public abstract class CodeComposedTypeBase : CodeTypeBase, IDiscriminatorInforma
     protected override TChildType BaseClone<TChildType>(CodeTypeBase source, bool cloneName = true)
     {
         ArgumentNullException.ThrowIfNull(source);
-        if (source is not CodeComposedTypeBase sourceComposed)
+        if (source is not CodeComposedTypeBase sourceComposed) {
             throw new InvalidCastException($"Cannot cast {source.GetType().Name} to {nameof(CodeComposedTypeBase)}");
+        }
+
         base.BaseClone<TChildType>(source, cloneName);
-        if (sourceComposed.Types?.Any() ?? false)
+        if (sourceComposed.Types?.Any() ?? false) {
             AddType(sourceComposed.Types.ToArray());
+        }
+
         DiscriminatorInformation = (DiscriminatorInformation)sourceComposed.DiscriminatorInformation.Clone();
         Deprecation = sourceComposed.Deprecation;
         return this is TChildType casted ? casted : throw new InvalidCastException($"Cannot cast {GetType().Name} to {typeof(TChildType).Name}");

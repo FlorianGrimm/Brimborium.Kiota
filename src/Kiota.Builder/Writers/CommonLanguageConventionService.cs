@@ -34,10 +34,14 @@ public abstract class CommonLanguageConventionService : ILanguageConventionServi
 
     public string TranslateType(CodeTypeBase type)
     {
-        if (type is CodeType currentType)
+        if (type is CodeType currentType) {
             return TranslateType(currentType);
-        if (type is CodeComposedTypeBase currentUnionType)
+        }
+
+        if (type is CodeComposedTypeBase currentUnionType) {
             return TranslateType(currentUnionType.AllTypes.First());
+        }
+
         throw new InvalidOperationException("Unknown type");
     }
 

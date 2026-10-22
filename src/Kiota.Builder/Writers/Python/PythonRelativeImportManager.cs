@@ -20,22 +20,28 @@ public class PythonRelativeImportManager : RelativeImportManager
     /// <returns>The import symbol, it's alias if any and the relative import path</returns>
     public override (string, string, string) GetRelativeImportPathForUsing(CodeUsing codeUsing, CodeNamespace currentNamespace)
     {
-        if (codeUsing?.IsExternal ?? true)
+        if (codeUsing?.IsExternal ?? true) {
             return (string.Empty, string.Empty, string.Empty);//it's an external import, add nothing
+        }
+
         var (importSymbol, typeDef) = codeUsing.Declaration?.TypeDefinition is CodeElement td ? td switch
         {
             CodeFunction f => (f.Name, td),
             _ => (td.Name, td),
         } : (codeUsing.Name, null);
 
-        if (typeDef == null)
+        if (typeDef == null) {
             return (importSymbol, codeUsing.Alias, "."); // it's relative to the folder, with no declaration (default failsafe)
+        }
+
         var importPath = GetImportRelativePathFromNamespaces(currentNamespace,
             typeDef.GetImmediateParentOfType<CodeNamespace>());
-        if (string.IsNullOrEmpty(importPath))
+        if (string.IsNullOrEmpty(importPath)) {
             importPath += codeUsing.Name.ToSnakeCase(); // TODO: review the logic happening for those imports
-        else
+        } else {
             importPath += codeUsing.Declaration?.Name.ToSnakeCase();
+        }
+
         return (importSymbol.ToFirstCharacterUpperCase(), codeUsing.Alias, importPath);
     }
     protected new string GetImportRelativePathFromNamespaces(CodeNamespace currentNamespace, CodeNamespace importNamespace)
@@ -55,8 +61,10 @@ public class PythonRelativeImportManager : RelativeImportManager
     protected static new string GetRemainingImportPath(IEnumerable<string> remainingSegments)
     {
         var segments = remainingSegments.Select(static x => x.ToSnakeCase()).ToArray();
-        if (segments.Length != 0)
+        if (segments.Length != 0) {
             return segments.Aggregate(static (x, y) => $"{x}.{y}") + '.';
+        }
+
         return string.Empty;
     }
 }

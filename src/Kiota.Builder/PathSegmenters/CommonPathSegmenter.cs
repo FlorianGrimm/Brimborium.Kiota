@@ -48,11 +48,15 @@ public abstract class CommonPathSegmenter : IPathSegmenter
         var targetPath = Path.Combine(RootPath, namespacePathSegments.Count != 0 ? namespacePathSegments
                                         .Aggregate(static (x, y) => $"{x}{Path.DirectorySeparatorChar}{y}") : string.Empty,
                                         fileName + FileSuffix);
-        if (shouldNormalizePath)
+        if (shouldNormalizePath) {
             targetPath = NormalizePath(targetPath);
+        }
+
         var directoryPath = Path.GetDirectoryName(targetPath);
-        if (!string.IsNullOrEmpty(directoryPath))
+        if (!string.IsNullOrEmpty(directoryPath)) {
             Directory.CreateDirectory(directoryPath);
+        }
+
         return targetPath;
     }
 }

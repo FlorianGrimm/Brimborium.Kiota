@@ -21,8 +21,9 @@ public class RelativeImportManager
     public RelativeImportManager(string namespacePrefix, char namespaceSeparator, Func<CodeNamespace, CodeElement, string>? normalizeFileNameCallback = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(namespacePrefix);
-        if (namespaceSeparator == default)
+        if (namespaceSeparator == default) {
             throw new ArgumentNullException(nameof(namespaceSeparator));
+        }
 
         prefix = namespacePrefix;
         separator = namespaceSeparator;
@@ -36,8 +37,9 @@ public class RelativeImportManager
     /// <returns>The import symbol, it's alias if any and the relative import path</returns>
     public virtual (string, string, string) GetRelativeImportPathForUsing(CodeUsing codeUsing, CodeNamespace currentNamespace)
     {
-        if (codeUsing?.IsExternal ?? true)
+        if (codeUsing?.IsExternal ?? true) {
             return (string.Empty, string.Empty, string.Empty);//it's an external import, add nothing
+        }
 
         var (importSymbol, typeDef) = codeUsing.Declaration?.TypeDefinition is CodeElement td ? td switch
         {
@@ -45,8 +47,10 @@ public class RelativeImportManager
             _ => (td.Name.ToFirstCharacterUpperCase(), td),
         } : (codeUsing.Name, null);
 
-        if (typeDef == null)
+        if (typeDef == null) {
             return (importSymbol, codeUsing.Alias, "./"); // it's relative to the folder, with no declaration (default failsafe)
+        }
+
         var importPath = GetImportRelativePathFromNamespaces(currentNamespace,
             typeDef.GetImmediateParentOfType<CodeNamespace>());
         importPath += NormalizeFileNameCallback == null ?
@@ -72,8 +76,10 @@ public class RelativeImportManager
     protected static string GetRemainingImportPath(IEnumerable<string> remainingSegments)
     {
         var segments = remainingSegments.Select(x => x.ToFirstCharacterLowerCase()).ToArray();
-        if (segments.Length != 0)
+        if (segments.Length != 0) {
             return segments.Aggregate(static (x, y) => $"{x}/{y}") + PathSeparator;
+        }
+
         return string.Empty;
     }
 }

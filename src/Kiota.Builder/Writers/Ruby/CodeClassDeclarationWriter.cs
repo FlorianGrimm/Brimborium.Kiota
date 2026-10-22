@@ -33,8 +33,9 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Ru
                                         .Where(static x => !string.IsNullOrEmpty(x))
                                         .GroupBy(static x => x)
                                         .Select(static x => x.Key)
-                                        .Order(StringComparer.OrdinalIgnoreCase))
+                                        .Order(StringComparer.OrdinalIgnoreCase)) {
                 writer.WriteLine($"require '{codeUsing}'");
+            }
 
             foreach (var relativePath in codeElement.Usings
                                         .Where(static x => !x.IsExternal)
@@ -44,8 +45,9 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Ru
                                             relativeImportManager.GetRelativeImportPathForUsing(x, currentNamespace))
                                         .Select(static x => x.Item3)
                                         .Distinct()
-                                        .Order(StringComparer.OrdinalIgnoreCase))
+                                        .Order(StringComparer.OrdinalIgnoreCase)) {
                 writer.WriteLine($"require_relative '{relativePath.ToSnakeCase()}'");
+            }
         }
         writer.WriteLine();
         if (codeElement.Parent?.Parent is CodeNamespace ns)
@@ -54,8 +56,10 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Ru
         }
 
         var derivation = codeElement.Inherits == null ? string.Empty : $" < {conventions.GetNormalizedNamespacePrefixForType(codeElement.Inherits)}{codeElement.Inherits.Name.ToFirstCharacterUpperCase()}";
-        if (codeElement.Parent is CodeClass parentClass)
+        if (codeElement.Parent is CodeClass parentClass) {
             conventions.WriteShortDescription(parentClass, writer);
+        }
+
         writer.StartBlock($"class {codeElement.Name.ToFirstCharacterUpperCase()}{derivation}");
         var mixins = !codeElement.Implements.Any() ? string.Empty : $"include {codeElement.Implements.Select(static x => x.Name).Aggregate(static (x, y) => x + ", " + y)}";
         writer.WriteLine($"{mixins}");

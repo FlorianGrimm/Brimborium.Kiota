@@ -52,13 +52,17 @@ public class GoConventionService : CommonLanguageConventionService
     public string GetTypeString(CodeTypeBase code, CodeElement targetElement, bool includeCollectionInformation, bool addPointerSymbol, bool includeImportSymbol = true)
     {
         ArgumentNullException.ThrowIfNull(targetElement);
-        if (code is CodeComposedTypeBase)
+        if (code is CodeComposedTypeBase) {
             throw new InvalidOperationException($"Go does not support union types, the union type {code.Name} should have been filtered out by the refiner");
+        }
+
         if (code is CodeType currentType)
         {
             var importSymbol = includeImportSymbol ? GetImportSymbol(code, targetElement) : string.Empty;
-            if (!string.IsNullOrEmpty(importSymbol))
+            if (!string.IsNullOrEmpty(importSymbol)) {
                 importSymbol += ".";
+            }
+
             var typeName = TranslateType(currentType, includeImportSymbol);
             var nullableSymbol = addPointerSymbol &&
                                  currentType.IsNullable &&
@@ -75,8 +79,10 @@ public class GoConventionService : CommonLanguageConventionService
             var genericTypeParameters = currentType.GenericTypeParameterValues.Any() ?
                             $"[{string.Join(",", currentType.GenericTypeParameterValues.Select(x => GetTypeString(x, targetElement, true, false, true)))}]" :
                             string.Empty;
-            if (currentType.ActionOf)
+            if (currentType.ActionOf) {
                 return $"func (value {nullableSymbol}{collectionPrefix}{importSymbol}{typeName}{genericTypeParameters}) (err error)";
+            }
+
             return $"{nullableSymbol}{collectionPrefix}{importSymbol}{typeName}{genericTypeParameters}";
         }
 
@@ -88,7 +94,9 @@ public class GoConventionService : CommonLanguageConventionService
     public string TranslateType(CodeTypeBase type, bool includeImportSymbol)
     {
         ArgumentNullException.ThrowIfNull(type);
-        if (type.Name.StartsWith("map[", StringComparison.Ordinal)) return type.Name; //casing hack
+        if (type.Name.StartsWith("map[", StringComparison.Ordinal)) {
+            return type.Name; //casing hack
+        }
 
         return type.Name switch
         {
@@ -128,7 +136,10 @@ public class GoConventionService : CommonLanguageConventionService
     }
     public bool IsScalarType(string typeName)
     {
-        if (typeName?.StartsWith("map[", StringComparison.Ordinal) ?? false) return true;
+        if (typeName?.StartsWith("map[", StringComparison.Ordinal) ?? false) {
+            return true;
+        }
+
         return typeName?.ToLowerInvariant() switch
         {
             "binary" or "base64" or "base64url" or "void" or "[]byte" => true,
@@ -138,23 +149,32 @@ public class GoConventionService : CommonLanguageConventionService
 #pragma warning restore CA1822 // Method should be static
     private string GetImportSymbol(CodeTypeBase currentBaseType, CodeElement targetElement)
     {
-        if (currentBaseType == null || IsPrimitiveType(currentBaseType.Name)) return string.Empty;
+        if (currentBaseType == null || IsPrimitiveType(currentBaseType.Name)) {
+            return string.Empty;
+        }
+
         var targetNamespace = targetElement.GetImmediateParentOfType<CodeNamespace>();
         if (currentBaseType is CodeType currentType)
         {
             if (currentType.TypeDefinition is IProprietableBlock currentTypDefinition &&
                currentTypDefinition.Parent is CodeNamespace typeDefNS &&
-               targetNamespace != typeDefNS)
+               targetNamespace != typeDefNS) {
                 return typeDefNS.GetNamespaceImportSymbol();
+            }
+
             if (currentType.TypeDefinition is IProprietableBlock typeDefinition &&
                 typeDefinition.Parent is CodeFile codeFile &&
                 codeFile.Parent is CodeNamespace fileTypeDefNS &&
-                targetNamespace != fileTypeDefNS)
+                targetNamespace != fileTypeDefNS) {
                 return fileTypeDefNS.GetNamespaceImportSymbol();
+            }
+
             if (currentType.TypeDefinition is CodeEnum currentEnumDefinition &&
                currentEnumDefinition.Parent is CodeNamespace enumNS &&
-               targetNamespace != enumNS)
+               targetNamespace != enumNS) {
                 return enumNS.GetNamespaceImportSymbol();
+            }
+
             if (currentType.TypeDefinition is null &&
                targetElement is IProprietableBlock targetTypeDef)
             {
@@ -173,8 +193,13 @@ public class GoConventionService : CommonLanguageConventionService
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(element);
-        if (!element.Documentation.DescriptionAvailable) return false;
-        if (element is not CodeElement codeElement) return false;
+        if (!element.Documentation.DescriptionAvailable) {
+            return false;
+        }
+
+        if (element is not CodeElement codeElement) {
+            return false;
+        }
 
         var description = element.Documentation.GetDescription(x => GetTypeString(x, codeElement, true, false), normalizationFunc: RemoveInvalidDescriptionCharacters);
         if (!string.IsNullOrEmpty(prefix))
@@ -209,7 +234,10 @@ public class GoConventionService : CommonLanguageConventionService
     }
     public void WriteLinkDescription(CodeDocumentation documentation, LanguageWriter writer)
     {
-        if (documentation is null) return;
+        if (documentation is null) {
+            return;
+        }
+
         if (documentation.ExternalDocumentationAvailable)
         {
             var documentationLabel = RemoveInvalidDescriptionCharacters(documentation.DocumentationLabel);
@@ -222,7 +250,10 @@ public class GoConventionService : CommonLanguageConventionService
 #pragma warning disable CA1822 // Method should be static
     internal void AddRequestBuilderBody(CodeClass parentClass, string returnType, LanguageWriter writer, string? urlTemplateVarName = default, IEnumerable<CodeParameter>? pathParameters = default)
     {
-        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is not CodeProperty requestAdapterProp) return;
+        if (parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) is not CodeProperty requestAdapterProp) {
+            return;
+        }
+
         var urlTemplateParams = string.IsNullOrEmpty(urlTemplateVarName) &&
                                 parentClass.GetPropertyOfKind(CodePropertyKind.PathParameters) is CodeProperty urlTemplateParamsProp ?
                                     $"m.BaseRequestBuilder.{urlTemplateParamsProp.Name.ToFirstCharacterUpperCase()}" :
@@ -237,7 +268,10 @@ public class GoConventionService : CommonLanguageConventionService
     public override string TempDictionaryVarName => "urlTplParams";
     internal void AddParametersAssignment(LanguageWriter writer, CodeTypeBase? pathParametersType, string pathParametersReference, string pathParametersTarget, bool copyMap, params (CodeTypeBase, string, string)[] parameters)
     {
-        if (pathParametersType == null) return;
+        if (pathParametersType == null) {
+            return;
+        }
+
         if (string.IsNullOrEmpty(pathParametersTarget))
         {
             pathParametersTarget = TempDictionaryVarName;
@@ -258,11 +292,14 @@ public class GoConventionService : CommonLanguageConventionService
                 (_, true) => ("nil", "*", true),
                 (_, false) => (string.Empty, string.Empty, false),
             };
-            if (shouldCheckNullability)
+            if (shouldCheckNullability) {
                 writer.StartBlock($"if {p.Item3} != {defaultValue} {{");
+            }
+
             writer.WriteLine($"{pathParametersTarget}[\"{p.Item2.SanitizeDoubleQuote()}\"] = {GetValueStringConversion(p.Item1.Name, pointerDereference + p.Item3)}");
-            if (shouldCheckNullability)
+            if (shouldCheckNullability) {
                 writer.CloseBlock();
+            }
         }
     }
 #pragma warning restore CA1822 // Method should be static
@@ -285,7 +322,9 @@ public class GoConventionService : CommonLanguageConventionService
     }
     internal void WriteDeprecation(IDeprecableElement element, LanguageWriter writer)
     {
-        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) return;
+        if (element.Deprecation is null || !element.Deprecation.IsDeprecated) {
+            return;
+        }
 
         var versionComment = string.IsNullOrEmpty(element.Deprecation.Version) ? string.Empty : $" as of {RemoveInvalidDescriptionCharacters(element.Deprecation.Version)}";
         var dateComment = element.Deprecation.Date is null ? string.Empty : $" on {element.Deprecation.Date.Value.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";

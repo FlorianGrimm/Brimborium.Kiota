@@ -36,15 +36,18 @@ internal sealed partial class AllowedExternalOriginsStreamLoader : DefaultStream
     {
         ArgumentNullException.ThrowIfNull(uri);
         var targetUri = uri.IsAbsoluteUri || baseUrl is null ? uri : new Uri(baseUrl, uri);
-        if (!IsAllowed(targetUri, uri))
+        if (!IsAllowed(targetUri, uri)) {
             throw new InvalidOperationException($"The external reference {targetUri} is not allowed. Add it to --allowed-external-origins to load it.");
+        }
+
         return base.LoadAsync(baseUrl!, uri, cancellationToken);
     }
 
     private bool IsAllowed(Uri targetUri, Uri originalUri)
     {
-        if (allowedExternalOrigins.Count == 0)
+        if (allowedExternalOrigins.Count == 0) {
             return false;
+        }
 
         var uriCandidates = GetUriCandidates(targetUri, originalUri);
         var pathCandidates = GetPathCandidates(targetUri, originalUri);
@@ -63,10 +66,13 @@ internal sealed partial class AllowedExternalOriginsStreamLoader : DefaultStream
 
     private static IEnumerable<string> GetPathCandidates(Uri targetUri, Uri originalUri)
     {
-        if (targetUri.IsFile)
+        if (targetUri.IsFile) {
             yield return NormalizePathCandidate(targetUri.LocalPath);
-        if (!originalUri.IsAbsoluteUri || originalUri.IsFile)
+        }
+
+        if (!originalUri.IsAbsoluteUri || originalUri.IsFile) {
             yield return NormalizePathCandidate(originalUri.IsAbsoluteUri ? originalUri.LocalPath : originalUri.OriginalString);
+        }
     }
 
     private static bool MatchesAnyCandidate(string pattern, IEnumerable<string> candidates)
@@ -83,12 +89,15 @@ internal sealed partial class AllowedExternalOriginsStreamLoader : DefaultStream
 
     private static string NormalizeAllowedPath(string allowedOrigin)
     {
-        if (Uri.TryCreate(allowedOrigin, UriKind.Absolute, out var uri) && !uri.IsFile)
+        if (Uri.TryCreate(allowedOrigin, UriKind.Absolute, out var uri) && !uri.IsFile) {
             return allowedOrigin;
+        }
 
         var path = allowedOrigin.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-        if (!Path.IsPathRooted(path))
+        if (!Path.IsPathRooted(path)) {
             path = Path.Combine(Directory.GetCurrentDirectory(), path);
+        }
+
         return NormalizePathCandidate(path);
     }
 

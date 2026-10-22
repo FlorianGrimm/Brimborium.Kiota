@@ -33,19 +33,26 @@ public abstract class ProprietableBlock<TBlockKind, TBlockDeclaration> : CodeBlo
     public CodeDocumentation Documentation { get; set; } = new();
     public virtual IEnumerable<CodeProperty> AddProperty(params CodeProperty[] properties)
     {
-        if (properties == null || properties.Any(static x => x == null))
+        if (properties == null || properties.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(properties));
-        if (properties.Length == 0)
+        }
+
+        if (properties.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(properties));
+        }
+
         return AddRange(properties);
     }
     public void RemovePropertiesOfKind(params CodePropertyKind[] kind)
     {
-        if (kind == null || kind.Length == 0)
+        if (kind == null || kind.Length == 0) {
             throw new ArgumentNullException(nameof(kind));
+        }
+
         var propertiesToRemove = Properties.Where(x => x.IsOfKind(kind)).ToList();
-        foreach (var property in propertiesToRemove)
+        foreach (var property in propertiesToRemove) {
             RemoveChildElement(property);
+        }
     }
 #nullable disable
     public TBlockKind Kind
@@ -79,10 +86,14 @@ public abstract class ProprietableBlock<TBlockKind, TBlockDeclaration> : CodeBlo
     }
     public IEnumerable<CodeMethod> AddMethod(params CodeMethod[] methods)
     {
-        if (methods == null || methods.Any(static x => x == null))
+        if (methods == null || methods.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(methods));
-        if (methods.Length == 0)
+        }
+
+        if (methods.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(methods));
+        }
+
         return AddRange(methods);
     }
 
@@ -93,11 +104,14 @@ public class ProprietableBlockDeclaration : BlockDeclaration
     private readonly ConcurrentDictionary<string, CodeType> implements = new(StringComparer.OrdinalIgnoreCase);
     public void AddImplements(params CodeType[] types)
     {
-        if (types == null || types.Any(x => x == null))
+        if (types == null || types.Any(x => x == null)) {
             throw new ArgumentNullException(nameof(types));
+        }
+
         EnsureElementsAreChildren(types);
-        foreach (var type in types)
+        foreach (var type in types) {
             implements.TryAdd(type.Name, type);
+        }
     }
     public CodeType? FindImplementByName(string name)
     {
@@ -117,21 +131,27 @@ public class ProprietableBlockDeclaration : BlockDeclaration
     }
     public void RemoveImplements(params CodeType[] types)
     {
-        if (types == null || types.Any(x => x == null))
+        if (types == null || types.Any(x => x == null)) {
             throw new ArgumentNullException(nameof(types));
-        foreach (var type in types)
+        }
+
+        foreach (var type in types) {
             implements.TryRemove(type.Name, out var _);
+        }
     }
     public IEnumerable<CodeType> Implements => implements.Values.OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase);
 
     private readonly ConcurrentDictionary<string, CodeTypeParameter> typeParameters = new(StringComparer.OrdinalIgnoreCase);
     public void AddTypeParameter(params CodeTypeParameter[] parameters)
     {
-        if (parameters == null || parameters.Any(static x => x == null))
+        if (parameters == null || parameters.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(parameters));
+        }
+
         EnsureElementsAreChildren(parameters);
-        foreach (var parameter in parameters)
+        foreach (var parameter in parameters) {
             typeParameters.TryAdd(parameter.Name, parameter);
+        }
     }
     public IReadOnlyList<CodeTypeParameter> TypeParameters => typeParameters.Values.OrderBy(static x => x.Name, StringComparer.OrdinalIgnoreCase).ToList();
     public bool IsGeneric => !typeParameters.IsEmpty;

@@ -15,13 +15,18 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, PythonConventi
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (codeElement.ExistsInExternalBaseType) return;
+        if (codeElement.ExistsInExternalBaseType) {
+            return;
+        }
+
         var returnType = conventions.GetTypeString(codeElement.Type, codeElement, true, writer);
-        if (codeElement.Parent is not CodeClass parentClass) throw new InvalidOperationException("The parent of a property should be a class");
+        if (codeElement.Parent is not CodeClass parentClass) {
+            throw new InvalidOperationException("The parent of a property should be a class");
+        }
         /* Only write specific properties as class attributes
-        * The rest will be implemented as instance attributes, to avoid mutable properties
-        * from being modified across instances. 
-        */
+* The rest will be implemented as instance attributes, to avoid mutable properties
+* from being modified across instances. 
+*/
         switch (codeElement.Kind)
         {
             case CodePropertyKind.RequestBuilder:
@@ -64,8 +69,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, PythonConventi
                     writer.DecreaseIndent();
                     writer.WriteLine("return ''");
                 }
-                else
+                else {
                     writer.WriteLine("return super().message");
+                }
+
                 writer.DecreaseIndent();
                 break;
         }

@@ -38,39 +38,61 @@ internal class OpenApiSchemaComparer : IEqualityComparer<IOpenApiSchema>
 
     private void GetHashCodeInternal([DisallowNull] IOpenApiSchema obj, HashSet<IOpenApiSchema> visitedSchemas, ref HashCode hash)
     {
-        if (obj is null) return;
-        if (!visitedSchemas.Add(obj)) return;
+        if (obj is null) {
+            return;
+        }
+
+        if (!visitedSchemas.Add(obj)) {
+            return;
+        }
+
         hash.Add(obj.Deprecated);
-        if (obj.Discriminator is not null)
+        if (obj.Discriminator is not null) {
             hash.Add(obj.Discriminator, discriminatorComparer);
-        if (obj.AdditionalProperties is not null)
+        }
+
+        if (obj.AdditionalProperties is not null) {
             GetHashCodeInternal(obj.AdditionalProperties, visitedSchemas, ref hash);
+        }
+
         hash.Add(obj.AdditionalPropertiesAllowed);
-        if (obj.Properties is not null)
+        if (obj.Properties is not null) {
             foreach (var prop in obj.Properties)
             {
                 hash.Add(prop.Key, StringComparer.Ordinal);
                 GetHashCodeInternal(prop.Value, visitedSchemas, ref hash);
             }
-        if (obj.Default is not null)
+        }
+
+        if (obj.Default is not null) {
             hash.Add(obj.Default, jsonNodeComparer);
-        if (obj.Items is not null)
+        }
+
+        if (obj.Items is not null) {
             GetHashCodeInternal(obj.Items, visitedSchemas, ref hash);
-        if (obj.OneOf is not null)
+        }
+
+        if (obj.OneOf is not null) {
             foreach (var schema in obj.OneOf)
             {
                 GetHashCodeInternal(schema, visitedSchemas, ref hash);
             }
-        if (obj.AnyOf is not null)
+        }
+
+        if (obj.AnyOf is not null) {
             foreach (var schema in obj.AnyOf)
             {
                 GetHashCodeInternal(schema, visitedSchemas, ref hash);
             }
-        if (obj.AllOf is not null)
+        }
+
+        if (obj.AllOf is not null) {
             foreach (var schema in obj.AllOf)
             {
                 GetHashCodeInternal(schema, visitedSchemas, ref hash);
             }
+        }
+
         hash.Add(obj.Format, StringComparer.OrdinalIgnoreCase);
         hash.Add(obj.Type);
         hash.Add(obj.Title, StringComparer.Ordinal);
@@ -129,7 +151,10 @@ internal class OpenApiDiscriminatorComparer : IEqualityComparer<OpenApiDiscrimin
     /// <inheritdoc/>
     public bool Equals(OpenApiDiscriminator? x, OpenApiDiscriminator? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
         return x.PropertyName.EqualsIgnoreCase(y.PropertyName) && GetOrderedRequests(x.Mapping).SequenceEqual(GetOrderedRequests(y.Mapping), mappingComparer);
     }
     private static readonly IOrderedEnumerable<KeyValuePair<string, string>> defaultOrderedDictionary = new Dictionary<string, string>(0).OrderBy(x => x.Key, StringComparer.Ordinal);
@@ -142,7 +167,10 @@ internal class OpenApiDiscriminatorComparer : IEqualityComparer<OpenApiDiscrimin
     public int GetHashCode([DisallowNull] OpenApiDiscriminator obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.PropertyName);
         foreach (var mapping in GetOrderedRequests(obj.Mapping))
         {
@@ -156,7 +184,9 @@ internal class JsonNodeComparer : IEqualityComparer<JsonNode>
     /// <inheritdoc/>
     public bool Equals(JsonNode? x, JsonNode? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
         // TODO: Can we use the OpenAPI.NET implementation of Equals?
         return x.GetValueKind() == y.GetValueKind() && string.Equals(x.ToJsonString(), y.ToJsonString(), StringComparison.OrdinalIgnoreCase);
     }
@@ -164,7 +194,10 @@ internal class JsonNodeComparer : IEqualityComparer<JsonNode>
     public int GetHashCode([DisallowNull] JsonNode obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.ToString());
         return hash.ToHashCode();
     }

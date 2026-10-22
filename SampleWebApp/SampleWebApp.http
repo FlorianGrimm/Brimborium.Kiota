@@ -1,11 +1,16 @@
 @SampleWebApp_HostAddress = http://localhost:5190
 
-GET {{SampleWebApp_HostAddress}}/todos/
+GET {{SampleWebApp_HostAddress}}/openapi/v1.json
 Accept: application/json
 
 ###
 
-GET {{SampleWebApp_HostAddress}}/todos/1
+GET {{SampleWebApp_HostAddress}}/api/Todo
+Accept: application/json
+
+###
+
+GET {{SampleWebApp_HostAddress}}/api/Todo/1
 Accept: application/json
 
 ###

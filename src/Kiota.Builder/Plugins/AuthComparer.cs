@@ -12,7 +12,10 @@ internal class AuthComparer(StringComparer? stringComparer = null) : IEqualityCo
     /// <inheritdoc/>
     public bool Equals(Auth? x, Auth? y)
     {
-        if (x is null || y is null) return object.Equals(x, y);
+        if (x is null || y is null) {
+            return object.Equals(x, y);
+        }
+
         return x switch
         {
             AnonymousAuth when y is AnonymousAuth => true,
@@ -27,7 +30,10 @@ internal class AuthComparer(StringComparer? stringComparer = null) : IEqualityCo
     public int GetHashCode([DisallowNull] Auth obj)
     {
         var hash = new HashCode();
-        if (obj == null) return hash.ToHashCode();
+        if (obj == null) {
+            return hash.ToHashCode();
+        }
+
         hash.Add(obj.Type, _stringComparer);
         switch (obj)
         {

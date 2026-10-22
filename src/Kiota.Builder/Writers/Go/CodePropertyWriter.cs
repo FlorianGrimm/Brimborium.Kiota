@@ -36,8 +36,10 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, GoConventionSe
     }
     internal static void WriteField(CodeProperty codeElement, LanguageWriter writer, GoConventionService conventions)
     {
-        if (codeElement.ExistsInExternalBaseType)
+        if (codeElement.ExistsInExternalBaseType) {
             return;
+        }
+
         var propertyName = codeElement.Access == AccessModifier.Public ? codeElement.Name.ToFirstCharacterUpperCase() : codeElement.Name.ToFirstCharacterLowerCase();
         var suffix = codeElement.Kind is CodePropertyKind.QueryParameter && codeElement.IsNameEscaped ?
             $" \"uriparametername:\\\"{codeElement.SerializationName.SanitizeDoubleQuote()}\\\"\"" :

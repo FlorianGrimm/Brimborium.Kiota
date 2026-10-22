@@ -13,15 +13,20 @@ public class CodeEnumWriter : BaseElementWriter<CodeEnum, RubyConventionService>
     {
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
-        if (!codeElement.Options.Any())
+        if (!codeElement.Options.Any()) {
             return;
-        if (codeElement.Parent is CodeNamespace ns)
+        }
+
+        if (codeElement.Parent is CodeNamespace ns) {
             conventions.WriteNamespaceModules(ns, writer);
+        }
+
         conventions.WriteShortDescription(codeElement, writer);
         writer.StartBlock($"{codeElement.Name.ToFirstCharacterUpperCase()} = {{");
         codeElement.Options.ToList().ForEach(x => writer.WriteLine($"{x.Name.ToFirstCharacterUpperCase()}: :{x.Name.ToFirstCharacterUpperCase()},"));
         writer.CloseBlock();
-        if (codeElement.Parent is CodeNamespace ns2)
+        if (codeElement.Parent is CodeNamespace ns2) {
             conventions.WriteNamespaceClosing(ns2, writer);
+        }
     }
 }

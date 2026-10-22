@@ -40,24 +40,28 @@ public class DiscriminatorInformation : CodeElement, ICloneable
     public CodeTypeBase? GetDiscriminatorMappingValue(string key)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
-        if (discriminatorMappings.TryGetValue(key, out var value))
+        if (discriminatorMappings.TryGetValue(key, out var value)) {
             return value;
+        }
+
         return null;
     }
 
     public void RemoveDiscriminatorMapping(params string[] keys)
     {
         ArgumentNullException.ThrowIfNull(keys);
-        foreach (var key in keys)
+        foreach (var key in keys) {
             discriminatorMappings.TryRemove(key, out var _);
+        }
     }
 
     public void RemoveDiscriminatorMapping(CodeClass classToRemove)
     {
         ArgumentNullException.ThrowIfNull(classToRemove);
         var keyToRemove = discriminatorMappings.FirstOrDefault(x => x.Value is CodeType currentType && currentType.TypeDefinition == classToRemove).Key;
-        if (!string.IsNullOrEmpty(keyToRemove))
+        if (!string.IsNullOrEmpty(keyToRemove)) {
             discriminatorMappings.TryRemove(keyToRemove, out var _);
+        }
     }
 
     public object Clone()

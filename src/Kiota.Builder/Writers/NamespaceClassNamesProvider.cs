@@ -22,12 +22,15 @@ public static class NamespaceClassNamesProvider
                                                 .Select(static x => x.GetInheritanceTree(true))
                                                 .ToList();
         var maxDepth = inheritanceBranches.Count != 0 ? inheritanceBranches.Max(static x => x.Count) : 0;
-        for (var depth = 0; depth < maxDepth; depth++)
+        for (var depth = 0; depth < maxDepth; depth++) {
             foreach (var name in inheritanceBranches
                                                 .Where(x => x.Count > depth)
                                                 .Select(x => x[depth])
                                                 .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)//order is important to get a deterministic output
                                                 .Where(x => writtenClassNames.Add(x.Name))) // linq distinct does not guarantee order
+{
                 callbackToWriteImport(name);
+            }
+        }
     }
 }

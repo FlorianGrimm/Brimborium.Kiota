@@ -47,10 +47,19 @@ public static partial class StringExtensions
 
     private static string ToInternalCamelCase(string? input, char[] separators, bool firstCharacterUpperCase = false, bool normalizeFirstCharacter = true)
     {
-        if (string.IsNullOrEmpty(input)) return string.Empty;
-        if (separators is null || separators.Length == 0) separators = defaultSeparators;
+        if (string.IsNullOrEmpty(input)) {
+            return string.Empty;
+        }
+
+        if (separators is null || separators.Length == 0) {
+            separators = defaultSeparators;
+        }
+
         var chunks = input.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-        if (chunks.Length == 0) return string.Empty;
+        if (chunks.Length == 0) {
+            return string.Empty;
+        }
+
         return ((normalizeFirstCharacter, firstCharacterUpperCase) switch
         {
             (false, _) => chunks[0],
@@ -90,8 +99,10 @@ public static partial class StringExtensions
     /// <returns>The original name if within limits, or a truncated name with hash suffix for uniqueness</returns>
     public static string ShortenNameSegment(this string name, int maxLength = DefaultMaxNameSegmentLength)
     {
-        if (string.IsNullOrEmpty(name) || name.Length <= maxLength)
+        if (string.IsNullOrEmpty(name) || name.Length <= maxLength) {
             return name;
+        }
+
         var prefixLength = maxLength - HashSuffixLength - 1; // -1 for the underscore separator
 #pragma warning disable CA1308
         var hashSuffix = HashString(name).ToLowerInvariant()[..HashSuffixLength];
@@ -102,7 +113,9 @@ public static partial class StringExtensions
     public static string EscapeSuffix(this string? name, HashSet<string> specialFileNameSuffixes, char separator = '_')
     {
         ArgumentNullException.ThrowIfNull(specialFileNameSuffixes);
-        if (string.IsNullOrEmpty(name)) return string.Empty;
+        if (string.IsNullOrEmpty(name)) {
+            return string.Empty;
+        }
 
         var last = name.Split(separator)[^1];
         return specialFileNameSuffixes.Contains(last) ? $"{name}_escaped" : name;
@@ -110,7 +123,9 @@ public static partial class StringExtensions
 
     public static string ToSnakeCase(this string? name, char separator = '_')
     {
-        if (string.IsNullOrEmpty(name)) return string.Empty;
+        if (string.IsNullOrEmpty(name)) {
+            return string.Empty;
+        }
 
         var nameSpan = name.AsSpan();
         var indexOfLess = nameSpan.IndexOf('<');
@@ -143,11 +158,16 @@ public static partial class StringExtensions
             current = nameSpan[i];
             if (current == '-')
             {
-                if (!char.IsUpper(nameSpan[i + 1])) span[counter++] = separator;
+                if (!char.IsUpper(nameSpan[i + 1])) {
+                    span[counter++] = separator;
+                }
             }
             else if (char.IsUpper(current))
             {
-                if (nameSpan[i - 1] != '_') span[counter++] = separator;
+                if (nameSpan[i - 1] != '_') {
+                    span[counter++] = separator;
+                }
+
                 span[counter++] = char.ToLowerInvariant(current);
             }
             else
@@ -166,14 +186,19 @@ public static partial class StringExtensions
     private static readonly ThreadLocal<HashAlgorithm> sha = new(SHA256.Create); // getting safe handle null exception from BCrypt on concurrent multi-threaded access
     public static string GetNamespaceImportSymbol(this string? importName, string prefix = "i")
     {
-        if (string.IsNullOrEmpty(importName)) return string.Empty;
+        if (string.IsNullOrEmpty(importName)) {
+            return string.Empty;
+        }
 #pragma warning disable CA1308
         return prefix + HashString(importName).ToLowerInvariant();
 #pragma warning restore CA1308
     }
     internal static string HashString(string? input)
     {
-        if (string.IsNullOrEmpty(input)) return string.Empty;
+        if (string.IsNullOrEmpty(input)) {
+            return string.Empty;
+        }
+
         var hash = (sha.Value ?? throw new InvalidOperationException("unable to get hash algorithm")).ComputeHash(Encoding.UTF8.GetBytes(input));
         return hash.Select(static b => b.ToString("x2", CultureInfo.InvariantCulture)).Aggregate(static (x, y) => x + y);
     }
@@ -187,15 +212,23 @@ public static partial class StringExtensions
     /// <param name="current"></param>
     public static string ReplaceDoubleQuoteWithSingleQuote(this string? current)
     {
-        if (string.IsNullOrEmpty(current)) return string.Empty;
-        if (!current.StartsWith('"')) return current;
+        if (string.IsNullOrEmpty(current)) {
+            return string.Empty;
+        }
+
+        if (!current.StartsWith('"')) {
+            return current;
+        }
+
         var builder = new StringBuilder(current.Length);
         builder.Append('\'');
         for (var i = 1; i < current.Length; i++)
         {
             var character = current[i];
-            if (i == current.Length - 1 && character == '"')
+            if (i == current.Length - 1 && character == '"') {
                 break;
+            }
+
             switch (character)
             {
                 case '\\':
@@ -217,10 +250,12 @@ public static partial class StringExtensions
                     builder.Append("\\0");
                     break;
                 default:
-                    if (char.IsControl(character))
+                    if (char.IsControl(character)) {
                         builder.Append(@"\u").Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
-                    else
+                    } else {
                         builder.Append(character);
+                    }
+
                     break;
             }
         }
@@ -230,7 +265,10 @@ public static partial class StringExtensions
 
     public static string ReplaceDotsWithSlashInNamespaces(this string? namespaced)
     {
-        if (string.IsNullOrEmpty(namespaced)) return string.Empty;
+        if (string.IsNullOrEmpty(namespaced)) {
+            return string.Empty;
+        }
+
         var parts = namespaced.Split('.');
         return string.Join('\\', parts.Select(ToFirstCharacterUpperCase)).Trim('\\');
     }
@@ -242,7 +280,9 @@ public static partial class StringExtensions
     private const string CleanupGroupName = "followingLetter";
     public static string CleanupSymbolName(this string? original)
     {
-        if (string.IsNullOrEmpty(original)) return string.Empty;
+        if (string.IsNullOrEmpty(original)) {
+            return string.Empty;
+        }
 
         string result = NormalizeSymbolsBeforeCleanup(original);
 
@@ -253,10 +293,12 @@ public static partial class StringExtensions
                                                 string.Empty); //strip out any invalid characters, and replace any following one by its uppercase version
 
         if (result.Length != 0 && int.TryParse(result.AsSpan(0, 1), out var _)) // in most languages a number or starting with a number is not a valid symbol name
+{
             result = NumbersSpellingRegex().Replace(result, static x => x.Groups["number"]
                                                                     .Value
                                                                     .Select(static x => SpelledOutNumbers[x])
                                                                     .Aggregate(static (z, y) => z + y));
+        }
 
         result = NormalizeSymbolsAfterCleanup(result);
 
@@ -391,13 +433,22 @@ public static partial class StringExtensions
         !string.IsNullOrEmpty(s) && !string.IsNullOrEmpty(suffix) && s.EndsWith(suffix, stringComparison) ? s[..^suffix.Length] : s;
     public static string GetFileExtension(this string path)
     {
-        if (string.IsNullOrEmpty(path)) return string.Empty;
+        if (string.IsNullOrEmpty(path)) {
+            return string.Empty;
+        }
+
         return Path.GetExtension(path).TrimStart('.');
     }
     public static string NormalizePathSeparators(this string path)
     {
-        if (string.IsNullOrEmpty(path)) return string.Empty;
-        if (Path.DirectorySeparatorChar != '/') return path.Replace(Path.DirectorySeparatorChar, '/');
+        if (string.IsNullOrEmpty(path)) {
+            return string.Empty;
+        }
+
+        if (Path.DirectorySeparatorChar != '/') {
+            return path.Replace(Path.DirectorySeparatorChar, '/');
+        }
+
         return path;
     }
 }

@@ -20,8 +20,10 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Da
         ArgumentNullException.ThrowIfNull(codeElement);
         ArgumentNullException.ThrowIfNull(writer);
 
-        if (codeElement.Parent is not CodeClass parentClass)
+        if (codeElement.Parent is not CodeClass parentClass) {
             throw new InvalidOperationException($"The provided code element {codeElement.Name} doesn't have a parent of type {nameof(CodeClass)}");
+        }
+
         conventions.WriteLintingMessage(writer);
         var currentNamespace = codeElement.GetImmediateParentOfType<CodeNamespace>();
 
@@ -31,8 +33,9 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Da
                     .Where(x => (x.Declaration?.IsExternal ?? true) || !x.Declaration.Name.Equals(codeElement.Name, StringComparison.OrdinalIgnoreCase)) // needed for circular requests patterns like message folder
                     .Where(static x => x.IsExternal)
                     .DistinctBy(static x => x.Declaration!.Name, StringComparer.Ordinal)
-                    .OrderBy(static x => x.Declaration!.Name, StringComparer.Ordinal))
+                    .OrderBy(static x => x.Declaration!.Name, StringComparer.Ordinal)) {
                 writer.WriteLine($"import 'package:{externalPath.Declaration!.Name}.dart';");
+            }
 
             foreach (var relativePath in codeElement.Usings
                     .Where(static x => !x.IsExternal)
@@ -40,8 +43,9 @@ public class CodeClassDeclarationWriter : BaseElementWriter<ClassDeclaration, Da
                     .Select(x => x.Declaration?.Name?.StartsWith('.') ?? false ?
                         (string.Empty, x.Alias, x.Declaration.Name) :
                         relativeImportManager.GetRelativeImportPathForUsing(x, currentNamespace))
-                    .OrderBy(static x => x.Item3, StringComparer.Ordinal))
+                    .OrderBy(static x => x.Item3, StringComparer.Ordinal)) {
                 writer.WriteLine($"import '{relativePath.Item3}.dart'{GetAlias(relativePath.Item2)};");
+            }
 
             writer.WriteLine();
 

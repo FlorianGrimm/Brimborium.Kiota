@@ -13,10 +13,13 @@ public class CodeFile : CodeBlock<CodeFileDeclaration, CodeFileBlockEnd>
 
     public IEnumerable<T> AddElements<T>(params T[] elements) where T : CodeElement
     {
-        if (elements == null || elements.Any(static x => x == null))
+        if (elements == null || elements.Any(static x => x == null)) {
             throw new ArgumentNullException(nameof(elements));
-        if (elements.Length == 0)
+        }
+
+        if (elements.Length == 0) {
             throw new ArgumentOutOfRangeException(nameof(elements));
+        }
 
         return AddRange(elements);
     }
