@@ -56,7 +56,8 @@ namespace ApiSdk.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
-                { "dueBy", n => { DueBy = n.GetObjectValue<DateOnly>(DateOnly.CreateFromDiscriminatorValue); } },
+                // TODO { "dueBy", n => { DueBy = n.GetDateValue<DateOnly>(DateOnly.CreateFromDiscriminatorValue); } },
+                { "dueBy", n => { DueBy = n.GetDateValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "isComplete", n => { IsComplete = n.GetBoolValue(); } },
                 { "title", n => { Title = n.GetStringValue(); } },
@@ -69,7 +70,8 @@ namespace ApiSdk.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteObjectValue<DateOnly>("dueBy", DueBy);
+            // TODO writer.WriteObjectValue<DateOnly>("dueBy", DueBy);
+            writer.WriteDateValue("dueBy", DueBy);
             writer.WriteIntValue("id", Id);
             writer.WriteBoolValue("isComplete", IsComplete);
             writer.WriteStringValue("title", Title);
