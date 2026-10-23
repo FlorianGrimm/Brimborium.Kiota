@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SampleWebApp;
+namespace SampleMSWebApp;
 
 
 [JsonSerializable(typeof(List<Todo>))]

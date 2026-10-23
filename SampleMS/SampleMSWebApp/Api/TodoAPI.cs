@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace SampleWebApp.Api;
+﻿namespace SampleMSWebApp.Api;
 
 [Injectio.Attributes.RegisterSingleton<IMinimalApiEndpoint>(Duplicate = DuplicateStrategy.Append)]
 public class TodoAPI : IMinimalApiEndpoint {

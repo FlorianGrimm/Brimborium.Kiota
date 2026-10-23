@@ -32,16 +32,10 @@ namespace ApiSdk
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
         public ApiClient(IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}", new Dictionary<string, object>())
         {
-            ApiClientBuilder.RegisterDefaultSerializer<JsonSerializationWriterFactory>();
-            ApiClientBuilder.RegisterDefaultSerializer<TextSerializationWriterFactory>();
-            ApiClientBuilder.RegisterDefaultSerializer<FormSerializationWriterFactory>();
-            ApiClientBuilder.RegisterDefaultSerializer<MultipartSerializationWriterFactory>();
-            ApiClientBuilder.RegisterDefaultDeserializer<JsonParseNodeFactory>();
-            ApiClientBuilder.RegisterDefaultDeserializer<TextParseNodeFactory>();
-            ApiClientBuilder.RegisterDefaultDeserializer<FormParseNodeFactory>();
+            ApiClientBuilder.SetupDefaults();
             if (string.IsNullOrEmpty(RequestAdapter.BaseUrl))
             {
-                RequestAdapter.BaseUrl = "http://localhost:5190";
+                RequestAdapter.BaseUrl = "https://localhost";
             }
             PathParameters.TryAdd("baseurl", RequestAdapter.BaseUrl);
         }

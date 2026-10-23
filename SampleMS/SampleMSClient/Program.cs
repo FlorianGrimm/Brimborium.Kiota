@@ -3,45 +3,53 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Bundle;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
-namespace SampleClient;
+namespace SampleMSClient;
 
 public class Program {
-    private const string _HostUrl = "http://localhost:5190";
+    private const string _HostUrl = "http://localhost:5191";
     private const string _TodoUrl = "/api/Todo";
-    private const int _LoopCount = 100;
 
     public static async Task Main(string[] args) {
         try {
-            await Run(args);
+            int[] listLoopCout = [10, 20, 30, 40, 50, 100, 200, 300, 500, 1000];
+            foreach (var loopcount in listLoopCout) {
+                await Run(loopcount).ConfigureAwait(false);
+            }
         } catch (Exception ex) {
             Console.WriteLine($"Error: {ex.Message}");
         }
         Console.WriteLine("Done");
     }
-    public static async Task Run(string[] args) {
+    public static async Task Run(int loopCount) {
         Microsoft.Extensions.DependencyInjection.ServiceCollection serviceBuilder = new();
-        serviceBuilder.AddTransient<ApiClient>((sp) => {
-            var authProvider = new AnonymousAuthenticationProvider();
-            var requestAdapter = new DefaultRequestAdapter(authProvider);
-            var client = new ApiClient(requestAdapter);
-            return client;
-        });
         serviceBuilder.AddHttpClient("MyClient", client => {
             client.BaseAddress = new Uri(_HostUrl);
         });
+        var authProvider = new AnonymousAuthenticationProvider();
+        serviceBuilder.AddTransient<ApiClient>((sp) => {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient(nameof(ApiClient));
+            var requestAdapter = new HttpClientRequestAdapter(
+                authenticationProvider: authProvider,
+                httpClient: httpClient) {
+                BaseUrl = _HostUrl
+            };
+            var client = new ApiClient(requestAdapter);
+            return client;
+        });
         using (var globalServiceProvider = serviceBuilder.BuildServiceProvider()) {
 
-            await RunRequestTyped(globalServiceProvider).ConfigureAwait(false);
+            await RunRequestTyped(globalServiceProvider, 1).ConfigureAwait(false);
 
             var start = Stopwatch.GetTimestamp();
 
             List<Task<double>> listTask = new();
-            for (int i = 0; i < _LoopCount; i++) {
-                listTask.Add(RunRequestTyped(globalServiceProvider));
+            for (int i = 0; i < loopCount; i++) {
+                listTask.Add(RunRequestTyped(globalServiceProvider, loopCount));
             }
             int countSuccess = 0;
             double sumElapsedTime = 0.0d;
@@ -66,32 +74,13 @@ public class Program {
         }
     }
 
-    private static async Task<double> RunRequestGeneric(ServiceProvider globalServiceProvider) {
-        var start = Stopwatch.GetTimestamp();
-        using (var scope = globalServiceProvider.CreateScope()) {
-            var scopeServiceProvider = scope.ServiceProvider;
-            var httpClientFactory = scopeServiceProvider.GetRequiredService<IHttpClientFactory>();
-            var httpClient = httpClientFactory.CreateClient("MyClient");
-            for (int i = 0; i < _LoopCount; i++) {
-                try {
-                    using (var response = await httpClient.GetAsync(_TodoUrl).ConfigureAwait(false)) {
-                        response.EnsureSuccessStatusCode();
-                    }
-                } catch (System.Exception ex) {
-                    System.Console.Error.WriteLine($"Error: {ex.Message}");
-                    return -1.0d;
-                }
-            }
-        }
-        var elapsedTime = Stopwatch.GetElapsedTime(start);
-        return elapsedTime.TotalSeconds;
-    }
-    private static async Task<double> RunRequestTyped(ServiceProvider globalServiceProvider) {
+
+    private static async Task<double> RunRequestTyped(ServiceProvider globalServiceProvider, int loopCount) {
         var start = Stopwatch.GetTimestamp();
         using (var scope = globalServiceProvider.CreateScope()) {
             var scopeServiceProvider = scope.ServiceProvider;
             var apiClient = scopeServiceProvider.GetRequiredService<ApiClient>();
-            for (int i = 0; i < _LoopCount; i++) {
+            for (int i = 0; i < loopCount; i++) {
                 try {
                     var result = await apiClient.Api.Todo.GetAsync((eequestConfiguration) => {
                     }, CancellationToken.None);
@@ -107,11 +96,3 @@ public class Program {
         return elapsedTime.TotalSeconds;
     }
 }
-/*
-cd C:\github.com\FlorianGrimm\Brimborium.Kiota\SampleClient\
-kiota generate --openapi C:\github.com\FlorianGrimm\Brimborium.Kiota\SampleWebApp\openapi.v1.json --output C:\github.com\FlorianGrimm\Brimborium.Kiota\SampleClient\Client --language CSharp
-
-cd C:\github.com\FlorianGrimm\Brimborium.Kiota\
-dotnet run --project src\kiota\kiota.csproj -- generate --openapi C:\github.com\FlorianGrimm\Brimborium.Kiota\SampleWebApp\openapi.v1.json --output C:\github.com\FlorianGrimm\Brimborium.Kiota\SampleClient\Client --language CSharp
- 
- */

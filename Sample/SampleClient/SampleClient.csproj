@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Brimborium.Kiota-dotnet\src\Brimborium.Kiota.csproj" />
+    <ProjectReference Include="..\..\..\Brimborium.Kiota-dotnet\src\Brimborium.Kiota.csproj" />
   </ItemGroup>
 
 </Project>

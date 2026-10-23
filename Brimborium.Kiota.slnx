@@ -10,6 +10,12 @@
     <Project Path="tests/Kiota.Builder.Tests/Kiota.Builder.Tests.csproj" />
     <Project Path="tests/Kiota.Tests/Kiota.Tests.csproj" />
   </Folder>
-  <Project Path="SampleClient/SampleClient.csproj" Id="9ea0c819-680f-41d6-9448-d50801ef26df" />
-  <Project Path="SampleWebApp/SampleWebApp.csproj" Id="b57203fb-5c34-4002-902f-7ce893444481" />
+  <Folder Name="/Sample/">
+    <Project Path="Sample/SampleClient/SampleClient.csproj" Id="9ea0c819-680f-41d6-9448-d50801ef26df" />
+    <Project Path="Sample/SampleWebApp/SampleWebApp.csproj" Id="b57203fb-5c34-4002-902f-7ce893444481" />
+  </Folder>
+  <Folder Name="/SampleMS/">
+    <Project Path="SampleMS/SampleMSClient/SampleMSClient.csproj" />
+    <Project Path="SampleMS/SampleMSWebApp/SampleMSWebApp.csproj" />
+  </Folder>
 </Solution>
