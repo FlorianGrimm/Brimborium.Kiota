@@ -2,7 +2,8 @@
   "profiles": {
     "kiota": {
       "commandName": "Project",
-      "commandLineArgs": "generate --openapi C:\\github.com\\FlorianGrimm\\Brimborium.Kiota\\SampleWebApp\\openapi.v1.json --output C:\\github.com\\FlorianGrimm\\Brimborium.Kiota\\SampleClient\\Client --language CSharp"
+      "commandLineArgs": "generate --language csharp --output .\\Sample\\SampleClient\\Client\\ --openapi .\\Sample\\SampleWebApp\\openapi.v1.json",
+      "workingDirectory": "C:\\github.com\\FlorianGrimm\\Brimborium.Kiota"
     },
     "dart": {
       "commandName": "Project",

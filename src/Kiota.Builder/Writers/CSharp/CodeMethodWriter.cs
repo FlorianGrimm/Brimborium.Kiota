@@ -455,6 +455,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
         return propertyType switch
         {
             "byte[]" => "GetByteArrayValue()",
+            "DateOnly" => "GetDateValue()",
+            "DateOnly?" => "GetDateValue()",
+            "TimeOnly" => "GetTimeValue()",
+            "TimeOnly?" => "GetTimeValue()",
             _ when conventions.IsPrimitiveType(propertyType) => $"Get{propertyType.TrimEnd(CSharpConventionService.NullableMarker).ToFirstCharacterUpperCase()}Value()",
             _ => $"GetObjectValue<{propertyType}>({propertyType}.CreateFromDiscriminatorValue)",
         };
@@ -804,6 +808,10 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
         return propertyType switch
         {
             "byte[]" => "WriteByteArrayValue",
+            "DateOnly" => "WriteDateValue",
+            "DateOnly?" => "WriteDateValue",
+            "TimeOnly" => "WriteTimeValue",
+            "TimeOnly?" => "WriteTimeValue",
             _ when conventions.IsPrimitiveType(propertyType) => $"Write{propertyType.TrimEnd(CSharpConventionService.NullableMarker).ToFirstCharacterUpperCase()}Value",
             _ => $"WriteObjectValue<{propertyType}{(includeNullableRef ? "?" : string.Empty)}>",
         };

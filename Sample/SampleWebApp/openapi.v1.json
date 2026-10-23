@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5190/"
+      "url": "https://localhost/"
     }
   ],
   "paths": {

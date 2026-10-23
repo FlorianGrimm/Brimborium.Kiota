@@ -98,3 +98,11 @@ public class Program {
         return elapsedTime.TotalSeconds;
     }
 }
+/*
+cd C:\github.com\FlorianGrimm\Brimborium.Kiota
+
+del .\Sample\SampleClient\Client\.kiota.log
+del .\Sample\SampleClient\Client\kiota-lock.json
+dotnet run --project src\kiota\kiota.csproj generate --language csharp --output .\Sample\SampleClient\Client\ --openapi .\Sample\SampleWebApp\openapi.v1.json
+
+ */
