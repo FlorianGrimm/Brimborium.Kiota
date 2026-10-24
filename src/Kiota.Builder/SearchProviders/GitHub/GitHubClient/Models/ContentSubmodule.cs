@@ -149,6 +149,8 @@ namespace Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models
             writer.WriteStringValue("url", Url);
             writer.WriteAdditionalData(AdditionalData);
         }
+        /// <inheritdoc/>
+        public IDictionary<string, object>? GetAdditionalData() => this.AdditionalData;
     }
 }
 #pragma warning restore CS0618

@@ -51,6 +51,8 @@ namespace Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models
             _ = writer ?? throw new ArgumentNullException(nameof(writer));
             writer.WriteAdditionalData(AdditionalData);
         }
+        /// <inheritdoc/>
+        public IDictionary<string, object> GetAdditionalData() => this.AdditionalData;
     }
 }
 #pragma warning restore CS0618

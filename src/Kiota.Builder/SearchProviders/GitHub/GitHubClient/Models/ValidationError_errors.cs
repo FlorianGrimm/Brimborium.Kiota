@@ -104,6 +104,8 @@ namespace Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models
             writer.WriteObjectValue<global::Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models.ValidationError_errors.ValidationError_errors_value>("value", Value);
             writer.WriteAdditionalData(AdditionalData);
         }
+        /// <inheritdoc/>
+        public IDictionary<string, object>? GetAdditionalData() => this.AdditionalData;
         /// <summary>
         /// Composed type wrapper for classes <see cref="int"/>, <see cref="string"/>
         /// </summary>

@@ -23,8 +23,9 @@ internal partial class Server : IServer
     private readonly Lazy<KiotaConfiguration> ConfigurationFactory = new(() =>
     {
         var builder = new ConfigurationBuilder();
-        using var defaultStream = new MemoryStream(Kiota.Generated.KiotaAppSettings.Default());
-        var configuration = builder.AddJsonStream(defaultStream)
+        var defaultStream = typeof(Server).Assembly.GetManifestResourceStream("kiota.appsettings.json") ?? throw new Exception();
+        var configuration = builder
+                .AddJsonStream(defaultStream)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                 .AddEnvironmentVariables(prefix: "KIOTA_")
                 .Build();

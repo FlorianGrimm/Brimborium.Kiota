@@ -80,6 +80,8 @@ namespace Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models
             writer.WriteStringValue("self", Self);
             writer.WriteAdditionalData(AdditionalData);
         }
+        /// <inheritdoc/>
+        public IDictionary<string, object>? GetAdditionalData() => this.AdditionalData;
     }
 }
 #pragma warning restore CS0618

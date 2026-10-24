@@ -243,6 +243,8 @@ namespace Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models
             writer.WriteEnumValue<global::Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models.AppPermissions_workflows>("workflows", Workflows);
             writer.WriteAdditionalData(AdditionalData);
         }
+        /// <inheritdoc/>
+        public IDictionary<string, object> GetAdditionalData() => this.AdditionalData;
     }
 }
 #pragma warning restore CS0618

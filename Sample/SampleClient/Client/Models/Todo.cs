@@ -10,7 +10,7 @@ namespace ApiSdk.Models
 {
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "0.0.0")]
     #pragma warning disable CS1591
-    public partial class Todo : IAdditionalDataHolderSlim, IParsable
+    public partial class Todo : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>

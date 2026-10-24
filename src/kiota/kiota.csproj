@@ -27,7 +27,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Microsoft.OpenApi.snk</AssemblyOriginatorKeyFile>
     -->
-    <VersionPrefix>1.34.1</VersionPrefix>
+    <VersionPrefix>2.0.2</VersionPrefix>
     <VersionSuffix>$(VersionSuffix)</VersionSuffix>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -38,6 +38,7 @@
     <NoWarn>$(NoWarn);CS8785;NU5048;NU5104</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="C:\github.com\FlorianGrimm\Brimborium.Kiota-dotnet\KiotaGenerated\KiotaGenerated.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="All" />
     <ProjectReference Include="..\Kiota.Builder\Kiota.Builder.csproj" />
   </ItemGroup>
   <PropertyGroup>
@@ -66,14 +67,14 @@
     <PackageReference Include="StreamJsonRpc" Version="2.26.150" />
     <PackageReference Include="System.CommandLine" Version="2.0.13" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.402" PrivateAssets="All" />
-    <ProjectReference Include="..\Kiota.Generated\KiotaGenerated.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="All" />
+    
   </ItemGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="appsettings.json">
+    <EmbeddedResource Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -203,6 +203,9 @@ namespace Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models
             writer.WriteDateTimeOffsetValue("updated_at", UpdatedAt);
             writer.WriteAdditionalData(AdditionalData);
         }
+        /// <inheritdoc/>
+        public IDictionary<string, object> GetAdditionalData() => this.AdditionalData;
+
         /// <summary>
         /// Composed type wrapper for classes <see cref="global::Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models.Enterprise"/>, <see cref="global::Kiota.Builder.SearchProviders.GitHub.GitHubClient.Models.SimpleUser"/>
         /// </summary>

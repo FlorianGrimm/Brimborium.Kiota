@@ -50,7 +50,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <ProjectReference Include="..\..\..\Brimborium.Kiota-dotnet\src\Brimborium.Kiota.csproj" />
-    <ProjectReference Include="..\Kiota.Generated\KiotaGenerated.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="*.g.cs" />

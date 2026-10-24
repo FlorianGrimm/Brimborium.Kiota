@@ -3004,7 +3004,7 @@ public partial class KiotaBuilder
     private const string BackingStoreInterface = "IBackingStore";
     internal const string BackedModelInterface = "IBackedModel";
     private const string ParseNodeInterface = "IParseNode";
-    internal const string AdditionalHolderInterface = "IAdditionalDataHolderSlim";
+    internal const string AdditionalHolderInterface = "IAdditionalDataHolder";
     private static readonly char[] manifestPathSeparator = ['#'];
     internal static void AddSerializationMembers(CodeClass model, bool includeAdditionalProperties, bool usesBackingStore, Func<string, string> refineMethodName)
     {
