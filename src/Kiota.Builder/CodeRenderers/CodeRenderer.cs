@@ -111,6 +111,7 @@ public class CodeRenderer
         ArgumentNullException.ThrowIfNull(config);
         return config.Language switch
         {
+            GenerationLanguage.CSharp => new CodeRenderer(config, new CodeElementOrderComparerCSharp()),
             GenerationLanguage.TypeScript => new TypeScriptCodeRenderer(config),
             GenerationLanguage.Python => new CodeRenderer(config, new CodeElementOrderComparerPython()),
             GenerationLanguage.Go => new CodeRenderer(config, new CodeElementOrderComparerWithExternalMethods()),

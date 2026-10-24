@@ -1,10 +1,10 @@
 ﻿using System;
+
 using Kiota.Builder.Extensions;
 
 namespace Kiota.Builder.CodeDOM;
 
-public enum CodePropertyKind
-{
+public enum CodePropertyKind {
     Custom,
     RequestBuilder,
     AdditionalData,
@@ -41,30 +41,26 @@ public enum CodePropertyKind
     ErrorMessageOverride
 }
 
-public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedElement, IAlternativeName, ICloneable, IDeprecableElement, IAccessibleElement
-{
-    public bool ReadOnly
-    {
+public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedElement, IAlternativeName, ICloneable, IDeprecableElement, IAccessibleElement {
+    public CodeProperty() { 
+    }
+
+    public bool ReadOnly {
         get; set;
     }
     public AccessModifier Access { get; set; } = AccessModifier.Public;
     public bool ExistsInBaseType => OriginalPropertyFromBaseType != null;
-    public bool ExistsInExternalBaseType
-    {
+    public bool ExistsInExternalBaseType {
         get; set;
     }
-    public CodeMethod? Getter
-    {
+    public CodeMethod? Getter {
         get; set;
     }
-    public CodeMethod? Setter
-    {
+    public CodeMethod? Setter {
         get; set;
     }
-    public CodeMethod? GetterFromCurrentOrBaseType
-    {
-        get
-        {
+    public CodeMethod? GetterFromCurrentOrBaseType {
+        get {
             if (Getter != null) {
                 return Getter;
             }
@@ -76,10 +72,8 @@ public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedE
             return default;
         }
     }
-    public CodeMethod? SetterFromCurrentOrBaseType
-    {
-        get
-        {
+    public CodeMethod? SetterFromCurrentOrBaseType {
+        get {
             if (Setter != null) {
                 return Setter;
             }
@@ -94,10 +88,8 @@ public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedE
 #nullable disable // the backing property is required
     private CodeTypeBase type;
 #nullable enable
-    public required CodeTypeBase Type
-    {
-        get => type; set
-        {
+    public required CodeTypeBase Type {
+        get => type; set {
             ArgumentNullException.ThrowIfNull(value);
             EnsureElementsAreChildren(value);
             type = value;
@@ -109,32 +101,30 @@ public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedE
     public string SerializationName { get; set; } = string.Empty;
     public string NamePrefix { get; set; } = string.Empty;
     /// <inheritdoc/>
-    public bool IsNameEscaped
-    {
+    public bool IsNameEscaped {
         get => !string.IsNullOrEmpty(SerializationName);
     }
     /// <inheritdoc/>
     public string WireName => IsNameEscaped ? SerializationName : Name;
-    public CodeProperty? OriginalPropertyFromBaseType
-    {
+    public CodeProperty? OriginalPropertyFromBaseType {
         get; set;
     }
-    public DeprecationInformation? Deprecation
-    {
+    public DeprecationInformation? Deprecation {
         get; set;
     }
     /// <summary>
     /// Indicates if the property is the primary error message for the error/exception type.
     /// </summary>
-    public bool IsPrimaryErrorMessage
-    {
+    public bool IsPrimaryErrorMessage {
         get; set;
     }
 
-    public object Clone()
-    {
-        var property = new CodeProperty
-        {
+    public int OrderDefinition {
+        get; set;
+    }
+
+    public object Clone() {
+        var property = new CodeProperty {
             Name = Name,
             Kind = Kind,
             Parent = Parent,
@@ -151,6 +141,7 @@ public class CodeProperty : CodeTerminalWithKind<CodePropertyKind>, IDocumentedE
             OriginalPropertyFromBaseType = OriginalPropertyFromBaseType?.Clone() as CodeProperty,
             Deprecation = Deprecation,
             IsPrimaryErrorMessage = IsPrimaryErrorMessage,
+            OrderDefinition = OrderDefinition,
         };
         return property;
     }

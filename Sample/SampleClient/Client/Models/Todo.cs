@@ -19,18 +19,18 @@ namespace ApiSdk.Models
         private IDictionary<string, object>? _AdditionalData;
         /// <inheritdoc>/>
         public IDictionary<string, object>? GetAdditionalData() => _AdditionalData;
-        /// <summary>The dueBy property</summary>
-        [global::System.Text.Json.Serialization.JsonPropertyName("dueBy")]
-        public DateOnly? DueBy { get; set; }
         /// <summary>The id property</summary>
         [global::System.Text.Json.Serialization.JsonPropertyName("id")]
         public int? Id { get; set; }
-        /// <summary>The isComplete property</summary>
-        [global::System.Text.Json.Serialization.JsonPropertyName("isComplete")]
-        public bool? IsComplete { get; set; }
         /// <summary>The title property</summary>
         [global::System.Text.Json.Serialization.JsonPropertyName("title")]
         public string? Title { get; set; }
+        /// <summary>The dueBy property</summary>
+        [global::System.Text.Json.Serialization.JsonPropertyName("dueBy")]
+        public DateOnly? DueBy { get; set; }
+        /// <summary>The isComplete property</summary>
+        [global::System.Text.Json.Serialization.JsonPropertyName("isComplete")]
+        public bool? IsComplete { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::ApiSdk.Models.Todo"/> and sets the default values.
         /// </summary>
@@ -69,10 +69,10 @@ namespace ApiSdk.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
-            writer.WriteDateValue("dueBy", DueBy);
             writer.WriteIntValue("id", Id);
-            writer.WriteBoolValue("isComplete", IsComplete);
             writer.WriteStringValue("title", Title);
+            writer.WriteDateValue("dueBy", DueBy);
+            writer.WriteBoolValue("isComplete", IsComplete);
             if (this._AdditionalData is { }) writer.WriteAdditionalData(this._AdditionalData);
         }
     }
