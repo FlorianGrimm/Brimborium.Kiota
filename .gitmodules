@@ -1,3 +1,6 @@
 [submodule "Brimborium.Kiota-dotnet"]
 	path = Brimborium.Kiota-dotnet
 	url = https://github.com/FlorianGrimm/Brimborium.Kiota-dotnet.git
+[submodule "Brimborium.UriTemplate"]
+	path = Brimborium.UriTemplate
+	url = https://github.com/FlorianGrimm/Brimborium.UriTemplate
