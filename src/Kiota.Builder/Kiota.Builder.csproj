@@ -49,7 +49,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <ProjectReference Include="..\..\..\Brimborium.Kiota-dotnet\src\Brimborium.Kiota.csproj" />
+    <ProjectReference Include="..\..\Brimborium.Kiota-dotnet\src\Brimborium.Kiota.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="*.g.cs" />

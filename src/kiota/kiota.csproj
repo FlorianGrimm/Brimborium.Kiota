@@ -38,7 +38,7 @@
     <NoWarn>$(NoWarn);CS8785;NU5048;NU5104</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="C:\github.com\FlorianGrimm\Brimborium.Kiota-dotnet\KiotaGenerated\KiotaGenerated.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="All" />
+    <ProjectReference Include="..\..\Brimborium.Kiota-dotnet\KiotaGenerated\KiotaGenerated.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="All" />
     <ProjectReference Include="..\Kiota.Builder\Kiota.Builder.csproj" />
   </ItemGroup>
   <PropertyGroup>

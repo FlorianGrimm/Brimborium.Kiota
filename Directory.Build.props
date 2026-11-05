@@ -1,8 +1,8 @@
 <Project>
   <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
   <PropertyGroup>
-
-    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
-
+      <VersionPrefix>2.0.2</VersionPrefix>
+      <VersionSuffix/>
+      <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
   </PropertyGroup>
 </Project>

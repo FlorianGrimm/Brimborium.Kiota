@@ -1,7 +1,11 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
-    <Project Path="../Brimborium.Kiota-dotnet/KiotaGenerated/KiotaGenerated.csproj" />
-    <Project Path="../Brimborium.Kiota-dotnet/src/Brimborium.Kiota.csproj" />
     <Project Path="src/Kiota.Builder/Kiota.Builder.csproj" />
     <Project Path="src/kiota/kiota.csproj" />
   </Folder>
@@ -9,6 +13,15 @@
     <Project Path="tests/Kiota.Builder.IntegrationTests/Kiota.Builder.IntegrationTests.csproj" />
     <Project Path="tests/Kiota.Builder.Tests/Kiota.Builder.Tests.csproj" />
     <Project Path="tests/Kiota.Tests/Kiota.Tests.csproj" />
+  </Folder>
+  <Folder Name="/external.Brimborium.Kiota/">
+    <File Path="Brimborium.Kiota-dotnet/README.md" />
+    <Project Path="Brimborium.Kiota-dotnet/KiotaGenerated/KiotaGenerated.csproj" />
+    <Project Path="Brimborium.Kiota-dotnet/src/Brimborium.Kiota.csproj" />
+  </Folder>
+  <Folder Name="/external.Brimborium.UriTemplate/">
+    <File Path="Brimborium.UriTemplate/README.md" />
+    <Project Path="Brimborium.UriTemplate/Brimborium.UriTemplate/Brimborium.UriTemplate.csproj" />
   </Folder>
   <Folder Name="/Sample/">
     <Project Path="Sample/SampleClient/SampleClient.csproj" Id="9ea0c819-680f-41d6-9448-d50801ef26df" />
